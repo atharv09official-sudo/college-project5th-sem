@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Supply Chain Risk System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/modulepreload-polyfill-B5Qt9EMX.js"></script>
+  <script type="module" crossorigin src="/assets/smooth-toast-2nWdVltP.js"></script>
+  <script type="module" crossorigin src="/assets/map-fast-BOPcN3hr.js"></script>
+  <script type="module" crossorigin src="/assets/app-Btji-69o.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/flowgrid-B3C_C16G.css">
+  <link rel="stylesheet" crossorigin href="/assets/styles-SfqUW_C2.css">
+</head>
+
+<body class="bg-dark-bg text-gray-100 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass-panel border-b-0 border-b-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-4 md:gap-8">
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-white/10 text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+
+                    <a href="/"
+                        class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+                        HETVAYA FlowGrid
+                    </a>
+                    <div class="hidden md:flex items-center gap-4 text-sm text-gray-400">
+                        <a href="/trade-routes" class="text-indigo-400 hover:text-indigo-300 font-medium transition">Smart Trade Routes (AI)</a>
+                        <a href="/plan-generator" class="hover:text-emerald-300 transition">Plan Generator</a>
+                        <a href="/inventory-health" class="hover:text-emerald-300 transition">Inventory Health</a>
+                        <a href="/kirana-pos" class="hover:text-emerald-300 transition">Kirana POS</a>
+                        <a href="/road-risk" class="hover:text-emerald-300 transition">Road Risk & Ghats</a>
+                        <a href="/import-studio" class="hover:text-emerald-300 transition">Import Studio</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 md:gap-4">
+                    <button id="theme-toggle"
+                        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
+                    </button>
+                    <a href="/login" class="text-sm font-medium hover:text-indigo-400 transition">Log In</a>
+                    <a href="/signup"
+                        class="hidden sm:inline-block px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">Get
+                        Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden md:hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="mobile-menu-close"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-64 glass-panel border-r border-white/10 p-6 flex flex-col gap-6">
+            <div class="flex items-center justify-between">
+                <span class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-teal-400">SupplyGuard AI</span>
+                <button id="mobile-menu-close-btn" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <div class="flex flex-col gap-4 text-sm font-medium">
+                <a href="#problem" class="hover:text-indigo-300 transition">Problem</a>
+                <a href="#solution" class="hover:text-indigo-300 transition">Solution</a>
+                <a href="#features" class="hover:text-indigo-300 transition">Features</a>
+                <a href="#reports" class="hover:text-indigo-300 transition">Reports</a>
+                <hr class="border-white/5 my-2">
+                <a href="/login" class="hover:text-indigo-300 transition">Log In</a>
+                <a href="/signup" class="text-indigo-400 font-bold transition">Get Started</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <main class="flex-grow pt-16">
+        <section class="relative overflow-hidden pt-12 md:pt-20 pb-20 md:pb-32">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
+                    Navigate Global <br class="hidden sm:block">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-teal-400">Supply
+                        Chain Risks</span>
+                </h1>
+                <p class="mt-4 text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10">
+                    Real-time geopolitical, weather, and operational risk intelligence for your critical trade routes.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="/login"
+                        class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/25 transition transform hover:scale-105 text-center">
+                        Launch Platform
+                    </a>
+                    <button class="px-8 py-4 glass-panel hover:bg-white/10 rounded-xl font-semibold transition text-center">
+                        View Documentation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Abstract Background Element -->
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-3xl -z-10">
+            </div>
+        </section>
+
+        <section id="problem" class="py-16 bg-white/5">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-sm font-semibold text-indigo-400 tracking-[0.2em] uppercase mb-3">
+                    The Problem
+                </h2>
+                <h3 class="text-2xl md:text-3xl font-semibold mb-4">
+                    Global trade decisions are still made with partial visibility.
+                </h3>
+                <p class="text-gray-400 max-w-3xl mx-auto">
+                    Logistics teams are exposed to sudden route closures, fuel spikes, sanctions, and labour actions,
+                    often relying on emails, spreadsheets, and static PDFs to make multi‑million dollar calls.
+                </p>
+                <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 text-left">
+                    <div class="glass-panel rounded-2xl p-4 md:p-6">
+                        <p class="text-sm text-gray-300">Unpredictable port closures, weather, and political shocks.</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 md:p-6">
+                        <p class="text-sm text-gray-300">Rising fuel and logistics costs with no clear route comparison.
+                        </p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-4 md:p-6">
+                        <p class="text-sm text-gray-300">Manual, undocumented decisions that are hard to defend.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solution" class="py-16 bg-dark-bg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-10 items-center">
+                <div>
+                    <h2 class="text-sm font-semibold text-teal-400 tracking-[0.2em] uppercase mb-3">
+                        The Solution
+                    </h2>
+                    <h3 class="text-2xl md:text-3xl font-semibold mb-4">
+                        From noisy signals to a single, defensible route decision.
+                    </h3>
+                    <p class="text-gray-400 mb-4">
+                        SupplyGuard AI converts fragmented global risk indicators into one clear 0–10 rating per route,
+                        backed by factor breakdowns, live intelligence, and executive‑ready reports.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li>• Combines fuel, politics, labour, sanctions, and weather into one view.</li>
+                        <li>• Shows interactive routes on a 3D globe for quick situational awareness.</li>
+                        <li>• Generates PDF, CSV, and print‑ready summaries for leadership in seconds.</li>
+                    </ul>
+                </div>
+                <div class="glass-panel rounded-2xl p-6">
+                    <h4 class="text-sm font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400 inline-block hover:scale-105 transition-transform duration-300 origin-left">Who it is for</h4>
+                    <ul class="space-y-2 text-sm text-gray-200">
+                        <li>• Logistics managers and network planners</li>
+                        <li>• Supply chain and S&OP teams</li>
+                        <li>• Risk and compliance analysts</li>
+                        <li>• Operations and finance leadership</li>
+                    </ul>
+                    <p class="mt-4 text-xs text-gray-500">
+                        Designed for institutional and enterprise planning — not consumer or hobby use.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="py-20 bg-white/5">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-sm font-semibold text-indigo-400 tracking-[0.2em] uppercase mb-2">
+                            Core Capabilities
+                        </h2>
+                        <h3 class="text-2xl font-semibold">What the system does for your team</h3>
+                    </div>
+                    <a href="/login"
+                        class="hidden md:inline-flex px-4 py-2 text-sm rounded-lg glass-panel hover:bg-white/10">
+                        Explore live dashboard
+                    </a>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="p-6 rounded-2xl glass-panel">
+                        <div
+                            class="w-12 h-12 bg-indigo-500/20 rounded-lg flex items-center justify-center mb-4 text-indigo-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Global Coverage</h3>
+                        <p class="text-gray-400">Monitor routes across 190+ countries with real-time
+                            data feeds.</p>
+                    </div>
+                    <div class="p-6 rounded-2xl glass-panel">
+                        <div
+                            class="w-12 h-12 bg-teal-500/20 rounded-lg flex items-center justify-center mb-4 text-teal-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">AI-Powered Scoring</h3>
+                        <p class="text-gray-400">Proprietary algorithms analyze thousands of signals
+                            to predict disruptions.</p>
+                    </div>
+                    <div class="p-6 rounded-2xl glass-panel">
+                        <div
+                            class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-4 text-purple-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Instant Reports</h3>
+                        <p class="text-gray-400">Generate executive-ready PDF summaries and risk
+                            assessments in one click.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 bg-dark-bg">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <h2 class="text-sm font-semibold text-purple-400 tracking-[0.2em] uppercase mb-3">
+                        How it works
+                    </h2>
+                    <ol class="space-y-3 text-sm text-gray-200">
+                        <li><span class="font-semibold text-gray-100">1. Select a trade route</span> – from country, to
+                            country, product type, and sensitivity.</li>
+                        <li><span class="font-semibold text-gray-100">2. Ingest live and historical signals</span> –
+                            fuel, politics, labour, sanctions, and weather.</li>
+                        <li><span class="font-semibold text-gray-100">3. Compare alternatives</span> – benchmark
+                            multiple routes side‑by‑side on score and drivers.</li>
+                        <li><span class="font-semibold text-gray-100">4. Export and share</span> – send a PDF, CSV, or
+                            print‑ready summary to decision‑makers.</li>
+                    </ol>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-fuchsia-400 inline-block hover:scale-105 transition-transform duration-300 origin-left">Outcomes</h3>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li>• Fewer surprise disruptions and costly re‑routes.</li>
+                        <li>• Clear justification for chosen routes.</li>
+                        <li>• Faster cross‑team alignment on risk posture.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-blue-500 inline-block hover:scale-105 transition-transform duration-300 origin-left">Built for trust</h3>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li>• Transparent factor‑wise breakdown.</li>
+                        <li>• Uses real‑world risk indicators and news intelligence.</li>
+                        <li>• No tracking and no third‑party cookies in the platform.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="reports" class="py-16 bg-white/5">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-10 items-center">
+                <div>
+                    <h2 class="text-sm font-semibold text-emerald-400 tracking-[0.2em] uppercase mb-3">
+                        Reports & Exports
+                    </h2>
+                    <p class="text-gray-400 mb-4">
+                        Decision‑makers live in email, slide decks, and PDFs. SupplyGuard AI meets them there with
+                        export‑ready outputs.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li>• One‑click PDF route risk reports.</li>
+                        <li>• CSV exports for analysts and spreadsheets.</li>
+                        <li>• Print‑friendly summaries for board packs.</li>
+                        <li>• Shareable dashboard links with encoded route state.</li>
+                    </ul>
+                </div>
+                <div class="glass-panel rounded-2xl p-6 text-sm text-gray-300">
+                    <h3 class="text-base font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-green-400 inline-block hover:scale-105 transition-transform duration-300 origin-left">Why it matters</h3>
+                    <p class="mb-3">Every high‑stakes routing decision should be defensible. The platform produces a
+                        clear narrative: what was known, what was chosen, and why.</p>
+                    <p>That turns route selection from “best guess” into a repeatable, auditable process.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 bg-dark-bg">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-sm font-semibold text-indigo-400 tracking-[0.2em] uppercase mb-3">
+                    Ready to explore your routes?
+                </h2>
+                <h3 class="text-2xl md:text-3xl font-semibold mb-4">
+                    Launch the interactive dashboard or request an executive briefing session.
+                </h3>
+                <p class="text-gray-400 max-w-2xl mx-auto mb-8">
+                    Start with sample data, then connect your own routes and risk feeds when you are ready.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="/login"
+                        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/25 transition">
+                        Get started
+                    </a>
+                    <a href="/signup"
+                        class="px-6 py-3 glass-panel rounded-xl font-semibold hover:bg-white/10">
+                        Request Executive Access
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-dark-border py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+            &copy; 2026 SupplyGuard AI. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Login Modal -->
+    <div id="login-modal"
+        class="modal fixed inset-0 z-[60] hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="glass-panel w-full max-w-md p-8 rounded-2xl relative bg-dark-card">
+            <button data-modal-close class="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
+            <h2 class="text-2xl font-bold mb-6">Welcome Back</h2>
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-400">Email</label>
+                    <input type="email"
+                        class="w-full px-4 py-2 rounded-lg bg-black/20 border border-white/10 focus:border-indigo-500 focus:outline-none text-white"
+                        placeholder="user@example.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-400">Password</label>
+                    <input type="password"
+                        class="w-full px-4 py-2 rounded-lg bg-black/20 border border-white/10 focus:border-indigo-500 focus:outline-none text-white"
+                        placeholder="••••••••">
+                </div>
+                <a href="/dashboard"
+                    class="block w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-center rounded-lg font-medium transition">
+                    Sign In
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signup-modal"
+        class="modal fixed inset-0 z-[60] hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="glass-panel w-full max-w-md p-8 rounded-2xl relative bg-dark-card">
+            <button data-modal-close class="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
+            <h2 class="text-2xl font-bold mb-6">Create Account</h2>
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-400">Work Email</label>
+                    <input type="email"
+                        class="w-full px-4 py-2 rounded-lg bg-black/20 border border-white/10 focus:border-indigo-500 focus:outline-none text-white"
+                        placeholder="name@company.com">
+                </div>
+                <a href="/dashboard"
+                    class="block w-full py-3 bg-teal-600 hover:bg-teal-700 text-white text-center rounded-lg font-medium transition">
+                    Start Evaluation Access
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 p-3 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition opacity-0 invisible translate-y-10 z-40">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+</body>
+
+</html>

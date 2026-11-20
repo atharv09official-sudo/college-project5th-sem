@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Risk Map - SupplyGuard AI</title>
+    <link rel="stylesheet" href="/src/css/flowgrid.css">
+    <link href="/src/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/assets/js/globe.gl.min.js"></script>
+</head>
+
+<body class="bg-gray-100 dark:bg-dark-bg text-gray-900 dark:text-gray-100 h-screen overflow-hidden flex flex-col">
+
+    <!-- Navbar -->
+    <nav
+        class="glass-panel z-50 px-6 h-16 flex items-center justify-between border-b border-gray-200 dark:border-dark-border absolute top-0 left-0 right-0">
+        <div class="flex items-center gap-6">
+            <a href="/"
+                class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-teal-400">
+                SupplyGuard AI
+            </a>
+            <div class="hidden md:flex items-center gap-4 text-sm font-medium text-gray-500">
+                <a href="/dashboard" class="hover:text-gray-300">Dashboard</a>
+                <a href="/analysis" class="hover:text-gray-300">Analysis</a>
+                <a href="/routes" class="hover:text-gray-300">Routes</a>
+                <a href="/map" class="text-indigo-400 border-b border-indigo-400 pb-0.5">Map</a>
+                <a href="/intelligence" class="hover:text-gray-300">Intelligence</a>
+                <a href="/reports" class="hover:text-gray-300">Reports</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="theme-toggle"
+                class="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                    </path>
+                </svg>
+            </button>
+            <div class="relative">
+                <button id="profile-menu-btn" class="flex items-center gap-2 md:gap-3 px-2 py-1 rounded-lg hover:bg-white/10 text-sm focus:outline-none">
+                    <div class="text-right hidden sm:block">
+                        <div class="text-xs font-medium text-gray-100">System User</div>
+                        <div class="flex items-center justify-end gap-1">
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-400/20">Admin</span>
+                        </div>
+                    </div>
+                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 border border-white/20"></div>
+                </button>
+                <div id="profile-menu-dropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-[#121214] border border-white/10 rounded-lg shadow-lg shadow-black/50 backdrop-blur-xl p-1 z-50 text-gray-200 transform origin-top-right transition-all">
+                    <div class="px-2 py-1.5 border-b border-white/5 mb-1">
+                        <p class="text-sm font-medium text-gray-100">System User</p>
+                        <p class="text-xs text-gray-400 truncate">system@supplyguard.ai</p>
+                    </div>
+                    
+                    <div class="space-y-0.5">
+                        <a href="/settings#profile" class="relative flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-white/5 hover:text-white transition-colors cursor-pointer outline-none group">
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            <span>Profile</span>
+                            <span class="ml-auto text-xs text-gray-500">⇧⌘P</span>
+                        </a>
+                        <a href="/settings#users" class="relative flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-white/5 hover:text-white transition-colors cursor-pointer outline-none group">
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            <span>Team</span>
+                        </a>
+                        <a href="/settings" class="relative flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-white/5 hover:text-white transition-colors cursor-pointer outline-none group">
+                             <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>Settings</span>
+                            <span class="ml-auto text-xs text-gray-500">⌘S</span>
+                        </a>
+                    </div>
+                    
+                    <div class="h-px bg-white/5 my-1 mx-1"></div>
+                    
+                    <button id="btn-logout" class="w-full relative flex items-center gap-2 px-2 py-1.5 text-sm rounded-md text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer outline-none group text-left">
+                        <svg class="w-4 h-4 text-red-400/70 group-hover:text-red-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <span>Log out</span>
+                        <span class="ml-auto text-xs text-red-400/50">⇧⌘Q</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow relative bg-black">
+        <div id="globe-viz" class="absolute inset-0 z-0"></div>
+
+        <!-- Overlay Controls -->
+        <div class="absolute top-24 left-6 z-10 w-80">
+            <div class="glass-panel p-4 rounded-xl space-y-4">
+                <h2 class="text-sm font-bold text-white uppercase tracking-wider">Map Layers</h2>
+
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                        <input type="checkbox" checked
+                            class="rounded border-gray-600 bg-gray-700 text-indigo-500 focus:ring-indigo-500">
+                        <span>Active Routes</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                        <input type="checkbox" checked
+                            class="rounded border-gray-600 bg-gray-700 text-indigo-500 focus:ring-indigo-500">
+                        <span>High Risk Zones</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                        <input type="checkbox"
+                            class="rounded border-gray-600 bg-gray-700 text-indigo-500 focus:ring-indigo-500">
+                        <span>Port Congestion</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                        <input type="checkbox"
+                            class="rounded border-gray-600 bg-gray-700 text-indigo-500 focus:ring-indigo-500">
+                        <span>Weather Patterns</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="route-intel-panel" class="absolute top-24 right-4 z-10 w-[430px] max-w-md hidden">
+            <div class="glass-panel p-4 rounded-xl space-y-4 max-h-[80vh] overflow-y-auto">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm font-bold text-neo-blue uppercase tracking-wider">Route Intelligence</div>
+                        <div id="route-intel-title" class="text-base text-gray-200 font-semibold mt-1">Select a route to begin</div>
+                    </div>
+                    <div id="route-intel-risk-pill" class="px-3 py-1 rounded-full border border-white/10 text-xs text-gray-300 bg-white/5">
+                        Risk: --
+                    </div>
+                </div>
+                <div id="route-intel-confidence" class="mt-1">
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span>Confidence</span>
+                        <span id="route-intel-confidence-label" class="text-gray-300">--%</span>
+                    </div>
+                    <div class="mt-1 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div id="route-intel-confidence-bar" class="h-full w-0 bg-emerald-400"></div>
+                    </div>
+                </div>
+                <div id="route-intel-summary" class="text-sm text-gray-400 leading-relaxed">
+                    When you run an analysis from the dashboard, the selected lane will appear here with live cost, time and risk intelligence.
+                </div>
+                <div class="text-xs text-gray-400 uppercase tracking-wide">Modes</div>
+                <div id="route-intel-modes" class="space-y-2 text-xs text-gray-300">
+                </div>
+                <div id="route-intel-why-not" class="text-xs text-gray-400 bg-white/5 border border-white/10 rounded-lg p-2 hidden">
+                </div>
+                <div class="border-t border-white/10 pt-3 space-y-2">
+                    <div class="flex items-center justify-between text-xs text-gray-500 uppercase">
+                        <span>Timeline</span>
+                        <span id="route-intel-timeline-label" class="text-gray-400 normal-case">Today</span>
+                    </div>
+                    <input id="route-intel-timeline" type="range" min="0" max="2" value="1" class="w-full accent-indigo-500">
+                    <div class="flex justify-between text-[11px] text-gray-500">
+                        <span>Past 30d</span>
+                        <span>Today</span>
+                        <span>Next 14d</span>
+                    </div>
+                </div>
+                <div class="border-t border-white/10 pt-3 space-y-2">
+                    <div class="text-xs text-gray-500 uppercase">What-If Scenarios</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" class="px-2 py-1 rounded-full text-xs bg-white/5 border border-white/10 text-gray-200" data-scenario="base">
+                            Base
+                        </button>
+                        <button type="button" class="px-2 py-1 rounded-full text-xs bg-white/5 border border-white/10 text-gray-200" data-scenario="fuel">
+                            Fuel +10%
+                        </button>
+                        <button type="button" class="px-2 py-1 rounded-full text-xs bg-white/5 border border-white/10 text-gray-200" data-scenario="weather">
+                            Weather Disruption
+                        </button>
+                        <button type="button" class="px-2 py-1 rounded-full text-xs bg-white/5 border border-white/10 text-gray-200" data-scenario="sanctions">
+                            Sanctions Escalate
+                        </button>
+                    </div>
+                    <div id="route-intel-scenario-note" class="text-xs text-gray-500">
+                        Base case view (no scenario applied).
+                    </div>
+                </div>
+                <div class="border-t border-white/10 pt-3">
+                    <div class="text-xs text-gray-500 uppercase mb-1">AI Captain Summary</div>
+                    <div id="route-intel-captain" class="text-sm text-gray-200">
+                        Waiting for a live route from the dashboard.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-8 right-8 z-10">
+            <div class="glass-panel px-4 py-2 rounded-lg text-xs text-gray-400">
+                Double-click to zoom • Drag to rotate
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentScenario = 'base';
+        let currentRouteAnalysis = null;
+        let currentRouteContext = null;
+
+        function getRiskColor(level) {
+            if (level === 'High') return '#ef4444';
+            if (level === 'Medium') return '#fbbf24';
+            return '#22c55e';
+        }
+
+        function getModeIcon(mode) {
+            if (!mode) return '🚢';
+            const lower = mode.toLowerCase();
+            if (lower === 'air') return '✈️';
+            if (lower === 'road' || lower === 'land') return '🚚';
+            return '🚢';
+        }
+
+        async function initGlobe() {
+            const rawAllocated = JSON.parse(localStorage.getItem('allocated_routes') || '[]');
+            const allocatedRoutes = rawAllocated.map(r => {
+                if (!r.fromCoords || !r.toCoords) return null;
+                return {
+                    startLat: r.fromCoords[0],
+                    startLng: r.fromCoords[1],
+                    endLat: r.toCoords[0],
+                    endLng: r.toCoords[1],
+                    color: r.riskLevel === 'High' ? '#ef4444' : r.riskLevel === 'Medium' ? '#f97316' : '#22c55e',
+                    name: `${r.from} -> ${r.to}`
+                };
+            }).filter(r => r !== null);
+
+            let context = null;
+            try {
+                context = JSON.parse(localStorage.getItem('current_route_context') || 'null');
+            } catch (e) {
+                context = null;
+            }
+
+            let liveAnalysis = null;
+            if (context && context.from && context.to) {
+                try {
+                    const res = await fetch('/api/analyze-shipment', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            from_country: context.from,
+                            to_country: context.to,
+                            currency: 'USD',
+                            preferred_mode: context.preferred_mode || 'sea'
+                        })
+                    });
+                    if (res.ok) {
+                        liveAnalysis = await res.json();
+                    }
+                } catch (e) {
+                    liveAnalysis = null;
+                }
+            }
+
+            let mockRoutes = [];
+            try {
+                const routesRes = await fetch('/api/routes');
+                if (routesRes.ok) {
+                    mockRoutes = await routesRes.json();
+                }
+            } catch (e) {
+                console.warn("Failed to fetch routes API, using local data only", e);
+            }
+
+            // Combine all available routes for visualization
+            const allRoutes = [];
+
+            // 1. Add Live Analysis Route (Highest Priority)
+            if (liveAnalysis && liveAnalysis.coordinates && liveAnalysis.risk_summary) {
+                const level = liveAnalysis.risk_summary.combined_level || 'Low';
+                allRoutes.push({
+                    startLat: liveAnalysis.coordinates.start[0],
+                    startLng: liveAnalysis.coordinates.start[1],
+                    endLat: liveAnalysis.coordinates.end[0],
+                    endLng: liveAnalysis.coordinates.end[1],
+                    color: getRiskColor(level),
+                    name: `${liveAnalysis.from} -> ${liveAnalysis.to} (Live)`
+                });
+            } 
+            // 2. Add Context Route if Live Analysis not available
+            else if (context && context.coordinates && context.coordinates.start && context.coordinates.end) {
+                allRoutes.push({
+                    startLat: context.coordinates.start[0],
+                    startLng: context.coordinates.start[1],
+                    endLat: context.coordinates.end[0],
+                    endLng: context.coordinates.end[1],
+                    color: '#6366f1',
+                    name: (context.from || 'Origin') + ' -> ' + (context.to || 'Destination')
+                });
+            }
+
+            // 3. Add Allocated/Saved Routes (from LocalStorage)
+            if (allocatedRoutes && allocatedRoutes.length > 0) {
+                allocatedRoutes.forEach(route => {
+                    // Avoid duplicates if possible, or just add them
+                    // Check if this route is effectively the same as the live one to avoid z-fighting
+                    const isDuplicate = allRoutes.some(existing => 
+                        Math.abs(existing.startLat - route.startLat) < 0.1 && 
+                        Math.abs(existing.endLat - route.endLat) < 0.1
+                    );
+                    
+                    if (!isDuplicate) {
+                        allRoutes.push(route);
+                    }
+                });
+            }
+            
+            // 4. Add Database Routes (from API) - Optional, if we want to show global network
+            if (mockRoutes && mockRoutes.length > 0) {
+                 mockRoutes.forEach(r => {
+                    if (r.startLat && r.endLat) {
+                         const isDuplicate = allRoutes.some(existing => 
+                            Math.abs(existing.startLat - r.startLat) < 0.1 && 
+                            Math.abs(existing.endLat - r.endLat) < 0.1
+                        );
+                        if (!isDuplicate) {
+                            allRoutes.push({
+                                startLat: r.startLat,
+                                startLng: r.startLng,
+                                endLat: r.endLat,
+                                endLng: r.endLng,
+                                color: r.color || '#22c55e',
+                                name: `${r.from} -> ${r.to}`
+                            });
+                        }
+                    }
+                 });
+            }
+
+            let breakdown = null;
+            if (liveAnalysis && liveAnalysis.to) {
+                try {
+                    const brRes = await fetch(`/api/risk-breakdown?location=${encodeURIComponent(liveAnalysis.to)}`);
+                    if (brRes.ok) {
+                        breakdown = await brRes.json();
+                    }
+                } catch (e) {
+                    breakdown = null;
+                }
+            }
+
+            const dynamicPoints = [];
+            if (liveAnalysis && liveAnalysis.coordinates && liveAnalysis.risk_summary) {
+                const originScore = liveAnalysis.risk_summary.origin_score;
+                const destinationScore = liveAnalysis.risk_summary.destination_score;
+                const preferredMode = context && context.preferred_mode ? context.preferred_mode : liveAnalysis.preferred_mode || 'sea';
+
+                dynamicPoints.push({
+                    name: `Origin: ${liveAnalysis.from}`,
+                    lat: liveAnalysis.coordinates.start[0],
+                    lng: liveAnalysis.coordinates.start[1],
+                    role: 'origin',
+                    riskScore: originScore,
+                    color: getRiskColor(originScore > 6 ? 'High' : originScore > 3 ? 'Medium' : 'Low')
+                });
+
+                dynamicPoints.push({
+                    name: `Destination: ${liveAnalysis.to}`,
+                    lat: liveAnalysis.coordinates.end[0],
+                    lng: liveAnalysis.coordinates.end[1],
+                    role: 'destination',
+                    riskScore: destinationScore,
+                    mode: preferredMode
+                });
+
+                if (breakdown) {
+                    const midLat = (liveAnalysis.coordinates.start[0] + liveAnalysis.coordinates.end[0]) / 2;
+                    const midLng = (liveAnalysis.coordinates.start[1] + liveAnalysis.coordinates.end[1]) / 2;
+                    const factors = [];
+                    for (const [k, v] of Object.entries(breakdown)) {
+                        factors.push({ key: k, value: typeof v === 'number' ? v : 0 });
+                    }
+                    factors.sort((a, b) => b.value - a.value);
+                    const topFactors = factors.slice(0, 3);
+                    topFactors.forEach((f, index) => {
+                        let icon = '●';
+                        let label = '';
+                        if (f.key === 'fuel') {
+                            icon = '⛽';
+                            label = 'Fuel spike zone';
+                        } else if (f.key === 'weather') {
+                            icon = '🌊';
+                            label = 'Weather disturbance corridor';
+                        } else if (f.key === 'sanctions') {
+                            icon = '⚖️';
+                            label = 'Regulatory pressure band';
+                        } else {
+                            icon = '🏗️';
+                            label = 'Operational stress zone';
+                        }
+                        const offsetLat = midLat + (index - 1) * 2;
+                        dynamicPoints.push({
+                            name: label,
+                            lat: offsetLat,
+                            lng: midLng,
+                            role: 'micro',
+                            icon,
+                            riskScore: f.value,
+                            description: `${label}. Factor score: ${f.value.toFixed(1)} / 10.`,
+                        });
+                    });
+                }
+            }
+
+            const world = Globe()
+                (document.getElementById('globe-viz'))
+                .globeImageUrl('/assets/img/earth-night.jpg')
+                .bumpImageUrl('/assets/img/earth-topology.png')
+                .backgroundImageUrl('/assets/img/night-sky.png')
+                .arcsData(allRoutes)
+                .arcColor('color')
+                .arcDashLength(1.0)
+                .arcDashGap(0.2)
+                .arcStroke(1.5)
+                .arcDashAnimateTime(2000)
+                .pointsData(dynamicPoints)
+                .pointResolution(12) // Lower resolution for performance (default 12 is fine, but ensuring it)
+                .pointColor(p => {
+                    if (p.role === 'destination') return '#38bdf8';
+                    if (p.role === 'origin') return '#a855f7';
+                    return '#facc15';
+                })
+                .pointAltitude(0.08)
+                .pointRadius(0.8)
+                .pointLabel(p => {
+                    // Simple tooltip, only create string when needed
+                    let icon = '●';
+                    if (p.role === 'destination') icon = getModeIcon(p.mode);
+                    if (p.role === 'micro' && p.icon) icon = p.icon;
+                    return `<div style="background:rgba(0,0,0,0.8);color:white;padding:4px 8px;border-radius:4px;font-size:12px;">${icon} ${p.name}</div>`;
+                });
+                
+            // Performance: Limit frame rate or stop when not interacting?
+            // Globe.gl controls internal loop, but we can simplify controls
+            world.controls().enableDamping = true;
+            world.controls().dampingFactor = 0.1;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const routeId = urlParams.get('route');
+            if (routeId) {
+                const routes = JSON.parse(localStorage.getItem('allocated_routes') || '[]');
+                const target = routes.find(r => r.id === routeId);
+                if (target && Array.isArray(target.fromCoords) && Array.isArray(target.toCoords)) {
+                    const centerLat = (target.fromCoords[0] + target.toCoords[0]) / 2;
+                    const centerLng = (target.fromCoords[1] + target.toCoords[1]) / 2;
+                    world.pointOfView({ lat: centerLat, lng: centerLng, altitude: 1.8 }, 2000);
+                } else if (target && Array.isArray(target.fromCoords)) {
+                    world.pointOfView({ lat: target.fromCoords[0], lng: target.fromCoords[1], altitude: 1.8 }, 2000);
+                }
+            } else if (liveAnalysis && liveAnalysis.coordinates) {
+                const start = liveAnalysis.coordinates.start;
+                const end = liveAnalysis.coordinates.end;
+                let centerLat = start[0];
+                let centerLng = start[1];
+                if (Array.isArray(end)) {
+                    centerLat = (start[0] + end[0]) / 2;
+                    centerLng = (start[1] + end[1]) / 2;
+                }
+                world.pointOfView({ lat: centerLat, lng: centerLng, altitude: 1.8 }, 2000);
+            } else {
+                world.controls().autoRotate = true;
+                world.controls().autoRotateSpeed = 0.5;
+            }
+
+            if (liveAnalysis && liveAnalysis.analysis && liveAnalysis.risk_summary) {
+                currentRouteAnalysis = liveAnalysis;
+                currentRouteContext = context || null;
+                hydrateRouteIntelPanel(liveAnalysis, context, world);
+                applyScenario(currentScenario || 'base');
+            }
+
+            const timeline = document.getElementById('route-intel-timeline');
+            const timelineLabel = document.getElementById('route-intel-timeline-label');
+            if (timeline && timelineLabel) {
+                timeline.addEventListener('input', () => {
+                    const value = parseInt(timeline.value, 10);
+                    if (value === 0) timelineLabel.textContent = 'Past 30d';
+                    else if (value === 1) timelineLabel.textContent = 'Today';
+                    else timelineLabel.textContent = 'Next 14d';
+                    if (value === 0) {
+                        world.arcDashLength(0.8);
+                        world.arcDashGap(0.3);
+                        world.pointAltitude(0.06);
+                    } else if (value === 1) {
+                        world.arcDashLength(1.0);
+                        world.arcDashGap(0.2);
+                        world.pointAltitude(0.08);
+                    } else {
+                        world.arcDashLength(1.2);
+                        world.arcDashGap(0.1);
+                        world.pointAltitude(0.1);
+                    }
+                });
+            }
+        }
+
+        function applyScenario(scenario) {
+            currentScenario = scenario;
+            const panel = document.getElementById('route-intel-panel');
+            const note = document.getElementById('route-intel-scenario-note');
+            if (note) {
+                if (scenario === 'base') {
+                    note.textContent = 'Base case view (no scenario applied).';
+                } else if (scenario === 'fuel') {
+                    note.textContent = 'Fuel pressure applied: modes with heavier fuel usage show higher cost and risk.';
+                } else if (scenario === 'weather') {
+                    note.textContent = 'Weather disruption applied: sea and air routes show slower transit and higher risk.';
+                } else if (scenario === 'sanctions') {
+                    note.textContent = 'Sanctions stress applied: structurally exposed modes carry a higher risk band.';
+                }
+            }
+            if (panel) {
+                const buttons = panel.querySelectorAll('[data-scenario]');
+                buttons.forEach(btn => {
+                    if (btn.getAttribute('data-scenario') === scenario) {
+                        btn.classList.add('border-indigo-400', 'text-indigo-200');
+                    } else {
+                        btn.classList.remove('border-indigo-400', 'text-indigo-200');
+                    }
+                });
+            }
+            if (currentRouteAnalysis && currentRouteAnalysis.analysis && currentRouteAnalysis.risk_summary) {
+                hydrateRouteIntelPanel(currentRouteAnalysis, currentRouteContext, null);
+            }
+        }
+
+        function hydrateRouteIntelPanel(data, context, worldInstance) {
+            const panel = document.getElementById('route-intel-panel');
+            const titleEl = document.getElementById('route-intel-title');
+            const pillEl = document.getElementById('route-intel-risk-pill');
+            const summaryEl = document.getElementById('route-intel-summary');
+            const modesEl = document.getElementById('route-intel-modes');
+            const captainEl = document.getElementById('route-intel-captain');
+            const confidenceLabel = document.getElementById('route-intel-confidence-label');
+            const confidenceBar = document.getElementById('route-intel-confidence-bar');
+            const whyEl = document.getElementById('route-intel-why-not');
+
+            if (!panel || !titleEl || !pillEl || !summaryEl || !modesEl || !captainEl || !confidenceLabel || !confidenceBar || !whyEl) return;
+
+            panel.classList.remove('hidden');
+
+            const from = data.from;
+            const to = data.to;
+            titleEl.textContent = `${from} → ${to}`;
+
+            const combined = data.risk_summary.combined_level || 'Low';
+            pillEl.textContent = `Risk: ${combined}`;
+            if (combined === 'High') {
+                pillEl.className = 'px-3 py-1 rounded-full border border-red-500/60 text-[11px] text-red-300 bg-red-500/10';
+            } else if (combined === 'Medium') {
+                pillEl.className = 'px-3 py-1 rounded-full border border-amber-400/60 text-[11px] text-amber-200 bg-amber-400/10';
+            } else {
+                pillEl.className = 'px-3 py-1 rounded-full border border-emerald-400/60 text-[11px] text-emerald-200 bg-emerald-400/10';
+            }
+
+            const originScore = data.risk_summary.origin_score;
+            const destinationScore = data.risk_summary.destination_score;
+            const avgRisk = typeof originScore === 'number' && typeof destinationScore === 'number'
+                ? (originScore + destinationScore) / 2
+                : null;
+
+            let confidence = 70;
+            if (avgRisk !== null) {
+                const spread = Math.abs((originScore || 0) - (destinationScore || 0));
+                const spreadPenalty = Math.min(30, spread * 4);
+                confidence = 92 - spreadPenalty;
+            }
+            confidence = Math.max(45, Math.min(97, confidence));
+            confidenceLabel.textContent = `${confidence.toFixed(0)}%`;
+            confidenceBar.style.width = `${confidence}%`;
+            if (confidence >= 80) {
+                confidenceBar.className = 'h-full w-0 bg-emerald-400';
+            } else if (confidence >= 65) {
+                confidenceBar.className = 'h-full w-0 bg-amber-400';
+            } else {
+                confidenceBar.className = 'h-full w-0 bg-red-500';
+            }
+
+            if (avgRisk !== null) {
+                summaryEl.textContent = `AI tracks this lane around a ${avgRisk.toFixed(1)} / 10 composite risk, blending origin, destination and mode exposure. Scores update as live risk inputs change.`;
+            } else {
+                summaryEl.textContent = 'AI could not compute a full composite score for this lane. Only structural distance and mode options are shown.';
+            }
+
+            const scenario = currentScenario || 'base';
+
+            const baseAnalysisClone = JSON.parse(JSON.stringify(data.analysis));
+            Object.values(baseAnalysisClone).forEach(opt => {
+                if (!opt.risk_level) opt.risk_level = data.risk_summary.combined_level;
+            });
+
+            const analysisView = {};
+            for (const [key, info] of Object.entries(baseAnalysisClone)) {
+                const copy = info;
+                if (scenario === 'fuel') {
+                    let intensity = 0.9;
+                    if (key === 'sea') intensity = 1.0;
+                    if (key === 'road') intensity = 0.7;
+                    if (typeof copy.cost === 'number') copy.cost = copy.cost * (1 + 0.1 * intensity);
+                    if (typeof copy.cost_usd === 'number') copy.cost_usd = copy.cost_usd * (1 + 0.1 * intensity);
+                } else if (scenario === 'weather') {
+                    if (key === 'sea' || key === 'air') {
+                        if (typeof copy.estimated_days === 'number') copy.estimated_days = copy.estimated_days * 1.15;
+                        if (copy.risk_level === 'Low') copy.risk_level = 'Medium';
+                        else if (copy.risk_level === 'Medium') copy.risk_level = 'High';
+                    }
+                } else if (scenario === 'sanctions') {
+                    if (copy.risk_level === 'Low') copy.risk_level = 'Medium';
+                    else copy.risk_level = 'High';
+                }
+                analysisView[key] = copy;
+            }
+
+            const modesArray = Object.entries(analysisView);
+            const preferredMode = context && context.preferred_mode ? context.preferred_mode : null;
+
+            let minCost = Infinity;
+            let minTime = Infinity;
+            modesArray.forEach(([key, info]) => {
+                if (typeof info.cost === 'number' && info.cost < minCost) minCost = info.cost;
+                if (typeof info.estimated_days === 'number' && info.estimated_days < minTime) minTime = info.estimated_days;
+            });
+
+            modesEl.innerHTML = '';
+            modesArray.forEach(([key, info]) => {
+                const div = document.createElement('div');
+                const isPreferred = preferredMode && key === preferredMode;
+                const isCheapest = info.cost === minCost;
+                const isFastest = info.estimated_days === minTime;
+                const icon = getModeIcon(key);
+
+                const tags = [];
+                if (isPreferred) tags.push('SELECTED');
+                if (isCheapest) tags.push('CHEAPEST');
+                if (isFastest) tags.push('FASTEST');
+
+                const currency = info.currency || 'USD';
+                const riskLevel = info.risk_level || data.risk_summary.combined_level || 'Low';
+                const riskColor = riskLevel === 'High' ? 'text-red-400' : riskLevel === 'Medium' ? 'text-amber-300' : 'text-emerald-300';
+
+                let philosophy = '';
+                if (key === 'air') philosophy = 'Speed-first';
+                else if (key === 'sea') philosophy = 'Cost-first';
+                else philosophy = 'Flexibility-first';
+
+                let breakdownHtml = '';
+                const bd = info.cost_breakdown;
+                if (bd && typeof info.cost === 'number' && typeof info.cost_usd === 'number' && info.cost_usd > 0) {
+                    const factor = info.cost / info.cost_usd;
+                    const fuel = bd.fuel * factor;
+                    const handling = bd.handling * factor;
+                    const insurance = bd.insurance * factor;
+                    const riskPremium = bd.risk_premium * factor;
+                    breakdownHtml = `
+                        <div class="mt-1 hidden space-y-1" data-role="breakdown">
+                            <div class="flex items-center justify-between text-xs text-gray-400">
+                                <span>Fuel</span>
+                                <span>${currency} ${fuel.toFixed(0)}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-400">
+                                <span>Handling</span>
+                                <span>${currency} ${handling.toFixed(0)}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-400">
+                                <span>Insurance</span>
+                                <span>${currency} ${insurance.toFixed(0)}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-400">
+                                <span>Risk premium</span>
+                                <span>${currency} ${riskPremium.toFixed(0)}</span>
+                            </div>
+                        </div>
+                        <button type="button" class="mt-1 text-xs text-indigo-300 hover:text-indigo-200 underline-offset-2 hover:underline self-start" data-role="toggle-breakdown">
+                            Cost breakdown
+                        </button>
+                    `;
+                }
+
+                div.className = 'p-2 rounded-lg bg-white/5 border border-white/10 flex flex-col gap-1';
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">${icon}</span>
+                            <span class="text-xs font-semibold text-gray-100 uppercase tracking-wide">${key}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            ${tags.map(t => `<span class="px-1.5 py-0.5 rounded text-[9px] bg-white/10 text-gray-100 font-semibold">${t}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-gray-300">
+                        <span>${currency} ${typeof info.cost === 'number' ? info.cost.toLocaleString() : 'n/a'}</span>
+                        <span>${typeof info.estimated_days === 'number' ? `${info.estimated_days.toFixed ? info.estimated_days.toFixed(1) : info.estimated_days} days` : 'n/a'}</span>
+                        <span class="${riskColor} font-semibold">${riskLevel} risk</span>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-500">
+                        ${philosophy}
+                    </div>
+                    ${breakdownHtml}
+                `;
+
+                modesEl.appendChild(div);
+            });
+            if (!modesEl.dataset.bound) {
+                modesEl.addEventListener('click', (e) => {
+                    const toggle = e.target.closest('[data-role="toggle-breakdown"]');
+                    if (!toggle) return;
+                    const card = toggle.closest('.p-2');
+                    if (!card) return;
+                    const section = card.querySelector('[data-role="breakdown"]');
+                    if (!section) return;
+                    section.classList.toggle('hidden');
+                });
+                modesEl.dataset.bound = '1';
+            }
+
+            const preferredKey = preferredMode && analysisView[preferredMode] ? preferredMode : modesArray[0] ? modesArray[0][0] : null;
+            const preferred = preferredKey ? analysisView[preferredKey] : null;
+
+            if (whyEl) {
+                whyEl.classList.add('hidden');
+                whyEl.textContent = '';
+                if (preferred && modesArray.length > 1) {
+                    const alternatives = modesArray.filter(([k]) => k !== preferredKey).map(([k, v]) => ({ key: k, info: v }));
+                    let focus = alternatives.find(a => a.key === 'sea') || alternatives[0];
+                    if (preferredKey === 'air' && focus) {
+                        const reasons = [];
+                        if (typeof focus.info.estimated_days === 'number' && typeof preferred.estimated_days === 'number' && focus.info.estimated_days > preferred.estimated_days) {
+                            reasons.push('longer dwell and transit time');
+                        }
+                        if ((focus.info.risk_level === 'High' || (focus.info.risk_level === 'Medium' && preferred.risk_level === 'Low'))) {
+                            reasons.push('higher disruption and queue exposure');
+                        }
+                        if (reasons.length > 0) {
+                            const text = `SEA route not selected because it carries ${reasons.join(' and ')} versus the current AIR plan.`;
+                            whyEl.textContent = text;
+                            whyEl.classList.remove('hidden');
+                        }
+                    }
+                }
+            }
+
+            if (preferred && typeof preferred.cost === 'number' && typeof preferred.estimated_days === 'number') {
+                const riskText = combined === 'High' ? 'shows elevated disruption risk' : combined === 'Medium' ? 'balances volatility with workable transit times' : 'sits in a broadly stable band';
+                let verdict = '';
+                if (preferredKey === 'air') {
+                    verdict = 'Recommended for high-value cargo with tight deadlines.';
+                } else if (preferredKey === 'sea') {
+                    verdict = 'Recommended when cost efficiency is the priority and schedules allow buffer.';
+                } else {
+                    verdict = 'Recommended for regional moves where flexibility and ground control matter.';
+                }
+                captainEl.textContent = `AI recommends ${getModeIcon(preferredKey)} ${preferredKey.toUpperCase()} for ${from} → ${to}. Estimated transit is ${preferred.estimated_days.toFixed ? preferred.estimated_days.toFixed(1) : preferred.estimated_days} days with spend around ${preferred.cost.toLocaleString()} ${preferred.currency || 'USD'}, and the lane ${riskText} ${verdict}`;
+            } else {
+                captainEl.textContent = 'AI could not derive a clean recommendation for this lane. Check upstream inputs or try another origin/destination pair.';
+            }
+
+            if (panel) {
+                panel.classList.remove('hidden');
+                const buttons = panel.querySelectorAll('[data-scenario]');
+                buttons.forEach(btn => {
+                    btn.addEventListener('click', () => applyScenario(btn.getAttribute('data-scenario') || 'base'));
+                });
+            }
+        }
+
+        initGlobe();
+    </script>
+    <script type="module" src="/src/js/app.js"></script>
+</body>
+
+</html>

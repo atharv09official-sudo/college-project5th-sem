@@ -1,0 +1,26 @@
+{
+  "name": "hetvaya-flowgrid",
+  "version": "2.0.0",
+  "description": "AI-Powered FMCG Distribution Intelligence, Expiry-Aware Inventory Optimization, and Constrained Dispatch",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "python run.py",
+    "test": "pytest -v"
+  },
+  "keywords": [
+    "fmcg",
+    "supply-chain",
+    "inventory-optimization",
+    "or-tools",
+    "fastapi",
+    "vite"
+  ],
+  "author": "HETVAYA Team",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.4.11"
+  }
+}

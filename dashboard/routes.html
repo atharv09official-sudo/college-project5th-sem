@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routes - SupplyGuard AI</title>
+    <link rel="stylesheet" href="/src/css/flowgrid.css">
+    <link href="/src/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 dark:bg-dark-bg text-gray-900 dark:text-gray-100 h-screen overflow-hidden flex flex-col">
+
+    <!-- Navbar -->
+    <nav
+        class="glass-panel z-50 px-6 h-16 flex items-center justify-between border-b border-gray-200 dark:border-dark-border">
+        <div class="flex items-center gap-6">
+            <a href="/"
+                class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-teal-400">
+                SupplyGuard AI
+            </a>
+            <div class="hidden md:flex items-center gap-4 text-sm font-medium text-gray-500">
+                <a href="/dashboard" class="hover:text-gray-300">Dashboard</a>
+                <a href="/analysis" class="hover:text-gray-300">Analysis</a>
+                <a href="/routes" class="text-indigo-400 border-b border-indigo-400 pb-0.5">Routes</a>
+                <a href="/map" class="hover:text-gray-300">Map</a>
+                <a href="/intelligence" class="hover:text-gray-300">Intelligence</a>
+                <a href="/reports" class="hover:text-gray-300">Reports</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="relative hidden md:block">
+                <input type="text" placeholder="Search routes..."
+                    class="bg-black/20 border border-white/10 rounded-lg pl-8 pr-4 py-1.5 text-sm w-48 focus:w-64 transition-all focus:border-indigo-500 focus:outline-none">
+                <svg class="w-4 h-4 text-gray-500 absolute left-2.5 top-2" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+            <button id="theme-toggle"
+                class="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                    </path>
+                </svg>
+            </button>
+            <div class="relative">
+                <button id="profile-menu-btn" class="flex items-center gap-2 md:gap-3 px-2 py-1 rounded-lg hover:bg-white/10 text-sm focus:outline-none">
+                    <div class="text-right hidden sm:block">
+                        <div class="text-xs font-medium text-gray-100">System User</div>
+                        <div class="flex items-center justify-end gap-1">
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-400/20">Admin</span>
+                        </div>
+                    </div>
+                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 border border-white/20"></div>
+                </button>
+                <div id="profile-menu-dropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-[#121214] border border-white/10 rounded-lg shadow-lg shadow-black/50 backdrop-blur-xl p-1 z-50 text-gray-200 transform origin-top-right transition-all">
+                    <div class="px-2 py-1.5 border-b border-white/5 mb-1">
+                        <p class="text-sm font-medium text-gray-100">System User</p>
+                        <p class="text-xs text-gray-400 truncate">system@supplyguard.ai</p>
+                    </div>
+                    
+                    <div class="space-y-0.5">
+                        <a href="/settings#profile" class="relative flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-white/5 hover:text-white transition-colors cursor-pointer outline-none group">
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            <span>Profile</span>
+                            <span class="ml-auto text-xs text-gray-500">⇧⌘P</span>
+                        </a>
+                        <a href="/settings#users" class="relative flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-white/5 hover:text-white transition-colors cursor-pointer outline-none group">
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            <span>Team</span>
+                        </a>
+                        <a href="/settings" class="relative flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-white/5 hover:text-white transition-colors cursor-pointer outline-none group">
+                             <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>Settings</span>
+                            <span class="ml-auto text-xs text-gray-500">⌘S</span>
+                        </a>
+                    </div>
+                    
+                    <div class="h-px bg-white/5 my-1 mx-1"></div>
+                    
+                    <button id="btn-logout" class="w-full relative flex items-center gap-2 px-2 py-1.5 text-sm rounded-md text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors cursor-pointer outline-none group text-left">
+                        <svg class="w-4 h-4 text-red-400/70 group-hover:text-red-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <span>Log out</span>
+                        <span class="ml-auto text-xs text-red-400/50">⇧⌘Q</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div
+        class="px-6 py-2 flex items-center justify-between text-[11px] text-gray-400 bg-black/40 border-b border-black/40">
+        <div class="flex items-center gap-2">
+            <span class="text-gray-500">Dashboard</span>
+            <span class="text-gray-600">›</span>
+            <span class="text-indigo-300 font-medium">Routes Directory</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6 overflow-y-auto bg-dark-bg">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-2xl font-bold text-white mb-2">Saved Routes</h1>
+                    <p class="text-sm text-gray-400">Manage and monitor all your tracked supply chain routes.</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="/routes/compare"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition">
+                        Compare Routes
+                    </a>
+                    <button onclick="alert('Feature coming soon: Use Dashboard to analyze and add new routes.')" class="px-4 py-2 glass-panel hover:bg-white/10 text-sm font-medium rounded-lg transition">
+                        Add New Route
+                    </button>
+                </div>
+            </div>
+
+            <!-- Route Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Origin Country -->
+                <div class="glass-panel p-4 rounded-xl border border-white/5">
+                    <label class="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">Origin Country</label>
+                    <div class="relative" id="origin-dropdown">
+                        <button type="button" class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white text-left flex justify-between items-center focus:outline-none focus:border-indigo-500 transition-colors">
+                            <span class="selected-text truncate text-gray-400">Select Origin...</span>
+                            <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="hidden absolute z-50 w-full mt-1 bg-[#121214] border border-white/10 rounded-lg shadow-xl shadow-black/50 backdrop-blur-xl overflow-hidden transform origin-top transition-all">
+                            <div class="p-2 border-b border-white/5 sticky top-0 bg-[#121214] z-10">
+                                <input type="text" class="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500/50" placeholder="Search country...">
+                            </div>
+                            <div class="max-h-60 overflow-y-auto custom-scrollbar p-1 options-list"></div>
+                        </div>
+                        <input type="hidden" id="origin-country" value="">
+                    </div>
+                </div>
+                
+                <!-- Destination Country -->
+                <div class="glass-panel p-4 rounded-xl border border-white/5">
+                    <label class="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">Destination Country</label>
+                    <div class="relative" id="dest-dropdown">
+                        <button type="button" class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white text-left flex justify-between items-center focus:outline-none focus:border-indigo-500 transition-colors">
+                            <span class="selected-text truncate text-gray-400">Select Destination...</span>
+                            <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="hidden absolute z-50 w-full mt-1 bg-[#121214] border border-white/10 rounded-lg shadow-xl shadow-black/50 backdrop-blur-xl overflow-hidden transform origin-top transition-all">
+                            <div class="p-2 border-b border-white/5 sticky top-0 bg-[#121214] z-10">
+                                <input type="text" class="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500/50" placeholder="Search country...">
+                            </div>
+                            <div class="max-h-60 overflow-y-auto custom-scrollbar p-1 options-list"></div>
+                        </div>
+                        <input type="hidden" id="dest-country" value="">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Routes Table -->
+            <div class="glass-panel rounded-xl overflow-hidden mb-8">
+                 <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                    <h3 class="font-bold text-white">Active Allocated Shipments</h3>
+                    <span class="text-xs text-gray-500">Real-time Tracking</span>
+                </div>
+                <table class="w-full text-left text-sm text-gray-400">
+                    <thead class="bg-white/5 text-xs uppercase font-semibold text-gray-300">
+                        <tr>
+                            <th class="px-6 py-3">Route</th>
+                            <th class="px-6 py-3">Mode</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Risk Score</th>
+                            <th class="px-6 py-3">Owner</th>
+                            <th class="px-6 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="active-routes-body" class="divide-y divide-white/5">
+                        <!-- Populated via JS -->
+                        <tr class="text-center py-8">
+                            <td colspan="6" class="py-8 text-gray-600">Loading active routes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Historical Routes Table -->
+            <div class="glass-panel rounded-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-white/5">
+                    <h3 class="font-bold text-white">Historical/Saved Routes</h3>
+                </div>
+                <table class="w-full text-left text-sm text-gray-400">
+                    <thead class="bg-white/5 text-xs uppercase font-semibold text-gray-300">
+                        <tr>
+                            <th class="px-6 py-3">Route</th>
+                            <th class="px-6 py-3">From / To</th>
+                            <th class="px-6 py-3">Risk Score</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Last Updated</th>
+                            <th class="px-6 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historical-routes-body" class="divide-y divide-white/5">
+                         <!-- Populated via JS -->
+                         <tr class="text-center py-8">
+                            <td colspan="6" class="py-8 text-gray-600">Loading historical routes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Route Modal -->
+    <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="glass-panel rounded-xl w-full max-w-md p-6 border border-white/10">
+            <h3 class="text-lg font-bold text-white mb-4">Edit Route Status</h3>
+            <input type="hidden" id="edit-route-id">
+            
+            <div class="mb-4">
+                <label class="block text-xs font-medium text-gray-400 mb-1">Status</label>
+                <select id="edit-status" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none">
+                    <option value="Stable">Stable</option>
+                    <option value="Monitor">Monitor</option>
+                    <option value="Review Recommended">Review Recommended</option>
+                    <option value="Action Required">Action Required</option>
+                    <option value="Archived">Archived</option>
+                </select>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-xs font-medium text-gray-400 mb-1">Notes</label>
+                <textarea id="edit-notes" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-indigo-500 outline-none h-24" placeholder="Add operational notes..."></textarea>
+            </div>
+            
+            <div class="flex justify-end gap-3">
+                <button onclick="closeEditModal()" class="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5">Cancel</button>
+                <button onclick="saveRouteChanges()" class="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-medium">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SmoothToast } from '/src/js/smooth-toast.js';
+
+        // --- Global State ---
+        let allActiveRoutes = [];
+        let allHistoricalRoutes = [];
+
+        // --- Dropdown Logic ---
+        async function initDropdown(containerId, initialOptions, onSelect) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const button = container.querySelector('button');
+            const menuDiv = container.querySelector('div.absolute'); // The dropdown menu container
+            const searchInput = menuDiv.querySelector('input');
+            const listDiv = menuDiv.querySelector('.options-list');
+            const selectedText = button.querySelector('.selected-text');
+            const hiddenInput = container.querySelector('input[type="hidden"]');
+
+            let currentOptions = initialOptions || [];
+
+            // Toggle
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close others
+                document.querySelectorAll('[id$="-dropdown"] div.absolute').forEach(el => {
+                    if (el !== menuDiv) el.classList.add('hidden');
+                });
+                menuDiv.classList.toggle('hidden');
+                if (!menuDiv.classList.contains('hidden')) {
+                    searchInput.value = ''; // Clear search on open
+                    renderOptions(''); // Reset list
+                    searchInput.focus();
+                }
+            });
+
+            // Populate Options
+            const renderOptions = (filter = '') => {
+                listDiv.innerHTML = '';
+                const filtered = currentOptions.filter(o => o.toLowerCase().includes(filter.toLowerCase()));
+                
+                if (filtered.length === 0) {
+                    listDiv.innerHTML = '<div class="px-3 py-2 text-xs text-gray-500 text-center">No results found</div>';
+                    return;
+                }
+
+                filtered.forEach(opt => {
+                    const div = document.createElement('div');
+                    div.className = 'px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white cursor-pointer rounded transition-colors flex items-center gap-2';
+                    div.innerHTML = `<span>${opt}</span>`;
+                    
+                    div.addEventListener('click', () => {
+                        selectedText.textContent = opt;
+                        selectedText.classList.remove('text-gray-400'); 
+                        selectedText.classList.add('text-white');
+                        hiddenInput.value = opt;
+                        menuDiv.classList.add('hidden');
+                        if (onSelect) onSelect(opt);
+                    });
+                    listDiv.appendChild(div);
+                });
+            };
+
+            // Search Listener
+            searchInput.addEventListener('input', (e) => {
+                renderOptions(e.target.value);
+            });
+            
+            // Prevent menu close when clicking input
+            searchInput.addEventListener('click', (e) => e.stopPropagation());
+
+            // Global Click to Close
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    menuDiv.classList.add('hidden');
+                }
+            });
+        }
+
+        async function initCountries() {
+            try {
+                const res = await fetch('/api/countries');
+                const countries = await res.json();
+                
+                if (!Array.isArray(countries)) return;
+                countries.sort();
+
+                // Initialize Custom Dropdowns
+                // When selection changes, re-render routes
+                const onFilterChange = () => {
+                    filterAndRenderRoutes();
+                };
+
+                initDropdown('origin-dropdown', countries, onFilterChange);
+                initDropdown('dest-dropdown', countries, onFilterChange);
+
+            } catch (err) {
+                console.error("Failed to load countries", err);
+                SmoothToast.error("Could not load country list.");
+            }
+        }
+
+        function filterAndRenderRoutes() {
+            const originFilter = document.getElementById('origin-country').value;
+            const destFilter = document.getElementById('dest-country').value;
+
+            // Filter Active
+            let filteredActive = allActiveRoutes;
+            if (originFilter) filteredActive = filteredActive.filter(r => r.from === originFilter);
+            if (destFilter) filteredActive = filteredActive.filter(r => r.to === destFilter);
+            renderTable('active-routes-body', filteredActive, 'active');
+
+            // Filter Historical
+            let filteredHistorical = allHistoricalRoutes;
+            if (originFilter) filteredHistorical = filteredHistorical.filter(r => r.from === originFilter);
+            if (destFilter) filteredHistorical = filteredHistorical.filter(r => r.to === destFilter);
+            renderTable('historical-routes-body', filteredHistorical, 'historical');
+        }
+
+        // --- Helper Functions ---
+        function getStatusBadge(status) {
+            const map = {
+                'Stable': 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+                'Monitor': 'bg-yellow-500/15 text-yellow-400 border-yellow-500/20',
+                'Review Recommended': 'bg-orange-500/15 text-orange-400 border-orange-500/20',
+                'Action Required': 'bg-red-500/15 text-red-400 border-red-500/20',
+                'Archived': 'bg-gray-500/15 text-gray-400 border-gray-500/20'
+            };
+            const classes = map[status] || map['Monitor'];
+            return `<span class="px-2 py-0.5 rounded text-[10px] border ${classes}">${status}</span>`;
+        }
+
+        function getRiskDelta(delta) {
+            if (!delta || delta === 0) return '';
+            const color = delta > 0 ? 'text-red-400' : 'text-emerald-400';
+            const sign = delta > 0 ? '↑' : '↓';
+            return `<span class="text-xs font-medium ${color} ml-1">${sign} ${Math.abs(delta).toFixed(1)}</span>`;
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return 'Unknown';
+            const date = new Date(isoString);
+            const now = new Date();
+            const diffHours = Math.round((now - date) / (1000 * 60 * 60));
+            
+            if (diffHours < 1) return 'Just now';
+            if (diffHours < 24) return `${diffHours} hours ago`;
+            return date.toLocaleDateString();
+        }
+
+        // --- Data Fetching ---
+        async function fetchRoutes(type) {
+            try {
+                const res = await fetch(`/api/routes?type=${type}`);
+                if (!res.ok) throw new Error('Failed to fetch routes');
+                return await res.json();
+            } catch (err) {
+                console.error(err);
+                return [];
+            }
+        }
+
+        async function loadAllRoutes() {
+            allActiveRoutes = await fetchRoutes('active');
+            allHistoricalRoutes = await fetchRoutes('historical');
+            filterAndRenderRoutes();
+        }
+
+        function renderTable(tbodyId, routes, type) {
+            const tbody = document.getElementById(tbodyId);
+            
+            if (routes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-600">No ${type} routes found matching filters.</td></tr>`;
+                return;
+            }
+
+            if (type === 'active') {
+                tbody.innerHTML = routes.map(r => `
+                    <tr class="hover:bg-white/5 transition group">
+                        <td class="px-6 py-4 font-medium text-white">
+                            <div class="flex items-center gap-2">
+                                <span>${r.from} <span class="text-gray-600">➝</span> ${r.to}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="capitalize px-2 py-1 rounded bg-white/5 text-xs border border-white/10">
+                                ${r.mode === 'Sea' ? '🚢' : r.mode === 'Air' ? '✈️' : '🚛'} ${r.mode}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            ${getStatusBadge(r.status)}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <span class="font-bold text-white text-lg">${r.risk_score.toFixed(1)}</span>
+                                ${getRiskDelta(r.risk_delta)}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-400">
+                            ${r.owner || 'Unassigned'}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="viewRoute('${r.id}')" class="text-indigo-400 hover:text-white text-xs font-bold uppercase tracking-wider mr-3">View</button>
+                            <button onclick="openEditModal('${r.id}', '${r.status}', '${r.notes || ''}')" class="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-wider">Edit</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                // Historical
+                tbody.innerHTML = routes.map(r => `
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="px-6 py-4 font-medium text-white text-xs text-gray-400">${r.id}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-white font-medium">${r.from} ➝ ${r.to}</span>
+                                <span class="text-gray-500 text-xs">${r.mode} Route</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                             <div class="flex items-center">
+                                <span class="font-bold text-gray-300">${r.risk_score.toFixed(1)}</span>
+                                ${getRiskDelta(r.risk_delta)}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            ${getStatusBadge(r.status)}
+                        </td>
+                        <td class="px-6 py-4 text-xs">${formatDate(r.last_updated)}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="viewRoute('${r.id}')" class="text-indigo-400 hover:text-indigo-300 mr-3 text-sm">View</button>
+                             <button onclick="openEditModal('${r.id}', '${r.status}', '${r.notes || ''}')" class="text-gray-500 hover:text-white text-sm">Edit</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // --- Actions ---
+        window.viewRoute = function(id) {
+            // "Connect Routes to Intelligence"
+            window.location.href = `/intelligence?route_id=${id}`; 
+        }
+
+        // --- Edit Modal Logic ---
+        window.openEditModal = function(id, status, notes) {
+            document.getElementById('edit-route-id').value = id;
+            document.getElementById('edit-status').value = status;
+            document.getElementById('edit-notes').value = notes;
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        window.closeEditModal = function() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        window.saveRouteChanges = async function() {
+            const id = document.getElementById('edit-route-id').value;
+            const status = document.getElementById('edit-status').value;
+            const notes = document.getElementById('edit-notes').value;
+            
+            try {
+                const res = await fetch(`/api/routes/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status, notes }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (res.ok) {
+                    closeEditModal();
+                    SmoothToast.success("Route updated successfully");
+                    loadAllRoutes();
+                } else {
+                    SmoothToast.error('Failed to save changes');
+                }
+            } catch (err) {
+                console.error(err);
+                SmoothToast.error('Error saving changes');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCountries();
+            loadAllRoutes();
+        });
+    </script>
+    <script type="module" src="/src/js/app.js"></script>
+</body>
+
+</html>

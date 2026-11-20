@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirana POS Portal - HETVAYA FlowGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .glass-panel {
+            background: rgba(18, 18, 20, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+  <link rel="stylesheet" crossorigin href="/assets/flowgrid-B3C_C16G.css">
+</head>
+<body class="bg-dark-bg text-gray-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Top Navigation -->
+    <nav class="glass-panel sticky top-0 z-50 px-6 h-16 flex items-center justify-between border-b border-white/10">
+        <div class="flex items-center gap-6">
+            <a href="/" class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+                HETVAYA FlowGrid
+            </a>
+            <div class="hidden md:flex items-center gap-5 text-sm font-medium text-gray-400">
+                <a href="/dashboard" class="hover:text-white transition">Overview</a>
+                <a href="/plan-generator" class="hover:text-white transition">Plan Generator</a>
+                <a href="/inventory-health" class="hover:text-white transition">Inventory Health & DOS</a>
+                <a href="/kirana-pos" class="text-emerald-400 border-b-2 border-emerald-400 pb-1 font-semibold" id="nav-pos">Kirana POS</a>
+                <a href="/road-risk" class="hover:text-white transition">Road Risk & Ghats</a>
+                <a href="/import-studio" class="hover:text-white transition">Import Studio</a>
+            </div>
+        </div>
+
+        <!-- Controls: Store Selector & Multi-Language -->
+        <div class="flex items-center gap-4">
+            <!-- Offline Queue Indicator -->
+            <div id="offline-badge" class="hidden px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="pending-sync-count">0</span> Pending Sync
+            </div>
+
+            <button id="btn-sync-offline" onclick="syncOfflineQueue()" class="hidden px-3 py-1.5 rounded-lg bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold hover:bg-emerald-600/50 transition">
+                ⚡ Sync Offline
+            </button>
+
+            <!-- Language Switcher -->
+            <select id="lang-select" onchange="changeLanguage()" class="bg-dark-card border border-white/10 rounded-lg px-2.5 py-1 text-xs text-emerald-300 font-semibold outline-none cursor-pointer">
+                <option value="en">English (EN)</option>
+                <option value="hi">हिन्दी (Hindi)</option>
+                <option value="mr">मराठी (Marathi)</option>
+            </select>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="flex-1 p-6 max-w-6xl mx-auto w-full space-y-6">
+
+        <!-- Store Header & Shelf Life Legend -->
+        <div class="glass-panel p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 id="lbl-pos-title" class="text-2xl font-bold text-white flex items-center gap-3">
+                    Retail Kirana POS & Offline Sales Portal
+                </h1>
+                <p id="lbl-pos-sub" class="text-xs text-gray-400 mt-1">
+                    Store manager terminal with expiry-aware shelf badges. Sales save locally and automatically sync upon internet reconnection.
+                </p>
+            </div>
+
+            <!-- Active Store Selector -->
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-400" id="lbl-select-store">Store:</span>
+                <select id="store-select" onchange="loadStoreInventory()" class="bg-dark-card border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none">
+                    <option value="1">Dadar Super Kirana (Mumbai)</option>
+                    <option value="2">Andheri West Daily Mart (Mumbai)</option>
+                    <option value="3">Kothrud Express Provisions (Pune)</option>
+                    <option value="4">Hinjawadi Tech Mega Bazaar (Pune)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Shelf Life Visual Legend -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="glass-panel p-3 rounded-xl flex items-center gap-3 border-l-4 border-l-emerald-500">
+                <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
+                <div>
+                    <p class="text-xs font-bold text-white" id="legend-green-title">Green Badge (&gt; 90 days)</p>
+                    <p class="text-[11px] text-gray-400" id="legend-green-sub">Optimal shelf life. Safe for regular retail sale.</p>
+                </div>
+            </div>
+            <div class="glass-panel p-3 rounded-xl flex items-center gap-3 border-l-4 border-l-amber-500">
+                <span class="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-lg shadow-amber-500/50"></span>
+                <div>
+                    <p class="text-xs font-bold text-white" id="legend-amber-title">Amber Badge (30 - 90 days)</p>
+                    <p class="text-[11px] text-gray-400" id="legend-amber-sub">Near-expiry window. Prioritize front-of-shelf display.</p>
+                </div>
+            </div>
+            <div class="glass-panel p-3 rounded-xl flex items-center gap-3 border-l-4 border-l-red-500">
+                <span class="w-3.5 h-3.5 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></span>
+                <div>
+                    <p class="text-xs font-bold text-white" id="legend-red-title">Red Badge (&lt; 30 days)</p>
+                    <p class="text-[11px] text-gray-400" id="legend-red-sub">Critical expiry warning. Markdown or liquidate immediately.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Catalog & Quick Checkout Grid -->
+        <div class="glass-panel p-6 rounded-2xl space-y-4">
+            <h3 class="text-lg font-bold text-white flex items-center justify-between">
+                <span id="lbl-catalog">Store Stock & Quick Checkout</span>
+                <span id="pos-items-count" class="text-xs text-gray-400">0 SKUs on shelf</span>
+            </h3>
+
+            <div id="pos-items-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically rendered -->
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const I18N = {
+            en: {
+                title: "Retail Kirana POS & Offline Sales Portal",
+                sub: "Store manager terminal with expiry-aware shelf badges. Sales save locally and automatically sync upon internet reconnection.",
+                selectStore: "Store:",
+                catalog: "Store Stock & Quick Checkout",
+                greenTitle: "Green Badge (> 90 days)",
+                greenSub: "Optimal shelf life. Safe for regular retail sale.",
+                amberTitle: "Amber Badge (30 - 90 days)",
+                amberSub: "Near-expiry window. Prioritize front-of-shelf display.",
+                redTitle: "Red Badge (< 30 days)",
+                redSub: "Critical expiry warning. Markdown or liquidate immediately.",
+                sell1: "Sell 1 Unit",
+                sell5: "Sell 5 Units",
+                stock: "In Stock:",
+                daysLeft: "days remaining",
+                offlineQueued: "Saved offline. Will sync when online."
+            },
+            hi: {
+                title: "किराना पीओएस एवं ऑफलाइन बिक्री पोर्टल",
+                sub: "शेल्फ-लाइफ एक्सपायरी बैज के साथ किराना स्टोर मैनेजर पोर्टल। बिक्री ऑफलाइन सहेजती है और इंटरनेट से जुड़ते ही सिंक हो जाती है।",
+                selectStore: "दुकान:",
+                catalog: "स्टोर इन्वेंट्री एवं त्वरित बिक्री",
+                greenTitle: "हरा बैज (> 90 दिन)",
+                greenSub: "उत्कृष्ट ताज़गी। नियमित खुदरा बिक्री के लिए सुरक्षित।",
+                amberTitle: "पीला बैज (30 - 90 दिन)",
+                amberSub: "निकट-समाप्ति। आगे के शेल्फ पर रखकर तुरंत बेचें।",
+                redTitle: "लाल बैज (< 30 दिन)",
+                redSub: "गंभीर समाप्ति चेतावनी। डिस्काउंट देकर तत्काल निपटाएं।",
+                sell1: "1 यूनिट बेचें",
+                sell5: "5 यूनिट बेचें",
+                stock: "स्टॉक में:",
+                daysLeft: "दिन शेष",
+                offlineQueued: "ऑफ़लाइन सहेजा गया। ऑनलाइन होने पर सिंक होगा।"
+            },
+            mr: {
+                title: "किराणा पीओएस आणि ऑफलाइन विक्री पोर्टल",
+                sub: "एक्सपायरी शेल्फ-लाइफ बॅजसह किराणा व्यवस्थापक पोर्टल. विक्री स्थानिक पातळीवर सेव्ह होते व इंटरनेट जोडल्यावर आपोआप सिंक होते.",
+                selectStore: "दुकान:",
+                catalog: "स्टॉक व जलद विक्री",
+                greenTitle: "हिरवा बॅज (> ९० दिवस)",
+                greenSub: "उत्कृष्ट ताजेपणा. नियमित विक्रीसाठी सुरक्षित.",
+                amberTitle: "पिवळा बॅज (३० - ९० दिवस)",
+                amberSub: "मुदत संपत आली आहे. दर्शनी शेल्फवर ठेवून लवकर विका.",
+                redTitle: "लाल बॅज (< ३० दिवस)",
+                redSub: "गंभीर चेतावणी. सूट देऊन तातडीने साठा संपवा.",
+                sell1: "१ युनिट विका",
+                sell5: "५ युनिट्स विका",
+                stock: "स्टॉकमध्ये:",
+                daysLeft: "दिवस शिल्लक",
+                offlineQueued: "ऑफलाइन सेव्ह केले. ऑनलाइन झाल्यावर सिंक होईल."
+            }
+        };
+
+        let currentLang = 'en';
+        let storeInventory = [];
+        const OFFLINE_KEY = "flowgrid_offline_sales_queue";
+
+        function changeLanguage() {
+            currentLang = document.getElementById('lang-select').value;
+            const t = I18N[currentLang];
+            document.getElementById('lbl-pos-title').innerText = t.title;
+            document.getElementById('lbl-pos-sub').innerText = t.sub;
+            document.getElementById('lbl-select-store').innerText = t.selectStore;
+            document.getElementById('lbl-catalog').innerText = t.catalog;
+            document.getElementById('legend-green-title').innerText = t.greenTitle;
+            document.getElementById('legend-green-sub').innerText = t.greenSub;
+            document.getElementById('legend-amber-title').innerText = t.amberTitle;
+            document.getElementById('legend-amber-sub').innerText = t.amberSub;
+            document.getElementById('legend-red-title').innerText = t.redTitle;
+            document.getElementById('legend-red-sub').innerText = t.redSub;
+            renderInventoryGrid();
+        }
+
+        async function loadStoreInventory() {
+            const storeId = document.getElementById('store-select').value;
+            try {
+                const res = await fetch(`/api/v1/pos/inventory/${storeId}`);
+                const data = await res.json();
+                storeInventory = data.inventory || [];
+                document.getElementById('pos-items-count').innerText = storeInventory.length + ' SKUs on shelf';
+                renderInventoryGrid();
+                updateOfflineBadge();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderInventoryGrid() {
+            const t = I18N[currentLang];
+            const grid = document.getElementById('pos-items-grid');
+
+            if (storeInventory.length === 0) {
+                grid.innerHTML = '<p class="text-sm text-gray-500 col-span-3 text-center py-8">No inventory in this store.</p>';
+                return;
+            }
+
+            grid.innerHTML = storeInventory.map(item => {
+                const badgeColor = item.shelf_life_badge;
+                let badgeClass = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                if (badgeColor === 'AMBER') badgeClass = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+                if (badgeColor === 'RED') badgeClass = 'bg-red-500/20 text-red-300 border-red-500/30 animate-pulse';
+
+                return `
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:border-white/20 transition">
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-start">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeClass}">
+                                    ${item.badge_label}
+                                </span>
+                                <span class="text-xs font-mono text-gray-400">₹${item.mrp.toFixed(2)}</span>
+                            </div>
+                            <h4 class="font-bold text-white text-sm pt-1">${item.sku_name}</h4>
+                            <p class="text-xs text-gray-400">${item.category}</p>
+                        </div>
+
+                        <div class="bg-black/30 p-2.5 rounded-xl flex justify-between items-center text-xs">
+                            <span class="text-gray-400">${t.stock} <b class="text-white">${item.current_stock}</b></span>
+                            <span class="font-bold text-amber-400">${item.remaining_days} ${t.daysLeft}</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="handleSell(${item.product_id}, 1)" class="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition">
+                                ${t.sell1}
+                            </button>
+                            <button onclick="handleSell(${item.product_id}, 5)" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-medium transition">
+                                ${t.sell5}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function handleSell(productId, units) {
+            const storeId = parseInt(document.getElementById('store-select').value);
+            const t = I18N[currentLang];
+
+            // Check if online
+            if (navigator.onLine) {
+                try {
+                    const res = await fetch('/api/v1/pos/sale', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            store_id: storeId,
+                            product_id: productId,
+                            units_sold: units
+                        })
+                    });
+                    if (res.ok) {
+                        loadStoreInventory();
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Network request failed, queueing offline:', e);
+                }
+            }
+
+            // Fallback to offline localStorage queue
+            queueOfflineSale(storeId, productId, units);
+            alert(t.offlineQueued);
+            updateOfflineBadge();
+        }
+
+        function queueOfflineSale(storeId, productId, units) {
+            const queue = JSON.parse(localStorage.getItem(OFFLINE_KEY) || '[]');
+            queue.push({
+                store_id: storeId,
+                product_id: productId,
+                units_sold: units,
+                sale_timestamp: new Date().toISOString(),
+                offline_client_id: 'LOCAL-' + Date.now()
+            });
+            localStorage.setItem(OFFLINE_KEY, JSON.stringify(queue));
+        }
+
+        function updateOfflineBadge() {
+            const queue = JSON.parse(localStorage.getItem(OFFLINE_KEY) || '[]');
+            const badge = document.getElementById('offline-badge');
+            const syncBtn = document.getElementById('btn-sync-offline');
+            const count = document.getElementById('pending-sync-count');
+
+            if (queue.length > 0) {
+                badge.classList.remove('hidden');
+                syncBtn.classList.remove('hidden');
+                count.innerText = queue.length;
+            } else {
+                badge.classList.add('hidden');
+                syncBtn.classList.add('hidden');
+            }
+        }
+
+        async function syncOfflineQueue() {
+            const queue = JSON.parse(localStorage.getItem(OFFLINE_KEY) || '[]');
+            if (queue.length === 0) return;
+
+            const storeId = parseInt(document.getElementById('store-select').value);
+            try {
+                const res = await fetch('/api/v1/pos/sync', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        store_id: storeId,
+                        sales: queue
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    localStorage.removeItem(OFFLINE_KEY);
+                    updateOfflineBadge();
+                    loadStoreInventory();
+                }
+            } catch (err) {
+                alert('Sync failed: ' + err.message);
+            }
+        }
+
+        window.onload = () => {
+            loadStoreInventory();
+            updateOfflineBadge();
+        };
+    </script>
+</body>
+</html>
