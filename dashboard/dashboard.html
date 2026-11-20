@@ -12,10 +12,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body class="bg-gray-100 dark:bg-dark-bg text-gray-900 dark:text-gray-100 min-h-screen overflow-x-hidden flex flex-col">
+<body class="bg-dark-bg text-gray-100 min-h-screen overflow-x-hidden flex flex-col">
 
     <!-- Navbar -->
-    <nav class="glass-panel z-50 px-4 md:px-6 h-16 flex items-center justify-between border-b border-gray-200 dark:border-dark-border flex-shrink-0">
+    <nav class="glass-panel z-50 px-4 md:px-6 h-16 flex items-center justify-between border-b border-dark-border flex-shrink-0">
         <div class="flex items-center gap-4 md:gap-6">
             <!-- Mobile Menu Toggle -->
             <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-white/10 text-gray-400">
@@ -29,6 +29,7 @@
             </a>
             <div class="hidden md:flex items-center gap-4 text-sm font-medium text-gray-400">
                 <a href="/dashboard" class="text-emerald-400 border-b border-emerald-400 pb-0.5">Overview</a>
+                <a href="/trade-routes" class="text-indigo-400 hover:text-indigo-300 font-medium transition">Smart Trade Routes (AI)</a>
                 <a href="/plan-generator" class="hover:text-emerald-300 transition">Plan Generator</a>
                 <a href="/inventory-health" class="hover:text-emerald-300 transition">Inventory Health & DOS</a>
                 <a href="/kirana-pos" class="hover:text-emerald-300 transition">Kirana POS</a>
@@ -391,5 +392,6 @@
     </div>
 
     <script type="module" src="/src/js/app.js"></script>
+    <script type="module" src="/src/js/motion.js"></script>
 </body>
 </html>

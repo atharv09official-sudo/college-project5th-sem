@@ -35,3 +35,29 @@ def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session 
             detail="User not found"
         )
     return user
+
+
+def require_authenticated_user(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    """Strict authentication dependency requiring a valid JWT token."""
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication credentials were not provided."
+        )
+
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired authentication token."
+        )
+
+    user_id = payload.get("sub") or payload.get("user_id")
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User inactive or does not exist."
+        )
+    return user
+

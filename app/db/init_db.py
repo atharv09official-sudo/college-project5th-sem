@@ -14,6 +14,10 @@ from app.models.entities import (
     DeliveryAgent,
     SalesObservation,
 )
+from app.models.trade_route_entities import (
+    ShipmentPlanRequest,
+    TradeRouteResult,
+)
 
 
 def init_db(db: Session = None, force_reset: bool = False):
