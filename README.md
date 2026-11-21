@@ -142,9 +142,14 @@ The candidate with the lowest multi-objective score is selected as the **Recomme
 * Employs scikit-learn **Gradient Boosting Regressor** trained on historical freight trip observations to estimate transit delay in minutes.
 * Predicts delay risk classification (`LOW`, `MEDIUM`, `HIGH`) and load-dependent fuel burn multipliers.
 
-### Module 9: Route Comparison & Vector Map Canvas
-* Interactive, hardware-accelerated 2D Vector Canvas rendering map geometries at 60 FPS without external Mapbox or Google Maps token dependencies.
-* Color-coded paths: Recommended Route (glowing Indigo), Alternative Routes (dashed Emerald, Amber, Violet), Origin/Destination markers, and Western Ghats hazard polygons.
+### Module 9: Route Comparison & mapcn Vector Map Engine
+* **mapcn Architecture** (inspired by `AnmolSaini16/mapcn`): Built on MapLibre GL with dark-mode CARTO Dark Matter vector tile styling, 3D perspective pitch controls, and shadcn/ui glassmorphic UI controls.
+* **Interactive GeoJSON Layers**:
+  * **Recommended Route (Indigo/Cyan Neon Glow)**: Primary Dijkstra/A* path with outer glow casing and hazard segment overlays.
+  * **Candidate Alternative Routes**: Distinct styled dashes in emerald, amber, and purple.
+  * **Base Freight Grid**: Low-opacity transit lines connecting all Maharashtra regional trade hubs.
+* **Dynamic DOM Markers**: Pulsing radar rings for origin (green) and destination (rose), ghat pass hazard indicators (amber), and click-to-open shadcn popover cards displaying hub metadata, city, and GPS coordinates.
+* **Camera Telemetry**: Automatic corridor bounding box fit (`map.fitBounds`) with smooth ease transitions.
 
 ### Module 10: Database Management
 * SQLAlchemy ORM entities:

@@ -1,13 +1,16 @@
 /**
  * AI-POWERED SMART TRADE ROUTE OPTIMIZATION SYSTEM
- * Frontend Interactive Controller & Vector Map Renderer
+ * Frontend Interactive Controller & mapcn Map Renderer
  * D. Y. Patil Agriculture & Technical University (AIML 2026-27)
  */
+
+import { MapCN } from './mapcn.js';
 
 let networkNodes = [];
 let networkCorridors = [];
 let currentOptimizationResult = null;
 let currentHighlightedRoute = null;
+let mapcn = null;
 
 // DOM Elements
 const originSelect = document.getElementById('origin-select');
@@ -33,9 +36,7 @@ const optForm = document.getElementById('optimization-form');
 const btnSubmit = document.getElementById('btn-submit-optimize');
 const btnText = document.getElementById('btn-text');
 
-// Canvas
-const canvas = document.getElementById('route-map-canvas');
-const ctx = canvas.getContext('2d');
+// Hover & Breadcrumb
 const hoverInfo = document.getElementById('hover-node-info');
 const breadcrumbSteps = document.getElementById('breadcrumb-steps');
 
@@ -79,7 +80,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupWeightIndicator();
     setupVehicleHints();
     setupModal();
-    setupCanvas();
+
+    // Initialize mapcn Map Component
+    mapcn = new MapCN('mapcn-trade-map', {
+        center: [74.5, 18.6],
+        zoom: 6.8,
+        pitch: 28
+    });
+    await mapcn.init();
 
     await loadNetworkData();
     await loadHistory();
@@ -116,11 +124,19 @@ async function loadNetworkData() {
         originSelect.value = 'MUM_BHIWANDI';
         destSelect.value = 'KOL_CITY';
 
-        // Redraw canvas on origin/destination selection change
-        originSelect.addEventListener('change', drawMap);
-        destSelect.addEventListener('change', drawMap);
+        // Load network and render on mapcn
+        if (mapcn) {
+            mapcn.setNetwork(networkNodes, networkCorridors);
+            mapcn.highlightSelection(originSelect.value, destSelect.value);
 
-        drawMap();
+            // Reactive origin/destination selection updates
+            originSelect.addEventListener('change', () => {
+                mapcn.highlightSelection(originSelect.value, destSelect.value);
+            });
+            destSelect.addEventListener('change', () => {
+                mapcn.highlightSelection(originSelect.value, destSelect.value);
+            });
+        }
     } catch (err) {
         showToast(`Failed to load network hubs: ${err.message}`, 'error');
     }
@@ -314,7 +330,9 @@ function renderOptimizationResults(data) {
 
         tr.addEventListener('click', () => {
             currentHighlightedRoute = r;
-            drawMap();
+            if (mapcn) {
+                mapcn.selectCandidateRoute(r);
+            }
             breadcrumbSteps.textContent = (r.path_names || []).join(' ➔ ');
         });
 
@@ -322,149 +340,19 @@ function renderOptimizationResults(data) {
     });
 
     currentHighlightedRoute = rec;
-    drawMap();
+    if (mapcn) {
+        mapcn.setOptimizationRoutes(rec, ranked);
+    }
 }
 
 // ==========================================
-// 6. Interactive Vector Map Rendering (Module 9)
+// 6. Interactive Vector Map Rendering (Module 9 via mapcn)
 // ==========================================
-function setupCanvas() {
-    const resize = () => {
-        const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width * window.devicePixelRatio;
-        canvas.height = rect.height * window.devicePixelRatio;
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        drawMap();
-    };
-
-    window.addEventListener('resize', resize);
-    setTimeout(resize, 100);
-
-    canvas.addEventListener('mousemove', handleCanvasHover);
-}
-
-function getCoords(lat, lng, width, height) {
-    // Maharashtra Bounding Box: Lat 15.5 to 22.0, Lng 72.5 to 80.5
-    const minLat = 15.2, maxLat = 22.0;
-    const minLng = 72.5, maxLng = 80.0;
-    const padding = 45;
-
-    const x = padding + ((lng - minLng) / (maxLng - minLng)) * (width - 2 * padding);
-    const y = height - (padding + ((lat - minLat) / (maxLat - minLat)) * (height - 2 * padding));
-    return { x, y };
-}
-
-function drawMap() {
-    const width = canvas.width / window.devicePixelRatio;
-    const height = canvas.height / window.devicePixelRatio;
-
-    ctx.clearRect(0, 0, width, height);
-
-    // 1. Draw Network Corridors
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    networkCorridors.forEach(corr => {
-        const u = networkNodes.find(n => n.id === corr.from_node);
-        const v = networkNodes.find(n => n.id === corr.to_node);
-        if (u && v) {
-            const p1 = getCoords(u.lat, u.lng, width, height);
-            const p2 = getCoords(v.lat, v.lng, width, height);
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-        }
-    });
-    ctx.stroke();
-
-    // 2. Draw Candidate Routes if available
-    if (currentOptimizationResult && currentOptimizationResult.ranked_routes) {
-        currentOptimizationResult.ranked_routes.forEach((r, idx) => {
-            const isHighlight = currentHighlightedRoute && currentHighlightedRoute.route_id === r.route_id;
-            if (isHighlight) return; // Draw highlighted on top
-
-            ctx.beginPath();
-            ctx.strokeStyle = idx === 1 ? 'rgba(16, 185, 129, 0.4)' : idx === 2 ? 'rgba(245, 158, 11, 0.4)' : 'rgba(168, 85, 247, 0.4)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
-
-            const wps = r.waypoints || [];
-            for (let i = 0; i < wps.length; i++) {
-                const pt = getCoords(wps[i].lat, wps[i].lng, width, height);
-                if (i === 0) ctx.moveTo(pt.x, pt.y);
-                else ctx.lineTo(pt.x, pt.y);
-            }
-            ctx.stroke();
-            ctx.setLineDash([]);
-        });
-
-        // 3. Draw Selected / Recommended Route
-        if (currentHighlightedRoute) {
-            const wps = currentHighlightedRoute.waypoints || [];
-            ctx.beginPath();
-            ctx.strokeStyle = '#6366f1';
-            ctx.lineWidth = 4;
-            ctx.shadowColor = 'rgba(99, 102, 241, 0.8)';
-            ctx.shadowBlur = 12;
-
-            for (let i = 0; i < wps.length; i++) {
-                const pt = getCoords(wps[i].lat, wps[i].lng, width, height);
-                if (i === 0) ctx.moveTo(pt.x, pt.y);
-                else ctx.lineTo(pt.x, pt.y);
-            }
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        }
+document.getElementById('btn-zoom-reset')?.addEventListener('click', () => {
+    if (mapcn) {
+        mapcn.resetView();
     }
-
-    // 4. Draw Nodes
-    networkNodes.forEach(node => {
-        const pt = getCoords(node.lat, node.lng, width, height);
-        const isOrigin = originSelect.value === node.id;
-        const isDest = destSelect.value === node.id;
-
-        ctx.beginPath();
-        if (isOrigin) {
-            ctx.fillStyle = '#10b981';
-            ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
-        } else if (isDest) {
-            ctx.fillStyle = '#ef4444';
-            ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
-        } else {
-            ctx.fillStyle = '#71717a';
-            ctx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2);
-        }
-        ctx.fill();
-
-        // Node labels
-        ctx.fillStyle = isOrigin ? '#34d399' : isDest ? '#f87171' : '#a1a1aa';
-        ctx.font = isOrigin || isDest ? 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : '9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.fillText(node.name.split(' ')[0], pt.x + 8, pt.y + 3);
-    });
-}
-
-function handleCanvasHover(e) {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const width = canvas.width / window.devicePixelRatio;
-    const height = canvas.height / window.devicePixelRatio;
-
-    let hoveredNode = null;
-    networkNodes.forEach(node => {
-        const pt = getCoords(node.lat, node.lng, width, height);
-        const dist = Math.hypot(mouseX - pt.x, mouseY - pt.y);
-        if (dist < 12) {
-            hoveredNode = node;
-        }
-    });
-
-    if (hoveredNode) {
-        hoverInfo.textContent = `${hoveredNode.name} (${hoveredNode.city}) • Lat: ${hoveredNode.lat.toFixed(2)} Lng: ${hoveredNode.lng.toFixed(2)}`;
-    } else {
-        hoverInfo.textContent = 'Hover over junction for metadata';
-    }
-}
+});
 
 // ==========================================
 // 7. Report Export Handlers (Module 11)

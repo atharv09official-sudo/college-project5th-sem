@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './maplibre-gl.css';
+
 /* ============================================================
    SupplyGuard & HETVAYA FlowGrid - Core Dark Theme & Low-End Optimization
    ============================================================ */
@@ -112,4 +114,28 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
+}
+
+/* ============================================================
+   mapcn Component & Popup Styles
+   ============================================================ */
+.maplibregl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0.75rem !important;
+}
+
+.maplibregl-popup-tip {
+  border-top-color: rgba(18, 18, 20, 0.95) !important;
+  border-bottom-color: rgba(18, 18, 20, 0.95) !important;
+}
+
+.maplibregl-canvas {
+  outline: none !important;
+}
+
+.mapcn-marker {
+  transform: translate(-50%, -50%);
+  user-select: none;
 }

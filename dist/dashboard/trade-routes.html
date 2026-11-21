@@ -35,9 +35,9 @@
             box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
         }
     </style>
-  <script type="module" crossorigin src="/assets/tradeRoutes-BKGUZeb2.js"></script>
+  <script type="module" crossorigin src="/assets/tradeRoutes-CewVBbuc.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="stylesheet" crossorigin href="/assets/flowgrid-1_cM21jj.css">
+  <link rel="stylesheet" crossorigin href="/assets/flowgrid-Dt6Qsxr9.css">
   <link rel="stylesheet" crossorigin href="/assets/styles-CvZ3AnkW.css">
 </head>
 
@@ -221,19 +221,25 @@
                     </div>
                 </div>
 
-                <!-- Canvas Container -->
-                <div class="network-canvas-container flex-1 min-h-[460px] flex items-center justify-center relative">
-                    <canvas id="route-map-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+                <!-- mapcn Map Container (MapLibre GL + shadcn) -->
+                <div class="mapcn-container-wrapper flex-1 min-h-[490px] flex flex-col relative rounded-lg overflow-hidden border border-white/10 bg-[#0d0e12]">
+                    <div id="mapcn-trade-map" class="w-full h-full flex-1 min-h-[480px]"></div>
                     
-                    <!-- Floating Map Overlay Controls -->
-                    <div class="absolute top-3 left-3 bg-[#121214]/80 backdrop-blur border border-white/10 rounded-lg p-2 text-[11px] space-y-1 font-mono text-gray-300">
-                        <div>Scale: 1:500,000</div>
-                        <div>Coverage: Maharashtra Hubs</div>
-                        <div id="hover-node-info" class="text-indigo-400">Hover over junction for metadata</div>
+                    <!-- Floating Map Info Pill -->
+                    <div class="absolute top-3 left-3 z-10 bg-[#121214]/85 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[11px] font-mono text-gray-300 shadow-xl pointer-events-none">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                            <span class="font-bold text-white uppercase tracking-wider text-[10px]">mapcn • Vector Engine</span>
+                        </div>
+                        <div class="text-gray-400 text-[10px]">Maharashtra Freight Corridors</div>
+                        <div id="hover-node-info" class="text-indigo-300 text-[10px] mt-0.5">Click hub pin for junction telemetry</div>
                     </div>
 
-                    <div class="absolute bottom-3 right-3 flex gap-2">
-                        <button id="btn-zoom-reset" class="px-2.5 py-1 text-xs bg-[#18181b]/90 border border-white/10 rounded text-gray-300 hover:text-white hover:bg-white/10 transition">Reset View</button>
+                    <div class="absolute bottom-3 left-3 z-10 flex gap-2">
+                        <button id="btn-zoom-reset" class="px-2.5 py-1 text-xs bg-[#121214]/90 backdrop-blur border border-white/10 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition shadow-lg flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Fit Corridors
+                        </button>
                     </div>
                 </div>
 
