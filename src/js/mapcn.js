@@ -2,16 +2,16 @@
  * mapcn - Modern MapLibre GL UI Component for HETVAYA FlowGrid
  * Inspired by AnmolSaini16/mapcn (shadcn/ui for Maps)
  * Features: Dark-mode vector tiles, custom shadcn DOM markers, glowing GeoJSON route lines,
- * 3D pitch controls, interactive popups, and smooth camera animations.
+ * 3D pitch controls, interactive popups, smooth camera animations, and robust 2D Canvas fallback.
  */
 
 import * as maplibregl from 'maplibre-gl';
 const { Map, Marker, Popup, LngLatBounds } = maplibregl;
 
-// Dark basemap style (CARTO Dark Matter - Fast, reliable, zero API key)
-const CARTO_DARK_STYLE = {
+// Deep dark theme style matching #0b0b0d / #121214
+const MAPCN_DARK_STYLE = {
     version: 8,
-    name: 'Carto Dark Matter',
+    name: 'mapcn-dark',
     sources: {
         'carto-dark': {
             type: 'raster',
@@ -26,6 +26,13 @@ const CARTO_DARK_STYLE = {
     },
     layers: [
         {
+            id: 'background',
+            type: 'background',
+            paint: {
+                'background-color': '#0d0e12'
+            }
+        },
+        {
             id: 'carto-dark-tiles',
             type: 'raster',
             source: 'carto-dark',
@@ -35,19 +42,14 @@ const CARTO_DARK_STYLE = {
     ]
 };
 
-// Fallback dark style for offline or slow network conditions
-const FALLBACK_DARK_STYLE = {
-    version: 8,
-    name: 'Fallback Dark',
-    sources: {},
-    layers: [
-        {
-            id: 'background',
-            type: 'background',
-            paint: { 'background-color': '#0d0e12' }
-        }
-    ]
-};
+function hasWebGL() {
+    try {
+        const c = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+    } catch (e) {
+        return false;
+    }
+}
 
 export class MapCN {
     constructor(containerId, options = {}) {
@@ -56,57 +58,107 @@ export class MapCN {
         this.options = Object.assign({
             center: [74.45, 18.65], // Maharashtra freight center
             zoom: 6.8,
-            pitch: 28, // 3D perspective pitch
+            pitch: 28,
             bearing: -5,
             interactive: true
         }, options);
 
         this.map = null;
         this.markers = [];
-        this.popups = [];
         this.nodes = [];
         this.corridors = [];
         this.currentOriginId = null;
         this.currentDestId = null;
         this.is3D = true;
+        this.isFallback = false;
+        this.fallbackCanvas = null;
+        this.fallbackCtx = null;
     }
 
     async init() {
         if (!this.container) return null;
 
+        // If WebGL is not available, launch high-performance 2D Canvas fallback directly
+        if (!hasWebGL()) {
+            console.warn('[mapcn] WebGL unsupported. Initializing 2D Canvas fallback.');
+            this.init2DFallback();
+            return null;
+        }
+
         return new Promise((resolve) => {
+            let settled = false;
+            const complete = () => {
+                if (settled) return;
+                settled = true;
+                try {
+                    this.initLayers();
+                    this.addCustomControls();
+                } catch (e) {
+                    console.warn('[mapcn] Post-init hook warning:', e);
+                }
+                resolve(this.map);
+            };
+
             try {
-                this.map = new maplibregl.Map({
+                this.map = new Map({
                     container: this.containerId,
-                    style: CARTO_DARK_STYLE,
+                    style: MAPCN_DARK_STYLE,
                     center: this.options.center,
                     zoom: this.options.zoom,
                     pitch: this.options.pitch,
                     bearing: this.options.bearing,
-                    attributionControl: false
+                    attributionControl: false,
+                    trackResize: false // Prevent infinite ResizeObserver loop
                 });
 
-                this.map.on('load', () => {
-                    this.initLayers();
-                    this.addCustomControls();
-                    resolve(this.map);
-                });
+                this.map.on('load', complete);
+                this.map.on('style.load', complete);
 
                 this.map.on('error', (e) => {
-                    console.warn('[mapcn] Map error, falling back to local dark style:', e);
-                    try {
-                        this.map.setStyle(FALLBACK_DARK_STYLE);
-                    } catch (err) { }
+                    console.warn('[mapcn] Tile warning (non-fatal):', e?.error?.message || e);
                 });
+
+                // Fail-safe timeout: never block app initialization longer than 700ms
+                setTimeout(complete, 700);
             } catch (err) {
-                console.error('[mapcn] Failed to initialize MapLibre GL:', err);
+                console.warn('[mapcn] MapLibre GL failed to mount. Falling back to 2D Canvas:', err);
+                this.init2DFallback();
                 resolve(null);
             }
         });
     }
 
+    init2DFallback() {
+        this.isFallback = true;
+        if (!this.container) return;
+        this.container.innerHTML = '';
+
+        this.fallbackCanvas = document.createElement('canvas');
+        this.fallbackCanvas.style.width = '100%';
+        this.fallbackCanvas.style.height = '100%';
+        this.fallbackCanvas.style.display = 'block';
+        this.container.appendChild(this.fallbackCanvas);
+        this.fallbackCtx = this.fallbackCanvas.getContext('2d');
+
+        const resize = () => {
+            const rect = this.container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            this.fallbackCanvas.width = rect.width * dpr;
+            this.fallbackCanvas.height = rect.height * dpr;
+            if (this.fallbackCtx) this.fallbackCtx.scale(dpr, dpr);
+            this.render2DFallback();
+        };
+
+        resize();
+        window.addEventListener('resize', resize);
+    }
+
     initLayers() {
         if (!this.map) return;
+        if (!this.map.isStyleLoaded()) {
+            this.map.once('style.load', () => this.initLayers());
+            return;
+        }
 
         // 1. Corridors GeoJSON Source (Base Road Network)
         if (!this.map.getSource('network-corridors')) {
@@ -178,9 +230,9 @@ export class MapCN {
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: {
                     'line-color': '#6366f1',
-                    'line-width': 10,
+                    'line-width': 9,
                     'line-opacity': 0.45,
-                    'line-blur': 4
+                    'line-blur': 3
                 }
             });
 
@@ -196,28 +248,14 @@ export class MapCN {
                     'line-opacity': 0.95
                 }
             });
-
-            // Ghat Hazard Segments Overlay
-            this.map.addLayer({
-                id: 'recommended-route-ghats',
-                type: 'line',
-                source: 'recommended-route',
-                filter: ['==', ['get', 'is_ghat'], true],
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: {
-                    'line-color': '#f59e0b',
-                    'line-width': 6,
-                    'line-opacity': 0.85
-                }
-            });
         }
     }
 
     addCustomControls() {
-        if (!this.container) return;
+        if (!this.container || this.container.querySelector('#mapcn-controls-overlay')) return;
 
-        // Custom shadcn/ui glass controls overlay
         const controlWrapper = document.createElement('div');
+        controlWrapper.id = 'mapcn-controls-overlay';
         controlWrapper.className = 'absolute top-3 right-3 z-20 flex flex-col gap-1.5 pointer-events-auto';
         controlWrapper.innerHTML = `
             <div class="flex flex-col rounded-lg bg-[#121214]/85 backdrop-blur-md border border-white/10 shadow-xl overflow-hidden divide-y divide-white/5 font-mono text-xs">
@@ -238,7 +276,6 @@ export class MapCN {
 
         this.container.appendChild(controlWrapper);
 
-        // Control listeners
         document.getElementById('mapcn-zoom-in')?.addEventListener('click', () => {
             this.map?.zoomIn({ duration: 300 });
         });
@@ -263,7 +300,11 @@ export class MapCN {
         this.nodes = nodes || [];
         this.corridors = corridors || [];
 
-        // Build GeoJSON LineStrings for base corridors
+        if (this.isFallback) {
+            this.render2DFallback();
+            return;
+        }
+
         const features = [];
         this.corridors.forEach((c) => {
             const u = this.nodes.find(n => n.id === c.from_node);
@@ -285,25 +326,26 @@ export class MapCN {
             }
         });
 
-        const source = this.map?.getSource('network-corridors');
-        if (source) {
-            source.setData({ type: 'FeatureCollection', features });
-        }
+        try {
+            const source = this.map?.getSource('network-corridors');
+            if (source) {
+                source.setData({ type: 'FeatureCollection', features });
+            }
+        } catch (e) { }
 
         this.renderMarkers();
     }
 
     renderMarkers() {
-        if (!this.map) return;
+        if (!this.map || this.isFallback) return;
 
-        // Clear existing markers
         this.markers.forEach(m => m.remove());
         this.markers = [];
 
         this.nodes.forEach(node => {
             const isOrigin = this.currentOriginId === node.id;
             const isDest = this.currentDestId === node.id;
-            const isGhat = node.name.toLowerCase().includes('ghat') || node.id.includes('KASARA') || node.id.includes('KHANDALA');
+            const isGhat = (node.name || '').toLowerCase().includes('ghat') || (node.id || '').includes('KASARA') || (node.id || '').includes('KHANDALA');
 
             const el = document.createElement('div');
             el.className = 'mapcn-marker group cursor-pointer relative';
@@ -311,7 +353,7 @@ export class MapCN {
             if (isOrigin) {
                 el.innerHTML = `
                     <div class="relative flex items-center justify-center">
-                        <span class="absolute w-8 h-8 rounded-full bg-emerald-500/30 animate-ping"></span>
+                        <span class="absolute w-7 h-7 rounded-full bg-emerald-500/30 animate-ping pointer-events-none"></span>
                         <div class="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center shadow-lg shadow-emerald-500/50 border-2 border-white text-xs font-bold z-10">
                             ▲
                         </div>
@@ -323,7 +365,7 @@ export class MapCN {
             } else if (isDest) {
                 el.innerHTML = `
                     <div class="relative flex items-center justify-center">
-                        <span class="absolute w-8 h-8 rounded-full bg-rose-500/30 animate-ping"></span>
+                        <span class="absolute w-7 h-7 rounded-full bg-rose-500/30 animate-ping pointer-events-none"></span>
                         <div class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/50 border-2 border-white text-xs font-bold z-10">
                             ●
                         </div>
@@ -335,7 +377,7 @@ export class MapCN {
             } else if (isGhat) {
                 el.innerHTML = `
                     <div class="relative flex items-center justify-center">
-                        <div class="w-4 h-4 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-[9px] text-amber-300">
+                        <div class="w-4 h-4 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-[9px] text-amber-300 font-bold">
                             ⚠
                         </div>
                         <div class="hidden group-hover:block absolute left-5 px-1.5 py-0.5 rounded bg-black/80 border border-amber-500/30 text-[9px] font-mono text-amber-300 whitespace-nowrap z-20">
@@ -354,7 +396,6 @@ export class MapCN {
                 `;
             }
 
-            // Shadcn Style Interactive Popup
             const popupHTML = `
                 <div class="p-3 bg-[#121214]/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-md text-xs font-sans min-w-[200px]">
                     <div class="flex items-center justify-between gap-2 mb-1.5 pb-1 border-b border-white/10">
@@ -372,13 +413,13 @@ export class MapCN {
                 </div>
             `;
 
-            const popup = new maplibregl.Popup({
+            const popup = new Popup({
                 offset: 14,
                 closeButton: false,
                 className: 'mapcn-shadcn-popup'
             }).setHTML(popupHTML);
 
-            const marker = new maplibregl.Marker({ element: el })
+            const marker = new Marker({ element: el })
                 .setLngLat([node.lng, node.lat])
                 .setPopup(popup)
                 .addTo(this.map);
@@ -390,119 +431,144 @@ export class MapCN {
     highlightSelection(originId, destId) {
         this.currentOriginId = originId;
         this.currentDestId = destId;
+
+        if (this.isFallback) {
+            this.render2DFallback();
+            return;
+        }
+
         this.renderMarkers();
 
-        // Fit camera to origin & destination
         const u = this.nodes.find(n => n.id === originId);
         const v = this.nodes.find(n => n.id === destId);
         if (u && v && this.map) {
-            const bounds = new maplibregl.LngLatBounds();
-            bounds.extend([u.lng, u.lat]);
-            bounds.extend([v.lng, v.lat]);
-            this.map.fitBounds(bounds, {
-                padding: { top: 90, bottom: 90, left: 70, right: 70 },
-                maxZoom: 9.5,
-                duration: 900
-            });
+            try {
+                const bounds = new LngLatBounds();
+                bounds.extend([u.lng, u.lat]);
+                bounds.extend([v.lng, v.lat]);
+                this.map.fitBounds(bounds, {
+                    padding: { top: 70, bottom: 70, left: 70, right: 70 },
+                    maxZoom: 9.5,
+                    duration: 800
+                });
+            } catch (e) { }
         }
     }
 
     setOptimizationRoutes(recommendedRoute, rankedRoutes = []) {
+        if (this.isFallback) {
+            this.fallbackRecommended = recommendedRoute;
+            this.fallbackAlternatives = rankedRoutes;
+            this.render2DFallback();
+            return;
+        }
+
         if (!this.map) return;
 
-        // 1. Render Recommended Route
-        const recSource = this.map.getSource('recommended-route');
-        if (recSource && recommendedRoute && recommendedRoute.waypoints) {
-            const coords = recommendedRoute.waypoints.map(w => [w.lng, w.lat]);
-            recSource.setData({
-                type: 'FeatureCollection',
-                features: [{
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: coords
-                    },
-                    properties: {
-                        name: recommendedRoute.name,
-                        distance_km: recommendedRoute.distance_km,
-                        cost_inr: recommendedRoute.total_cost_inr
-                    }
-                }]
-            });
+        // 1. Recommended Route
+        try {
+            const recSource = this.map.getSource('recommended-route');
+            if (recSource && recommendedRoute && recommendedRoute.waypoints) {
+                const coords = recommendedRoute.waypoints.map(w => [w.lng, w.lat]);
+                recSource.setData({
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: coords
+                        },
+                        properties: {
+                            name: recommendedRoute.name,
+                            distance_km: recommendedRoute.distance_km,
+                            cost_inr: recommendedRoute.total_cost_inr
+                        }
+                    }]
+                });
 
-            // Auto-fit bounds to recommended corridor
-            if (coords.length > 1) {
-                const bounds = new maplibregl.LngLatBounds();
-                coords.forEach(coord => bounds.extend(coord));
-                this.map.fitBounds(bounds, {
-                    padding: { top: 80, bottom: 80, left: 60, right: 60 },
-                    maxZoom: 10,
-                    duration: 1100
+                if (coords.length > 1) {
+                    const bounds = new LngLatBounds();
+                    coords.forEach(coord => bounds.extend(coord));
+                    this.map.fitBounds(bounds, {
+                        padding: { top: 75, bottom: 75, left: 60, right: 60 },
+                        maxZoom: 10,
+                        duration: 900
+                    });
+                }
+            }
+        } catch (e) { }
+
+        // 2. Alternative Routes
+        try {
+            const altSource = this.map.getSource('alt-routes');
+            if (altSource && Array.isArray(rankedRoutes)) {
+                const altFeatures = [];
+                const palette = ['#10b981', '#f59e0b', '#a855f7'];
+
+                rankedRoutes.forEach((route, idx) => {
+                    if (route.is_recommended || !route.waypoints) return;
+                    altFeatures.push({
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: route.waypoints.map(w => [w.lng, w.lat])
+                        },
+                        properties: {
+                            color: palette[idx % palette.length],
+                            name: route.name,
+                            distance_km: route.distance_km
+                        }
+                    });
+                });
+
+                altSource.setData({
+                    type: 'FeatureCollection',
+                    features: altFeatures
                 });
             }
-        }
-
-        // 2. Render Alternative Routes
-        const altSource = this.map.getSource('alt-routes');
-        if (altSource && Array.isArray(rankedRoutes)) {
-            const altFeatures = [];
-            const palette = ['#10b981', '#f59e0b', '#a855f7'];
-
-            rankedRoutes.forEach((route, idx) => {
-                if (route.is_recommended || !route.waypoints) return;
-                altFeatures.push({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: route.waypoints.map(w => [w.lng, w.lat])
-                    },
-                    properties: {
-                        color: palette[idx % palette.length],
-                        name: route.name,
-                        distance_km: route.distance_km
-                    }
-                });
-            });
-
-            altSource.setData({
-                type: 'FeatureCollection',
-                features: altFeatures
-            });
-        }
+        } catch (e) { }
     }
 
     selectCandidateRoute(route) {
-        if (!this.map || !route || !route.waypoints) return;
-        const recSource = this.map.getSource('recommended-route');
-        if (recSource) {
-            recSource.setData({
-                type: 'FeatureCollection',
-                features: [{
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: route.waypoints.map(w => [w.lng, w.lat])
-                    },
-                    properties: {
-                        name: route.name,
-                        distance_km: route.distance_km
-                    }
-                }]
-            });
-
-            const bounds = new maplibregl.LngLatBounds();
-            route.waypoints.forEach(w => bounds.extend([w.lng, w.lat]));
-            this.map.fitBounds(bounds, {
-                padding: { top: 75, bottom: 75, left: 60, right: 60 },
-                maxZoom: 10,
-                duration: 800
-            });
+        if (this.isFallback) {
+            this.fallbackRecommended = route;
+            this.render2DFallback();
+            return;
         }
+
+        if (!this.map || !route || !route.waypoints) return;
+        try {
+            const recSource = this.map.getSource('recommended-route');
+            if (recSource) {
+                recSource.setData({
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: route.waypoints.map(w => [w.lng, w.lat])
+                        },
+                        properties: {
+                            name: route.name,
+                            distance_km: route.distance_km
+                        }
+                    }]
+                });
+
+                const bounds = new LngLatBounds();
+                route.waypoints.forEach(w => bounds.extend([w.lng, w.lat]));
+                this.map.fitBounds(bounds, {
+                    padding: { top: 75, bottom: 75, left: 60, right: 60 },
+                    maxZoom: 10,
+                    duration: 700
+                });
+            }
+        } catch (e) { }
     }
 
     resetView() {
-        if (!this.map) return;
-        this.map.easeTo({
+        if (this.isFallback) return;
+        this.map?.easeTo({
             center: this.options.center,
             zoom: this.options.zoom,
             pitch: this.options.pitch,
@@ -511,8 +577,66 @@ export class MapCN {
         });
     }
 
-    resize() {
-        this.map?.resize();
+    render2DFallback() {
+        if (!this.fallbackCtx || !this.fallbackCanvas) return;
+        const ctx = this.fallbackCtx;
+        const w = this.fallbackCanvas.width / (window.devicePixelRatio || 1);
+        const h = this.fallbackCanvas.height / (window.devicePixelRatio || 1);
+
+        ctx.clearRect(0, 0, w, h);
+
+        const minLat = 15.2, maxLat = 22.0;
+        const minLng = 72.5, maxLng = 80.0;
+        const pad = 45;
+        const toXY = (lat, lng) => ({
+            x: pad + ((lng - minLng) / (maxLng - minLng)) * (w - 2 * pad),
+            y: h - (pad + ((lat - minLat) / (maxLat - minLat)) * (h - 2 * pad))
+        });
+
+        // Corridors
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        this.corridors.forEach(c => {
+            const u = this.nodes.find(n => n.id === c.from_node);
+            const v = this.nodes.find(n => n.id === c.to_node);
+            if (u && v) {
+                const p1 = toXY(u.lat, u.lng);
+                const p2 = toXY(v.lat, v.lng);
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+            }
+        });
+        ctx.stroke();
+
+        // Recommended route
+        if (this.fallbackRecommended && this.fallbackRecommended.waypoints) {
+            ctx.strokeStyle = '#6366f1';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            this.fallbackRecommended.waypoints.forEach((wp, idx) => {
+                const pt = toXY(wp.lat, wp.lng);
+                if (idx === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.stroke();
+        }
+
+        // Nodes
+        this.nodes.forEach(node => {
+            const pt = toXY(node.lat, node.lng);
+            const isOrigin = this.currentOriginId === node.id;
+            const isDest = this.currentDestId === node.id;
+
+            ctx.beginPath();
+            ctx.fillStyle = isOrigin ? '#10b981' : isDest ? '#ef4444' : '#64748b';
+            ctx.arc(pt.x, pt.y, isOrigin || isDest ? 6 : 3.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = isOrigin ? '#34d399' : isDest ? '#f87171' : '#94a3b8';
+            ctx.font = '10px -apple-system, sans-serif';
+            ctx.fillText(node.name.split(' ')[0], pt.x + 8, pt.y + 3);
+        });
     }
 
     destroy() {

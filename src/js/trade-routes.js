@@ -81,16 +81,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupVehicleHints();
     setupModal();
 
-    // Initialize mapcn Map Component
-    mapcn = new MapCN('mapcn-trade-map', {
-        center: [74.5, 18.6],
-        zoom: 6.8,
-        pitch: 28
-    });
-    await mapcn.init();
-
+    // 1. Load data first so form dropdowns and history are immediately functional
     await loadNetworkData();
     await loadHistory();
+
+    // 2. Reactive origin/destination selection updates
+    const onSelectionChange = () => {
+        if (mapcn) {
+            mapcn.highlightSelection(originSelect.value, destSelect.value);
+        }
+    };
+    originSelect.addEventListener('change', onSelectionChange);
+    destSelect.addEventListener('change', onSelectionChange);
+
+    // 3. Mount mapcn Map Component
+    try {
+        mapcn = new MapCN('mapcn-trade-map', {
+            center: [74.5, 18.6],
+            zoom: 6.8,
+            pitch: 28
+        });
+        await mapcn.init();
+        if (networkNodes.length > 0) {
+            mapcn.setNetwork(networkNodes, networkCorridors);
+            mapcn.highlightSelection(originSelect.value, destSelect.value);
+        }
+    } catch (e) {
+        console.warn('[trade-routes] mapcn init error:', e);
+    }
 });
 
 // ==========================================
@@ -124,18 +142,9 @@ async function loadNetworkData() {
         originSelect.value = 'MUM_BHIWANDI';
         destSelect.value = 'KOL_CITY';
 
-        // Load network and render on mapcn
         if (mapcn) {
             mapcn.setNetwork(networkNodes, networkCorridors);
             mapcn.highlightSelection(originSelect.value, destSelect.value);
-
-            // Reactive origin/destination selection updates
-            originSelect.addEventListener('change', () => {
-                mapcn.highlightSelection(originSelect.value, destSelect.value);
-            });
-            destSelect.addEventListener('change', () => {
-                mapcn.highlightSelection(originSelect.value, destSelect.value);
-            });
         }
     } catch (err) {
         showToast(`Failed to load network hubs: ${err.message}`, 'error');

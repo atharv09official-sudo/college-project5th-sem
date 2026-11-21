@@ -172,6 +172,9 @@ export default defineConfig({
       'src': resolve(__dirname, 'src')
     }
   },
+  optimizeDeps: {
+    exclude: ['maplibre-gl']
+  },
   server: {
     host: '127.0.0.1',
     port: 8067,
