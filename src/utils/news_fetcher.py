@@ -30,7 +30,7 @@ def fetch_google_news_rss(query: str) -> List[Dict[str, Any]]:
             headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         )
         
-        with urllib.request.urlopen(req, timeout=2.5) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:
             if response.status != 200:
                 return []
             xml_content = response.read()

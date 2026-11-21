@@ -1,0 +1,8 @@
+SupplyGuard AI Report: Route_Risk_Analysis_2026-02-07
+Generated: 2026-02-07T23:30:46.728517
+Type: route_risk
+
+Risk Analysis Summary:
+- Global Risk Score: 7.2/10 (High)
+- Primary Drivers: Weather, Geopolitical Instability
+- Active Routes: 12

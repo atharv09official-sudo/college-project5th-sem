@@ -116,6 +116,10 @@ async function loadNetworkData() {
         originSelect.value = 'MUM_BHIWANDI';
         destSelect.value = 'KOL_CITY';
 
+        // Redraw canvas on origin/destination selection change
+        originSelect.addEventListener('change', drawMap);
+        destSelect.addEventListener('change', drawMap);
+
         drawMap();
     } catch (err) {
         showToast(`Failed to load network hubs: ${err.message}`, 'error');
@@ -433,7 +437,7 @@ function drawMap() {
 
         // Node labels
         ctx.fillStyle = isOrigin ? '#34d399' : isDest ? '#f87171' : '#a1a1aa';
-        ctx.font = isOrigin || isDest ? 'bold 11px Inter, sans-serif' : '9px Inter, sans-serif';
+        ctx.font = isOrigin || isDest ? 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : '9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.fillText(node.name.split(' ')[0], pt.x + 8, pt.y + 3);
     });
 }

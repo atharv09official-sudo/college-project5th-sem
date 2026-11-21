@@ -4,11 +4,14 @@
   "description": "AI-Powered FMCG Distribution Intelligence, Expiry-Aware Inventory Optimization, and Constrained Dispatch",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node dev.js",
+    "dev:frontend": "vite",
+    "dev:backend": "python app.py",
+    "dev:fastapi": "python run.py",
     "build:css": "tailwindcss -i src/css/input.css -o src/css/flowgrid.css --minify",
     "build": "npm run build:css && vite build",
     "preview": "vite preview",
-    "start": "python run.py",
+    "start": "node dev.js",
     "test": "pytest -v"
   },
   "keywords": [

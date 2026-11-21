@@ -23,10 +23,17 @@ html, body {
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    letter-spacing: -0.015em;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: -0.012em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.font-mono, pre, code, kbd, samp, .tabular-nums {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", "Roboto Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "zero" 1;
 }
 
 /* Enhanced Glass Panel (for complex cases) */

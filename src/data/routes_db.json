@@ -1,0 +1,30 @@
+[
+  {
+    "from": "Afghanistan",
+    "to": "Belarus",
+    "type": "active",
+    "status": "Planned",
+    "risk_score": 2.5,
+    "riskLevel": "Low",
+    "transport_mode": "air",
+    "value": "",
+    "currency": "USD",
+    "last_updated": "2026-02-07T19:03:37.238Z",
+    "id": "r1_1770491017",
+    "risk_delta": 0.0
+  },
+  {
+    "from": "India",
+    "to": "Canada",
+    "type": "active",
+    "status": "Planned",
+    "risk_score": 5.5,
+    "riskLevel": "Medium",
+    "transport_mode": "sea",
+    "value": "",
+    "currency": "INR",
+    "last_updated": "2026-02-07T20:13:06.909Z",
+    "id": "r2_1770495186",
+    "risk_delta": 0.0
+  }
+]

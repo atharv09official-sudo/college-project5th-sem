@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import net from 'net';
@@ -49,6 +50,7 @@ function dashboardRouter() {
     'routes',
     'analysis',
     'compare',
+    'map',
     'intelligence',
     'reports',
     'settings',
@@ -60,6 +62,32 @@ function dashboardRouter() {
   return {
     name: 'dashboard-router',
     configureServer(server) {
+      // Auto-launch Python backend if not already started
+      if (!process.env.VITE_DEV_RUNNER) {
+        (async () => {
+          const isRunning = (await checkPort(5005)) || (await checkPort(8000));
+          if (!isRunning) {
+            const py = spawn('python', ['app.py'], {
+              shell: process.platform === 'win32',
+              stdio: 'inherit'
+            });
+            const killPy = () => {
+              if (py && py.pid) {
+                if (process.platform === 'win32') {
+                  spawn('taskkill', ['/pid', py.pid.toString(), '/T', '/F']);
+                } else {
+                  py.kill();
+                }
+              }
+            };
+            process.on('SIGINT', killPy);
+            process.on('SIGTERM', killPy);
+            process.on('exit', killPy);
+            server.httpServer?.on('close', killPy);
+          }
+        })();
+      }
+
       // 1. Dashboard page routing
       server.middlewares.use((req, res, next) => {
         const urlObj = new URL(req.url, 'http://localhost');
@@ -70,25 +98,55 @@ function dashboardRouter() {
         next();
       });
 
-      // 2. Serve /assets directly without Vite publicDir notice
+      // 2. Serve /assets directly with HTTP 206 Partial Content range streaming for MP4 videos and assets
       server.middlewares.use('/assets', (req, res, next) => {
         const cleanUrl = req.url.split('?')[0].replace(/^\//, '');
         const filePath = resolve(__dirname, 'assets', cleanUrl);
         if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          const stat = fs.statSync(filePath);
           const ext = path.extname(filePath).toLowerCase();
           const mimeTypes = {
             '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.ogg': 'video/ogg',
             '.jpg': 'image/jpeg',
             '.jpeg': 'image/jpeg',
             '.png': 'image/png',
+            '.gif': 'image/gif',
             '.svg': 'image/svg+xml',
             '.json': 'application/json',
             '.css': 'text/css',
             '.js': 'application/javascript',
-            '.woff2': 'font/woff2'
+            '.woff2': 'font/woff2',
+            '.woff': 'font/woff',
+            '.ttf': 'font/ttf',
+            '.txt': 'text/plain'
           };
-          res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
-          return fs.createReadStream(filePath).pipe(res);
+          const contentType = mimeTypes[ext] || 'application/octet-stream';
+          const range = req.headers.range;
+
+          if (range && ext === '.mp4') {
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
+            const chunkSize = (end - start) + 1;
+            res.writeHead(206, {
+              'Content-Range': `bytes ${start}-${end}/${stat.size}`,
+              'Accept-Ranges': 'bytes',
+              'Content-Length': chunkSize,
+              'Content-Type': contentType,
+              'Cache-Control': 'no-cache'
+            });
+            return fs.createReadStream(filePath, { start, end }).pipe(res);
+          } else {
+            res.writeHead(200, {
+              'Content-Length': stat.size,
+              'Accept-Ranges': 'bytes',
+              'Content-Type': contentType,
+              'Cache-Control': 'public, max-age=3600'
+            });
+            return fs.createReadStream(filePath).pipe(res);
+          }
         }
         next();
       });
@@ -145,6 +203,7 @@ export default defineConfig({
         routes: resolve(__dirname, 'dashboard/routes.html'),
         analysis: resolve(__dirname, 'dashboard/analysis.html'),
         compare: resolve(__dirname, 'dashboard/compare.html'),
+        map: resolve(__dirname, 'dashboard/map.html'),
         intelligence: resolve(__dirname, 'dashboard/intelligence.html'),
         reports: resolve(__dirname, 'dashboard/reports.html'),
         settings: resolve(__dirname, 'dashboard/settings.html'),

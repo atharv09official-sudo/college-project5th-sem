@@ -16,7 +16,25 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          'sans-serif'
+        ],
+        mono: [
+          'ui-monospace',
+          '"SF Mono"',
+          '"Cascadia Code"',
+          '"Segoe UI Mono"',
+          '"Roboto Mono"',
+          'Menlo',
+          'Consolas',
+          'monospace'
+        ]
       }
     },
   },

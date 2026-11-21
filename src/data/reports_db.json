@@ -1,0 +1,79 @@
+[
+  {
+    "id": "rep_1770494325",
+    "name": "Executive_Brief_February_2026",
+    "type": "TXT",
+    "date": "2026-02-08",
+    "version": "v1.0",
+    "status": "Ready",
+    "integrity": "Verified source",
+    "generated_by": "System User",
+    "download_url": "/assets/reports/Executive_Brief_February_2026_1770494325.txt"
+  },
+  {
+    "id": "rep_1770487295",
+    "name": "Executive_Brief_February_2026",
+    "type": "PDF",
+    "date": "2026-02-07",
+    "version": "v1.0",
+    "status": "Ready",
+    "integrity": "Verified source",
+    "generated_by": "System User",
+    "download_url": "#"
+  },
+  {
+    "id": "rep_1770487246",
+    "name": "Route_Risk_Analysis_2026-02-07",
+    "type": "TXT",
+    "date": "2026-02-07",
+    "version": "v1.0",
+    "status": "Ready",
+    "integrity": "Verified source",
+    "generated_by": "System User",
+    "download_url": "/assets/reports/Route_Risk_Analysis_2026-02-07_1770487246.txt"
+  },
+  {
+    "id": "rep_1770487103",
+    "name": "Executive_Brief_February_2026",
+    "type": "PDF",
+    "date": "2026-02-07",
+    "version": "v1.0",
+    "status": "Ready",
+    "integrity": "Verified source",
+    "generated_by": "System User",
+    "download_url": "#"
+  },
+  {
+    "id": "rep_1770487089",
+    "name": "Cost_Optimization_Report_2026-02-07",
+    "type": "CSV",
+    "date": "2026-02-07",
+    "version": "v1.0",
+    "status": "Ready",
+    "integrity": "Verified source",
+    "generated_by": "System User",
+    "download_url": "#"
+  },
+  {
+    "id": "rep_1770487010",
+    "name": "Executive_Brief_February_2026",
+    "type": "PDF",
+    "date": "2026-02-07",
+    "version": "v1.0",
+    "status": "Ready",
+    "integrity": "Verified source",
+    "generated_by": "System User",
+    "download_url": "#"
+  },
+  {
+    "id": "rep_1770486407",
+    "name": "Executive_Brief_February_2026",
+    "type": "PDF",
+    "date": "2026-02-07",
+    "version": "v1.0",
+    "status": "Ready",
+    "integrity": "Verified source",
+    "generated_by": "System User",
+    "download_url": "#"
+  }
+]
