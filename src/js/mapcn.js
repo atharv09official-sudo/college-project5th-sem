@@ -8,39 +8,98 @@
 import * as maplibregl from 'maplibre-gl';
 const { Map, Marker, Popup, LngLatBounds } = maplibregl;
 
-// Deep dark theme style matching #0b0b0d / #121214
-const MAPCN_DARK_STYLE = {
-    version: 8,
-    name: 'mapcn-dark',
-    sources: {
-        'carto-dark': {
-            type: 'raster',
-            tiles: [
-                'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-            ],
-            tileSize: 256,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        }
-    },
-    layers: [
-        {
-            id: 'background',
-            type: 'background',
-            paint: {
-                'background-color': '#0d0e12'
+// mapcn Base Styles: High-contrast Dark, Esri Satellite, and Clean Light
+export const MAPCN_STYLES = {
+    dark: {
+        version: 8,
+        name: 'mapcn-dark',
+        sources: {
+            'basemap-tiles': {
+                type: 'raster',
+                tiles: [
+                    'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                    'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                    'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+                ],
+                tileSize: 256,
+                attribution: '&copy; CARTO &copy; OpenStreetMap'
             }
         },
-        {
-            id: 'carto-dark-tiles',
-            type: 'raster',
-            source: 'carto-dark',
-            minzoom: 0,
-            maxzoom: 20
-        }
-    ]
+        layers: [
+            {
+                id: 'background',
+                type: 'background',
+                paint: { 'background-color': '#0d0e12' }
+            },
+            {
+                id: 'basemap-layer',
+                type: 'raster',
+                source: 'basemap-tiles',
+                minzoom: 0,
+                maxzoom: 20
+            }
+        ]
+    },
+    satellite: {
+        version: 8,
+        name: 'mapcn-satellite',
+        sources: {
+            'basemap-tiles': {
+                type: 'raster',
+                tiles: [
+                    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                ],
+                tileSize: 256,
+                attribution: '&copy; Esri, Maxar, Earthstar'
+            }
+        },
+        layers: [
+            {
+                id: 'background',
+                type: 'background',
+                paint: { 'background-color': '#000000' }
+            },
+            {
+                id: 'basemap-layer',
+                type: 'raster',
+                source: 'basemap-tiles',
+                minzoom: 0,
+                maxzoom: 19
+            }
+        ]
+    },
+    light: {
+        version: 8,
+        name: 'mapcn-light',
+        sources: {
+            'basemap-tiles': {
+                type: 'raster',
+                tiles: [
+                    'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                    'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+                ],
+                tileSize: 256,
+                attribution: '&copy; CARTO &copy; OpenStreetMap'
+            }
+        },
+        layers: [
+            {
+                id: 'background',
+                type: 'background',
+                paint: { 'background-color': '#f8fafc' }
+            },
+            {
+                id: 'basemap-layer',
+                type: 'raster',
+                source: 'basemap-tiles',
+                minzoom: 0,
+                maxzoom: 20
+            }
+        ]
+    }
 };
+
+const MAPCN_DARK_STYLE = MAPCN_STYLES.dark;
 
 function hasWebGL() {
     try {
@@ -70,6 +129,10 @@ export class MapCN {
         this.currentOriginId = null;
         this.currentDestId = null;
         this.is3D = true;
+        this.currentStyle = 'dark';
+        this.routeBadgeMarker = null;
+        this.cachedRecommended = null;
+        this.cachedAlternatives = [];
         this.isFallback = false;
         this.fallbackCanvas = null;
         this.fallbackCtx = null;
@@ -258,18 +321,27 @@ export class MapCN {
         controlWrapper.id = 'mapcn-controls-overlay';
         controlWrapper.className = 'absolute top-3 right-3 z-20 flex flex-col gap-1.5 pointer-events-auto';
         controlWrapper.innerHTML = `
-            <div class="flex flex-col rounded-lg bg-[#121214]/85 backdrop-blur-md border border-white/10 shadow-xl overflow-hidden divide-y divide-white/5 font-mono text-xs">
+            <div class="flex flex-col rounded-xl bg-[#121214]/90 backdrop-blur-md border border-white/10 shadow-2xl overflow-hidden divide-y divide-white/5 font-mono text-xs">
                 <button id="mapcn-zoom-in" title="Zoom In" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 </button>
                 <button id="mapcn-zoom-out" title="Zoom Out" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
                 </button>
-                <button id="mapcn-pitch-toggle" title="Toggle 3D / 2D Perspective" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-indigo-400 hover:bg-white/10 transition text-[10px] font-bold">
+                <button id="mapcn-pitch-toggle" title="Toggle 3D / 2D Perspective" class="w-8 h-8 flex items-center justify-center text-indigo-400 hover:text-indigo-300 hover:bg-white/10 transition text-[10px] font-bold">
                     3D
+                </button>
+                <button id="mapcn-compass" title="Reset North Orientation" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-sky-400 hover:bg-white/10 transition text-[11px]">
+                    🧭
+                </button>
+                <button id="mapcn-style-toggle" title="Cycle Basemap (Dark / Sat / Light)" class="w-8 h-8 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-white/10 transition text-[9px] font-bold uppercase">
+                    SAT
                 </button>
                 <button id="mapcn-recenter" title="Recenter Corridors" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-emerald-400 hover:bg-white/10 transition">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+                <button id="mapcn-fullscreen" title="Toggle Fullscreen" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                 </button>
             </div>
         `;
@@ -291,9 +363,50 @@ export class MapCN {
             const btn = document.getElementById('mapcn-pitch-toggle');
             if (btn) btn.textContent = this.is3D ? '3D' : '2D';
         });
+        document.getElementById('mapcn-compass')?.addEventListener('click', () => {
+            this.map?.easeTo({
+                bearing: 0,
+                pitch: this.is3D ? 35 : 0,
+                duration: 500
+            });
+        });
+        document.getElementById('mapcn-style-toggle')?.addEventListener('click', () => {
+            this.cycleStyle();
+        });
         document.getElementById('mapcn-recenter')?.addEventListener('click', () => {
             this.resetView();
         });
+        document.getElementById('mapcn-fullscreen')?.addEventListener('click', () => {
+            const wrapper = this.container.closest('.mapcn-container-wrapper') || this.container;
+            if (!document.fullscreenElement) {
+                wrapper.requestFullscreen?.().catch(() => {});
+            } else {
+                document.exitFullscreen?.().catch(() => {});
+            }
+        });
+    }
+
+    cycleStyle() {
+        if (this.isFallback || !this.map) return;
+        const styles = ['dark', 'satellite', 'light'];
+        const labels = { dark: 'SAT', satellite: 'LGT', light: 'DRK' };
+        const currentIdx = styles.indexOf(this.currentStyle);
+        const nextStyle = styles[(currentIdx + 1) % styles.length];
+        this.currentStyle = nextStyle;
+
+        this.map.setStyle(MAPCN_STYLES[this.currentStyle]);
+        this.map.once('style.load', () => {
+            this.initLayers();
+            if (this.nodes.length > 0) {
+                this.setNetwork(this.nodes, this.corridors);
+            }
+            if (this.cachedRecommended) {
+                this.setOptimizationRoutes(this.cachedRecommended, this.cachedAlternatives);
+            }
+        });
+
+        const btn = document.getElementById('mapcn-style-toggle');
+        if (btn) btn.textContent = labels[this.currentStyle] || 'STY';
     }
 
     setNetwork(nodes, corridors) {
@@ -397,7 +510,7 @@ export class MapCN {
             }
 
             const popupHTML = `
-                <div class="p-3 bg-[#121214]/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-md text-xs font-sans min-w-[200px]">
+                <div class="p-3 bg-[#121214]/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-md text-xs font-sans min-w-[210px]">
                     <div class="flex items-center justify-between gap-2 mb-1.5 pb-1 border-b border-white/10">
                         <span class="text-[10px] font-mono uppercase font-bold ${isOrigin ? 'text-emerald-400' : isDest ? 'text-rose-400' : isGhat ? 'text-amber-400' : 'text-indigo-400'}">
                             ${isOrigin ? 'Origin Terminal' : isDest ? 'Destination Terminal' : isGhat ? 'Ghat Corridor' : node.hub_type || 'Trade Hub'}
@@ -409,6 +522,16 @@ export class MapCN {
                     <div class="grid grid-cols-2 gap-1 text-[10px] font-mono bg-white/5 p-1.5 rounded border border-white/5">
                         <div class="text-gray-400">Lat: <span class="text-white">${node.lat.toFixed(4)}</span></div>
                         <div class="text-gray-400">Lng: <span class="text-white">${node.lng.toFixed(4)}</span></div>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-white/10 grid grid-cols-2 gap-1.5">
+                        <button onclick="window.setAsOrigin && window.setAsOrigin('${node.id}')"
+                            class="py-1 px-2 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono transition text-center font-bold">
+                            ▲ Set Origin
+                        </button>
+                        <button onclick="window.setAsDestination && window.setAsDestination('${node.id}')"
+                            class="py-1 px-2 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[10px] font-mono transition text-center font-bold">
+                            ● Set Dest
+                        </button>
                     </div>
                 </div>
             `;
@@ -456,6 +579,9 @@ export class MapCN {
     }
 
     setOptimizationRoutes(recommendedRoute, rankedRoutes = []) {
+        this.cachedRecommended = recommendedRoute;
+        this.cachedAlternatives = rankedRoutes;
+
         if (this.isFallback) {
             this.fallbackRecommended = recommendedRoute;
             this.fallbackAlternatives = rankedRoutes;
@@ -494,6 +620,27 @@ export class MapCN {
                         maxZoom: 10,
                         duration: 900
                     });
+
+                    // Add dynamic route midpoint badge (signature @mapcn/map component)
+                    if (this.routeBadgeMarker) {
+                        this.routeBadgeMarker.remove();
+                        this.routeBadgeMarker = null;
+                    }
+                    const midIdx = Math.floor(coords.length / 2);
+                    const midCoord = coords[midIdx];
+                    const badgeEl = document.createElement('div');
+                    badgeEl.className = 'mapcn-route-badge pointer-events-auto cursor-pointer animate-fade-in';
+                    badgeEl.innerHTML = `
+                        <div class="px-2.5 py-1 rounded-full bg-[#121214]/95 border border-indigo-500/50 text-[11px] font-mono font-bold text-white shadow-2xl flex items-center gap-1.5 backdrop-blur-md hover:scale-105 transition-transform">
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+                            <span class="text-indigo-300">⚡ ${recommendedRoute.distance_km ? recommendedRoute.distance_km.toFixed(0) : '--'} km</span>
+                            <span class="text-gray-400">•</span>
+                            <span class="text-sky-300">${recommendedRoute.travel_time_hours ? recommendedRoute.travel_time_hours.toFixed(1) : '--'} h</span>
+                        </div>
+                    `;
+                    this.routeBadgeMarker = new Marker({ element: badgeEl, anchor: 'center' })
+                        .setLngLat(midCoord)
+                        .addTo(this.map);
                 }
             }
         } catch (e) { }
@@ -540,13 +687,14 @@ export class MapCN {
         try {
             const recSource = this.map.getSource('recommended-route');
             if (recSource) {
+                const coords = route.waypoints.map(w => [w.lng, w.lat]);
                 recSource.setData({
                     type: 'FeatureCollection',
                     features: [{
                         type: 'Feature',
                         geometry: {
                             type: 'LineString',
-                            coordinates: route.waypoints.map(w => [w.lng, w.lat])
+                            coordinates: coords
                         },
                         properties: {
                             name: route.name,
@@ -555,13 +703,36 @@ export class MapCN {
                     }]
                 });
 
-                const bounds = new LngLatBounds();
-                route.waypoints.forEach(w => bounds.extend([w.lng, w.lat]));
-                this.map.fitBounds(bounds, {
-                    padding: { top: 75, bottom: 75, left: 60, right: 60 },
-                    maxZoom: 10,
-                    duration: 700
-                });
+                if (coords.length > 1) {
+                    const bounds = new LngLatBounds();
+                    coords.forEach(w => bounds.extend(w));
+                    this.map.fitBounds(bounds, {
+                        padding: { top: 75, bottom: 75, left: 60, right: 60 },
+                        maxZoom: 10,
+                        duration: 700
+                    });
+
+                    // Update midpoint badge
+                    if (this.routeBadgeMarker) {
+                        this.routeBadgeMarker.remove();
+                        this.routeBadgeMarker = null;
+                    }
+                    const midIdx = Math.floor(coords.length / 2);
+                    const midCoord = coords[midIdx];
+                    const badgeEl = document.createElement('div');
+                    badgeEl.className = 'mapcn-route-badge pointer-events-auto cursor-pointer animate-fade-in';
+                    badgeEl.innerHTML = `
+                        <div class="px-2.5 py-1 rounded-full bg-[#121214]/95 border border-indigo-500/50 text-[11px] font-mono font-bold text-white shadow-2xl flex items-center gap-1.5 backdrop-blur-md hover:scale-105 transition-transform">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                            <span class="text-indigo-300">⚡ ${route.distance_km ? route.distance_km.toFixed(0) : '--'} km</span>
+                            <span class="text-gray-400">•</span>
+                            <span class="text-sky-300">${route.travel_time_hours ? route.travel_time_hours.toFixed(1) : '--'} h</span>
+                        </div>
+                    `;
+                    this.routeBadgeMarker = new Marker({ element: badgeEl, anchor: 'center' })
+                        .setLngLat(midCoord)
+                        .addTo(this.map);
+                }
             }
         } catch (e) { }
     }
@@ -640,6 +811,10 @@ export class MapCN {
     }
 
     destroy() {
+        if (this.routeBadgeMarker) {
+            this.routeBadgeMarker.remove();
+            this.routeBadgeMarker = null;
+        }
         this.markers.forEach(m => m.remove());
         this.markers = [];
         this.map?.remove();

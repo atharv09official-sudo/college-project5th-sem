@@ -342,6 +342,7 @@ function renderOptimizationResults(data) {
             if (mapcn) {
                 mapcn.selectCandidateRoute(r);
             }
+            updateRouteHud(r);
             breadcrumbSteps.textContent = (r.path_names || []).join(' ➔ ');
         });
 
@@ -352,7 +353,44 @@ function renderOptimizationResults(data) {
     if (mapcn) {
         mapcn.setOptimizationRoutes(rec, ranked);
     }
+    updateRouteHud(rec);
 }
+
+function updateRouteHud(r) {
+    const hud = document.getElementById('mapcn-route-hud');
+    if (!hud || !r) return;
+    hud.classList.remove('hidden');
+    const hudCode = document.getElementById('hud-route-code');
+    const hudName = document.getElementById('hud-route-name');
+    const hudDist = document.getElementById('hud-dist');
+    const hudTime = document.getElementById('hud-time');
+    const hudCost = document.getElementById('hud-cost');
+    const hudRisk = document.getElementById('hud-risk');
+
+    if (hudCode) hudCode.textContent = r.algorithm || (r.is_recommended ? 'Recommended' : 'Alternative');
+    if (hudName) hudName.textContent = r.name;
+    if (hudDist) hudDist.textContent = `${r.distance_km.toFixed(1)} km`;
+    if (hudTime) hudTime.textContent = `${r.travel_time_hours.toFixed(1)} h`;
+    if (hudCost) hudCost.textContent = `₹${Math.round(r.total_cost_inr).toLocaleString('en-IN')}`;
+    if (hudRisk) hudRisk.textContent = `${r.risk_score.toFixed(1)} / 10`;
+}
+
+// Global Hub Fast Pickers for @mapcn/map Popups
+window.setAsOrigin = (nodeId) => {
+    if (originSelect) {
+        originSelect.value = nodeId;
+        originSelect.dispatchEvent(new Event('change'));
+        showToast(`Origin set to: ${nodeId}`, 'info');
+    }
+};
+
+window.setAsDestination = (nodeId) => {
+    if (destSelect) {
+        destSelect.value = nodeId;
+        destSelect.dispatchEvent(new Event('change'));
+        showToast(`Destination set to: ${nodeId}`, 'info');
+    }
+};
 
 // ==========================================
 // 6. Interactive Vector Map Rendering (Module 9 via mapcn)
