@@ -9,43 +9,56 @@ import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 const { Map, Marker, Popup, LngLatBounds } = maplibregl;
 
-// Robust, 100% Free basemap styles: OpenFreeMap Dark vector, Esri Satellite, and Dark Invert OSM
-export const MAPCN_FALLBACK_DARK_STYLE = {
-    version: 8,
-    name: 'mapcn-dark-fallback',
-    sources: {
-        'osm-tiles': {
-            type: 'raster',
-            tiles: [
-                'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-            ],
-            tileSize: 256,
-            attribution: '&copy; OpenStreetMap contributors'
-        }
-    },
-    layers: [
-        {
-            id: 'background',
-            type: 'background',
-            paint: { 'background-color': '#0d0e12' }
-        },
-        {
-            id: 'osm-layer',
-            type: 'raster',
-            source: 'osm-tiles',
-            minzoom: 0,
-            maxzoom: 19,
-            paint: {
-                'raster-opacity': 0.38,
-                'raster-contrast': 0.25,
-                'raster-brightness-max': 0.4
-            }
-        }
-    ]
-};
-
+// Robust, 100% Free basemap styles: Esri Dark Gray (No key, zero watermark), Esri Satellite, and OpenFreeMap vector
 export const MAPCN_STYLES = {
-    dark: 'https://tiles.openfreemap.org/styles/dark',
+    dark: {
+        version: 8,
+        name: 'mapcn-dark-gray',
+        sources: {
+            'esri-dark-gray-base': {
+                type: 'raster',
+                tiles: [
+                    'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+                ],
+                tileSize: 256,
+                attribution: '&copy; Esri &copy; OpenStreetMap'
+            },
+            'esri-dark-gray-ref': {
+                type: 'raster',
+                tiles: [
+                    'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
+                ],
+                tileSize: 256
+            }
+        },
+        layers: [
+            {
+                id: 'background',
+                type: 'background',
+                paint: { 'background-color': '#0d0e12' }
+            },
+            {
+                id: 'esri-base',
+                type: 'raster',
+                source: 'esri-dark-gray-base',
+                minzoom: 0,
+                maxzoom: 18,
+                paint: {
+                    'raster-opacity': 0.95
+                }
+            },
+            {
+                id: 'esri-ref',
+                type: 'raster',
+                source: 'esri-dark-gray-ref',
+                minzoom: 0,
+                maxzoom: 18,
+                paint: {
+                    'raster-opacity': 0.8
+                }
+            }
+        ]
+    },
     satellite: {
         version: 8,
         name: 'mapcn-satellite',
@@ -74,8 +87,10 @@ export const MAPCN_STYLES = {
             }
         ]
     },
-    fallback: MAPCN_FALLBACK_DARK_STYLE
+    vector: 'https://tiles.openfreemap.org/styles/dark'
 };
+
+export const MAPCN_FALLBACK_DARK_STYLE = MAPCN_STYLES.dark;
 
 /**
  * Predefined Maharashtra & West-Central India Freight Corridors Coordinates Dictionary.
@@ -223,16 +238,13 @@ export class MapCN {
                 });
 
                 this.map.on('load', complete);
-                this.map.on('style.load', complete);
+                this.map.on('styledata', () => {
+                    if (this.map.isStyleLoaded()) complete();
+                });
 
                 this.map.on('error', (e) => {
                     const msg = e?.error?.message || String(e);
-                    console.warn('[mapcn] Map warning:', msg);
-                    if (!this.map.isStyleLoaded() && !this._triedFallbackStyle) {
-                        this._triedFallbackStyle = true;
-                        console.info('[mapcn] Switching to fallback dark style');
-                        this.map.setStyle(MAPCN_FALLBACK_DARK_STYLE);
-                    }
+                    console.debug('[mapcn] Map note:', msg);
                 });
 
                 // Fail-safe timeout: 3500ms
@@ -549,15 +561,17 @@ export class MapCN {
 
     cycleStyle() {
         if (this.isFallback || !this.map) return;
-        const styles = ['dark', 'satellite', 'fallback'];
-        const labels = { dark: 'SAT', satellite: 'MIN', fallback: 'DRK' };
+        const styles = ['dark', 'satellite', 'vector'];
+        const labels = { dark: 'SAT', satellite: 'VEC', vector: 'DRK' };
         const currentIdx = styles.indexOf(this.currentStyle);
         const nextStyle = styles[(currentIdx + 1) % styles.length];
         this.currentStyle = nextStyle;
 
         this.map.setStyle(MAPCN_STYLES[this.currentStyle]);
-        this.map.once('style.load', () => {
-            this.initLayers();
+        this.map.once('styledata', () => {
+            if (this.map.isStyleLoaded()) {
+                this.initLayers();
+            }
         });
 
         const btn = document.getElementById('mapcn-style-toggle');

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark overflow-x-hidden">
 
 <head>
     <meta charset="UTF-8">
@@ -69,7 +69,7 @@
     </style>
 </head>
 
-<body class="bg-dark-bg text-gray-100 min-h-screen flex flex-col font-sans">
+<body class="bg-dark-bg text-gray-100 min-h-screen flex flex-col font-sans overflow-x-hidden">
 
     <!-- Top Navigation Bar -->
     <nav class="glass-panel z-50 px-6 h-16 flex items-center justify-between border-b border-white/10 shrink-0">
@@ -350,7 +350,7 @@
 
                 <!-- Corridor Path Breadcrumb -->
                 <div id="path-breadcrumb"
-                    class="mt-3 p-2.5 bg-[#18181b] border border-white/5 rounded-lg text-xs font-mono text-gray-300 flex items-center gap-2 overflow-x-auto whitespace-nowrap">
+                    class="mt-3 p-2.5 bg-[#18181b] border border-white/5 rounded-lg text-xs font-mono text-gray-300 flex items-center gap-2 overflow-hidden flex-wrap max-w-full">
                     <span class="text-gray-500">Selected Path:</span>
                     <span id="breadcrumb-steps" class="text-indigo-300">Select origin and destination to preview transit
                         corridor</span>
