@@ -8,38 +8,43 @@
 import * as maplibregl from 'maplibre-gl';
 const { Map, Marker, Popup, LngLatBounds } = maplibregl;
 
-// mapcn Base Styles: High-contrast Dark, Esri Satellite, and Clean Light
-export const MAPCN_STYLES = {
-    dark: {
-        version: 8,
-        name: 'mapcn-dark',
-        sources: {
-            'basemap-tiles': {
-                type: 'raster',
-                tiles: [
-                    'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                    'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                    'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-                ],
-                tileSize: 256,
-                attribution: '&copy; CARTO &copy; OpenStreetMap'
-            }
-        },
-        layers: [
-            {
-                id: 'background',
-                type: 'background',
-                paint: { 'background-color': '#0d0e12' }
-            },
-            {
-                id: 'basemap-layer',
-                type: 'raster',
-                source: 'basemap-tiles',
-                minzoom: 0,
-                maxzoom: 20
-            }
-        ]
+// Robust, 100% Free basemap styles: OpenFreeMap Dark vector, Esri Satellite, and Dark Invert OSM
+export const MAPCN_FALLBACK_DARK_STYLE = {
+    version: 8,
+    name: 'mapcn-dark-fallback',
+    sources: {
+        'osm-tiles': {
+            type: 'raster',
+            tiles: [
+                'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '&copy; OpenStreetMap contributors'
+        }
     },
+    layers: [
+        {
+            id: 'background',
+            type: 'background',
+            paint: { 'background-color': '#0d0e12' }
+        },
+        {
+            id: 'osm-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            minzoom: 0,
+            maxzoom: 19,
+            paint: {
+                'raster-opacity': 0.38,
+                'raster-contrast': 0.25,
+                'raster-brightness-max': 0.4
+            }
+        }
+    ]
+};
+
+export const MAPCN_STYLES = {
+    dark: 'https://tiles.openfreemap.org/styles/dark',
     satellite: {
         version: 8,
         name: 'mapcn-satellite',
@@ -50,7 +55,7 @@ export const MAPCN_STYLES = {
                     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
                 ],
                 tileSize: 256,
-                attribution: '&copy; Esri, Maxar, Earthstar'
+                attribution: '&copy; Esri &copy; Maxar'
             }
         },
         layers: [
@@ -68,35 +73,7 @@ export const MAPCN_STYLES = {
             }
         ]
     },
-    light: {
-        version: 8,
-        name: 'mapcn-light',
-        sources: {
-            'basemap-tiles': {
-                type: 'raster',
-                tiles: [
-                    'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                    'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                ],
-                tileSize: 256,
-                attribution: '&copy; CARTO &copy; OpenStreetMap'
-            }
-        },
-        layers: [
-            {
-                id: 'background',
-                type: 'background',
-                paint: { 'background-color': '#f8fafc' }
-            },
-            {
-                id: 'basemap-layer',
-                type: 'raster',
-                source: 'basemap-tiles',
-                minzoom: 0,
-                maxzoom: 20
-            }
-        ]
-    }
+    fallback: MAPCN_FALLBACK_DARK_STYLE
 };
 
 const MAPCN_DARK_STYLE = MAPCN_STYLES.dark;
@@ -133,6 +110,7 @@ export class MapCN {
         this.routeBadgeMarker = null;
         this.cachedRecommended = null;
         this.cachedAlternatives = [];
+        this._triedFallbackStyle = false;
         this.isFallback = false;
         this.fallbackCanvas = null;
         this.fallbackCtx = null;
@@ -178,11 +156,18 @@ export class MapCN {
                 this.map.on('style.load', complete);
 
                 this.map.on('error', (e) => {
-                    console.warn('[mapcn] Tile warning (non-fatal):', e?.error?.message || e);
+                    const msg = e?.error?.message || String(e);
+                    console.warn('[mapcn] Map warning:', msg);
+                    // Automatic fail-over to zero-key dark canvas raster style if vector fails
+                    if (!this.map.isStyleLoaded() && !this._triedFallbackStyle) {
+                        this._triedFallbackStyle = true;
+                        console.info('[mapcn] Switching to fallback dark style');
+                        this.map.setStyle(MAPCN_FALLBACK_DARK_STYLE);
+                    }
                 });
 
-                // Fail-safe timeout: never block app initialization longer than 700ms
-                setTimeout(complete, 700);
+                // Fail-safe timeout: 3500ms allows vector styles sufficient time to resolve
+                setTimeout(complete, 3500);
             } catch (err) {
                 console.warn('[mapcn] MapLibre GL failed to mount. Falling back to 2D Canvas:', err);
                 this.init2DFallback();
@@ -216,6 +201,30 @@ export class MapCN {
         window.addEventListener('resize', resize);
     }
 
+    buildCorridorFeatures() {
+        const features = [];
+        this.corridors.forEach((c) => {
+            const u = this.nodes.find(n => n.id === c.from_node);
+            const v = this.nodes.find(n => n.id === c.to_node);
+            if (u && v) {
+                features.push({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: [[u.lng, u.lat], [v.lng, v.lat]]
+                    },
+                    properties: {
+                        corridor_id: c.corridor_id,
+                        highway: c.highway_code,
+                        distance_km: c.distance_km,
+                        is_ghat: c.is_ghat_section
+                    }
+                });
+            }
+        });
+        return features;
+    }
+
     initLayers() {
         if (!this.map) return;
         if (!this.map.isStyleLoaded()) {
@@ -223,11 +232,13 @@ export class MapCN {
             return;
         }
 
+        const corridorFeatures = this.buildCorridorFeatures();
+
         // 1. Corridors GeoJSON Source (Base Road Network)
         if (!this.map.getSource('network-corridors')) {
             this.map.addSource('network-corridors', {
                 type: 'geojson',
-                data: { type: 'FeatureCollection', features: [] }
+                data: { type: 'FeatureCollection', features: corridorFeatures }
             });
 
             this.map.addLayer({
@@ -237,8 +248,8 @@ export class MapCN {
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: {
                     'line-color': '#38bdf8',
-                    'line-width': 3,
-                    'line-opacity': 0.15,
+                    'line-width': 3.5,
+                    'line-opacity': 0.25,
                     'line-blur': 2
                 }
             });
@@ -249,12 +260,19 @@ export class MapCN {
                 source: 'network-corridors',
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: {
-                    'line-color': '#ffffff',
-                    'line-width': 1.2,
-                    'line-opacity': 0.22,
+                    'line-color': '#93c5fd',
+                    'line-width': 1.6,
+                    'line-opacity': 0.45,
                     'line-dasharray': [2, 2]
                 }
             });
+        } else {
+            try {
+                this.map.getSource('network-corridors').setData({
+                    type: 'FeatureCollection',
+                    features: corridorFeatures
+                });
+            } catch (e) { }
         }
 
         // 2. Alternative Routes Source & Layer
@@ -271,8 +289,8 @@ export class MapCN {
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: {
                     'line-color': ['get', 'color'],
-                    'line-width': 3,
-                    'line-opacity': 0.65,
+                    'line-width': 3.5,
+                    'line-opacity': 0.8,
                     'line-dasharray': [4, 3]
                 }
             });
@@ -294,7 +312,7 @@ export class MapCN {
                 paint: {
                     'line-color': '#6366f1',
                     'line-width': 9,
-                    'line-opacity': 0.45,
+                    'line-opacity': 0.5,
                     'line-blur': 3
                 }
             });
@@ -307,10 +325,20 @@ export class MapCN {
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: {
                     'line-color': '#818cf8',
-                    'line-width': 4.5,
-                    'line-opacity': 0.95
+                    'line-width': 5,
+                    'line-opacity': 1.0
                 }
             });
+        }
+
+        // Re-apply cached optimization routes if present
+        if (this.cachedRecommended) {
+            this.setOptimizationRoutes(this.cachedRecommended, this.cachedAlternatives);
+        }
+
+        // Re-render DOM markers
+        if (this.nodes.length > 0) {
+            this.renderMarkers();
         }
     }
 
@@ -388,8 +416,8 @@ export class MapCN {
 
     cycleStyle() {
         if (this.isFallback || !this.map) return;
-        const styles = ['dark', 'satellite', 'light'];
-        const labels = { dark: 'SAT', satellite: 'LGT', light: 'DRK' };
+        const styles = ['dark', 'satellite', 'fallback'];
+        const labels = { dark: 'SAT', satellite: 'MIN', fallback: 'DRK' };
         const currentIdx = styles.indexOf(this.currentStyle);
         const nextStyle = styles[(currentIdx + 1) % styles.length];
         this.currentStyle = nextStyle;
@@ -397,12 +425,6 @@ export class MapCN {
         this.map.setStyle(MAPCN_STYLES[this.currentStyle]);
         this.map.once('style.load', () => {
             this.initLayers();
-            if (this.nodes.length > 0) {
-                this.setNetwork(this.nodes, this.corridors);
-            }
-            if (this.cachedRecommended) {
-                this.setOptimizationRoutes(this.cachedRecommended, this.cachedAlternatives);
-            }
         });
 
         const btn = document.getElementById('mapcn-style-toggle');
@@ -418,31 +440,13 @@ export class MapCN {
             return;
         }
 
-        const features = [];
-        this.corridors.forEach((c) => {
-            const u = this.nodes.find(n => n.id === c.from_node);
-            const v = this.nodes.find(n => n.id === c.to_node);
-            if (u && v) {
-                features.push({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: [[u.lng, u.lat], [v.lng, v.lat]]
-                    },
-                    properties: {
-                        corridor_id: c.corridor_id,
-                        highway: c.highway_code,
-                        distance_km: c.distance_km,
-                        is_ghat: c.is_ghat_section
-                    }
-                });
-            }
-        });
-
         try {
             const source = this.map?.getSource('network-corridors');
             if (source) {
-                source.setData({ type: 'FeatureCollection', features });
+                source.setData({
+                    type: 'FeatureCollection',
+                    features: this.buildCorridorFeatures()
+                });
             }
         } catch (e) { }
 
