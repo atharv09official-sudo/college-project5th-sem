@@ -8,7 +8,7 @@ if __name__ == "__main__":
     print(f"Interactive Swagger API Docs: http://localhost:{port}/docs")
     print(f"Plan Generator & Allocations: http://localhost:{port}/plan-generator")
     print(f"Inventory Health & DOS: http://localhost:{port}/inventory-health")
-    print(f"Kirana POS Portal: http://localhost:{port}/kirana-pos")
+    print(f"Trade Route Map (mapcn): http://localhost:{port}/trade-routes")
     print(f"Road Risk & Ghats: http://localhost:{port}/road-risk")
     print(f"Master Data Import Studio: http://localhost:{port}/import-studio")
     uvicorn.run("app.main:app", host=host, port=port, reload=False)

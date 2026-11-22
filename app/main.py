@@ -1,7 +1,7 @@
 import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -93,10 +93,7 @@ def serve_inventory_health():
 
 @app.get("/kirana-pos")
 def serve_kirana_pos():
-    path = os.path.join(DASHBOARD_DIR, "kirana-pos.html")
-    if os.path.exists(path):
-        return FileResponse(path)
-    return FileResponse(os.path.join(DASHBOARD_DIR, "dashboard.html"))
+    return RedirectResponse(url="/trade-routes", status_code=302)
 
 
 @app.get("/road-risk")

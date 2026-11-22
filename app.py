@@ -17,7 +17,7 @@ mimetypes.add_type('image/png', '.png')
 from src.utils import geo, finance, news_fetcher, risk_engine, weather
 from src.utils.auth import create_user, authenticate, get_user_by_id
 
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory, redirect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 
@@ -404,7 +404,7 @@ def inventory_health_page():
 
 @app.route("/kirana-pos", methods=["GET"])
 def kirana_pos_page():
-    return send_from_directory(FRONTEND_DIR, "kirana-pos.html")
+    return redirect("/trade-routes")
 
 
 @app.route("/road-risk", methods=["GET"])
