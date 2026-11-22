@@ -226,10 +226,10 @@ export const UI = {
 
         if (!isLanding) return;
 
-        const heroSection = document.querySelector('main > section.relative.overflow-hidden');
+        const heroSection = document.querySelector('main > section.relative');
         if (!heroSection) return;
 
-        if (heroSection.querySelector('.hero-video-wrapper')) return;
+        if (heroSection.querySelector('video') || heroSection.querySelector('.hero-video-wrapper')) return;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'hero-video-wrapper';
