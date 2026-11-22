@@ -122,25 +122,33 @@ async function loadNetworkData() {
         networkNodes = data.nodes || [];
         networkCorridors = data.corridors || [];
 
-        // Populate dropdowns
-        originSelect.innerHTML = '<option value="">Select Origin Trade Hub</option>';
-        destSelect.innerHTML = '<option value="">Select Destination Hub</option>';
+        // Populate dropdowns with categorized visual assets (Warehouse 🏭 vs Store 🏬)
+        originSelect.innerHTML = '<option value="">Select Origin Warehouse / Terminal</option>';
+        destSelect.innerHTML = '<option value="">Select Destination Retail Store / Hub</option>';
+
+        const getRoleIcon = (node) => {
+            if (node.hub_type === 'PORT' || (node.id || '').includes('PORT') || (node.id || '').includes('JNPT')) return '⚓';
+            if (node.hub_type === 'GHAT_PASS' || (node.id || '').includes('KASARA') || (node.id || '').includes('KHANDALA')) return '⛰️';
+            if (node.hub_type === 'LOGISTICS_HUB' || node.hub_type === 'INDUSTRIAL_HUB' || node.hub_type === 'DRY_PORT' || (node.id || '').includes('BHIWANDI') || (node.id || '').includes('CHAKAN')) return '🏭';
+            return '🏬';
+        };
 
         networkNodes.forEach(node => {
+            const icon = getRoleIcon(node);
             const opt1 = document.createElement('option');
             opt1.value = node.id;
-            opt1.textContent = `${node.name} (${node.city})`;
+            opt1.textContent = `${icon} ${node.name} (${node.city})`;
             originSelect.appendChild(opt1);
 
             const opt2 = document.createElement('option');
             opt2.value = node.id;
-            opt2.textContent = `${node.name} (${node.city})`;
+            opt2.textContent = `${icon} ${node.name} (${node.city})`;
             destSelect.appendChild(opt2);
         });
 
-        // Set realistic defaults
+        // Set realistic defaults (Bhiwandi Central Warehouse -> Pune Logistics Store)
         originSelect.value = 'MUM_BHIWANDI';
-        destSelect.value = 'KOL_CITY';
+        destSelect.value = 'PUNE_CITY';
 
         if (mapcn) {
             mapcn.setNetwork(networkNodes, networkCorridors);

@@ -76,6 +76,38 @@ export const MAPCN_STYLES = {
     fallback: MAPCN_FALLBACK_DARK_STYLE
 };
 
+/**
+ * Predefined Maharashtra & West-Central India Freight Corridors Coordinates Dictionary.
+ * Guarantees zero geocoding latency, 100% offline accuracy, and failsafe map rendering without Google Maps API keys.
+ */
+export const PREDEFINED_MAHARASHTRA_COORDINATES = {
+    'MUM_JNPT': { id: 'MUM_JNPT', name: 'JNPT Port (Nhava Sheva)', city: 'Navi Mumbai', state: 'Maharashtra', lat: 18.9499, lng: 72.9515, hub_type: 'PORT', defaultRole: 'warehouse', icon: '⚓' },
+    'MUM_BHIWANDI': { id: 'MUM_BHIWANDI', name: 'Bhiwandi Central Mega Hub', city: 'Bhiwandi', state: 'Maharashtra', lat: 19.2813, lng: 73.0483, hub_type: 'LOGISTICS_HUB', defaultRole: 'warehouse', icon: '🏭' },
+    'MUM_CENTRAL': { id: 'MUM_CENTRAL', name: 'Mumbai Central Distribution Node', city: 'Mumbai', state: 'Maharashtra', lat: 18.9696, lng: 72.8193, hub_type: 'URBAN_HUB', defaultRole: 'store', icon: '🏬' },
+    'MUM_THANE': { id: 'MUM_THANE', name: 'Thane Freight Terminal', city: 'Thane', state: 'Maharashtra', lat: 19.2183, lng: 72.9781, hub_type: 'TRANSIT_JUNCTION', defaultRole: 'warehouse', icon: '🏭' },
+    'MUM_PANVEL': { id: 'MUM_PANVEL', name: 'Panvel Expressway Gateway', city: 'Panvel', state: 'Maharashtra', lat: 18.9894, lng: 73.1175, hub_type: 'TRANSIT_JUNCTION', defaultRole: 'transit', icon: '🔄' },
+    'KHANDALA': { id: 'KHANDALA', name: 'Khandala Western Ghat Summit', city: 'Khandala', state: 'Maharashtra', lat: 18.7610, lng: 73.3742, hub_type: 'GHAT_PASS', defaultRole: 'ghat', icon: '⛰️' },
+    'LONAVALA': { id: 'LONAVALA', name: 'Lonavala Transit Node', city: 'Lonavala', state: 'Maharashtra', lat: 18.7557, lng: 73.4091, hub_type: 'TRANSIT_JUNCTION', defaultRole: 'transit', icon: '🔄' },
+    'PUNE_CHAKAN': { id: 'PUNE_CHAKAN', name: 'Chakan Auto MIDC Hub', city: 'Pune', state: 'Maharashtra', lat: 18.7606, lng: 73.8636, hub_type: 'INDUSTRIAL_HUB', defaultRole: 'warehouse', icon: '🏭' },
+    'PUNE_CITY': { id: 'PUNE_CITY', name: 'Pune Logistics Terminal (Hadapsar)', city: 'Pune', state: 'Maharashtra', lat: 18.5204, lng: 73.8567, hub_type: 'REGIONAL_HUB', defaultRole: 'store', icon: '🏬' },
+    'SHIRWAL': { id: 'SHIRWAL', name: 'Shirwal MIDC Junction', city: 'Shirwal', state: 'Maharashtra', lat: 18.1364, lng: 73.9856, hub_type: 'TRANSIT_JUNCTION', defaultRole: 'transit', icon: '🔄' },
+    'SATARA': { id: 'SATARA', name: 'Satara Southern Hub', city: 'Satara', state: 'Maharashtra', lat: 17.6805, lng: 74.0183, hub_type: 'REGIONAL_HUB', defaultRole: 'store', icon: '🏬' },
+    'KARAD': { id: 'KARAD', name: 'Karad NH-48 Junction', city: 'Karad', state: 'Maharashtra', lat: 17.2885, lng: 74.1834, hub_type: 'TRANSIT_JUNCTION', defaultRole: 'transit', icon: '🔄' },
+    'KOLHAPUR': { id: 'KOLHAPUR', name: 'Kolhapur Trade Terminal (Shiroli MIDC)', city: 'Kolhapur', state: 'Maharashtra', lat: 16.7050, lng: 74.2433, hub_type: 'BORDER_HUB', defaultRole: 'store', icon: '🏬' },
+    'KASARA': { id: 'KASARA', name: 'Kasara Ghat Pass (Thal Ghat)', city: 'Kasara', state: 'Maharashtra', lat: 19.6543, lng: 73.4831, hub_type: 'GHAT_PASS', defaultRole: 'ghat', icon: '⛰️' },
+    'IGATPURI': { id: 'IGATPURI', name: 'Igatpuri Mountain Hub', city: 'Igatpuri', state: 'Maharashtra', lat: 19.6967, lng: 73.5594, hub_type: 'TRANSIT_JUNCTION', defaultRole: 'transit', icon: '🔄' },
+    'NASHIK': { id: 'NASHIK', name: 'Nashik Ambad MIDC Terminal', city: 'Nashik', state: 'Maharashtra', lat: 19.9975, lng: 73.7898, hub_type: 'REGIONAL_HUB', defaultRole: 'store', icon: '🏬' },
+    'AHMEDNAGAR': { id: 'AHMEDNAGAR', name: 'Ahmednagar Central Junction', city: 'Ahmednagar', state: 'Maharashtra', lat: 19.0952, lng: 74.7496, hub_type: 'REGIONAL_HUB', defaultRole: 'transit', icon: '🔄' },
+    'AURANGABAD': { id: 'AURANGABAD', name: 'Chhatrapati Sambhajinagar (Aurangabad DMIC)', city: 'Aurangabad', state: 'Maharashtra', lat: 19.8762, lng: 75.3433, hub_type: 'INDUSTRIAL_HUB', defaultRole: 'warehouse', icon: '🏭' },
+    'JALNA': { id: 'JALNA', name: 'Jalna Dry Port & Steel Hub', city: 'Jalna', state: 'Maharashtra', lat: 19.8347, lng: 75.8816, hub_type: 'DRY_PORT', defaultRole: 'warehouse', icon: '🏭' },
+    'SOLAPUR': { id: 'SOLAPUR', name: 'Solapur Textile Hub', city: 'Solapur', state: 'Maharashtra', lat: 17.6599, lng: 75.9064, hub_type: 'REGIONAL_HUB', defaultRole: 'store', icon: '🏬' },
+    'NAGPUR': { id: 'NAGPUR', name: 'Nagpur MIHAN Multi-Modal Hub', city: 'Nagpur', state: 'Maharashtra', lat: 21.1458, lng: 79.0882, hub_type: 'NATIONAL_HUB', defaultRole: 'warehouse', icon: '🏭' },
+    'SURAT': { id: 'SURAT', name: 'Surat Hazira Port Hub', city: 'Surat', state: 'Gujarat', lat: 21.1702, lng: 72.8311, hub_type: 'PORT', defaultRole: 'warehouse', icon: '⚓' },
+    'AHMEDABAD': { id: 'AHMEDABAD', name: 'Ahmedabad Sanand Logistics Park', city: 'Ahmedabad', state: 'Gujarat', lat: 23.0225, lng: 72.5714, hub_type: 'NATIONAL_HUB', defaultRole: 'warehouse', icon: '🏭' },
+    'BELAGAVI': { id: 'BELAGAVI', name: 'Belagavi Karnataka Border Hub', city: 'Belagavi', state: 'Karnataka', lat: 15.8497, lng: 74.4977, hub_type: 'BORDER_HUB', defaultRole: 'store', icon: '🏬' },
+    'GOA_MORMUGAO': { id: 'GOA_MORMUGAO', name: 'Mormugao Port (Goa)', city: 'Mormugao', state: 'Goa', lat: 15.4124, lng: 73.8052, hub_type: 'PORT', defaultRole: 'warehouse', icon: '⚓' }
+};
+
 const MAPCN_DARK_STYLE = MAPCN_STYLES.dark;
 
 function hasWebGL() {
@@ -204,9 +236,11 @@ export class MapCN {
     buildCorridorFeatures() {
         const features = [];
         this.corridors.forEach((c) => {
-            const u = this.nodes.find(n => n.id === c.from_node);
-            const v = this.nodes.find(n => n.id === c.to_node);
-            if (u && v) {
+            const uObj = this.nodes.find(n => n.id === c.from_node);
+            const vObj = this.nodes.find(n => n.id === c.to_node);
+            const u = this.getNodeCoords(c.from_node, uObj);
+            const v = this.getNodeCoords(c.to_node, vObj);
+            if (u && v && typeof u.lat === 'number' && typeof v.lat === 'number') {
                 features.push({
                     type: 'Feature',
                     geometry: {
@@ -223,6 +257,29 @@ export class MapCN {
             }
         });
         return features;
+    }
+
+    getNodeCoords(nodeId, nodeObj = null) {
+        if (nodeObj && typeof nodeObj.lat === 'number' && typeof nodeObj.lng === 'number' && !isNaN(nodeObj.lat) && !isNaN(nodeObj.lng)) {
+            return {
+                lat: nodeObj.lat,
+                lng: nodeObj.lng,
+                name: nodeObj.name || nodeId,
+                city: nodeObj.city || '',
+                hub_type: nodeObj.hub_type || 'HUB'
+            };
+        }
+        const pre = PREDEFINED_MAHARASHTRA_COORDINATES[nodeId];
+        if (pre) {
+            return {
+                lat: pre.lat,
+                lng: pre.lng,
+                name: pre.name,
+                city: pre.city,
+                hub_type: pre.hub_type
+            };
+        }
+        return null;
     }
 
     initLayers() {
@@ -432,7 +489,16 @@ export class MapCN {
     }
 
     setNetwork(nodes, corridors) {
-        this.nodes = nodes || [];
+        const rawNodes = (nodes && nodes.length > 0) ? nodes : Object.values(PREDEFINED_MAHARASHTRA_COORDINATES);
+        this.nodes = rawNodes.map(n => {
+            const coords = this.getNodeCoords(n.id, n);
+            return {
+                ...n,
+                lat: coords ? coords.lat : n.lat,
+                lng: coords ? coords.lng : n.lng,
+                hub_type: n.hub_type || (coords ? coords.hub_type : 'LOGISTICS_HUB')
+            };
+        });
         this.corridors = corridors || [];
 
         if (this.isFallback) {
@@ -463,48 +529,67 @@ export class MapCN {
             const isOrigin = this.currentOriginId === node.id;
             const isDest = this.currentDestId === node.id;
             const isGhat = (node.name || '').toLowerCase().includes('ghat') || (node.id || '').includes('KASARA') || (node.id || '').includes('KHANDALA');
+            const isPort = (node.hub_type === 'PORT') || (node.id || '').includes('JNPT') || (node.id || '').includes('MORMUGAO') || (node.id || '').includes('SURAT');
 
             const el = document.createElement('div');
             el.className = 'mapcn-marker group cursor-pointer relative';
 
             if (isOrigin) {
+                // High-visibility Warehouse Origin Asset Marker
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center">
-                        <span class="absolute w-7 h-7 rounded-full bg-emerald-500/30 animate-ping pointer-events-none"></span>
-                        <div class="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center shadow-lg shadow-emerald-500/50 border-2 border-white text-xs font-bold z-10">
-                            ▲
+                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
+                        <span class="absolute w-10 h-10 rounded-full bg-emerald-500/40 animate-ping pointer-events-none"></span>
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-700 to-emerald-500 text-white flex items-center justify-center shadow-2xl shadow-emerald-500/70 border-2 border-white text-base font-bold z-10 transition-transform group-hover:scale-110">
+                            🏭
                         </div>
-                        <div class="absolute left-7 px-2 py-0.5 rounded bg-emerald-950/90 border border-emerald-500/40 text-[10px] font-mono font-bold text-emerald-300 shadow-md whitespace-nowrap z-20">
-                            ${node.name.split(' ')[0]} (Origin)
+                        <div class="absolute left-10 px-2.5 py-1 rounded-lg bg-[#0a1410]/95 border border-emerald-500/60 text-[11px] font-mono font-bold text-emerald-300 shadow-2xl whitespace-nowrap z-20 flex items-center gap-1.5 backdrop-blur-md">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>ORIGIN WAREHOUSE: ${node.name.split(' ')[0]}</span>
                         </div>
                     </div>
                 `;
             } else if (isDest) {
+                // High-visibility Store Destination Asset Marker
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center">
-                        <span class="absolute w-7 h-7 rounded-full bg-rose-500/30 animate-ping pointer-events-none"></span>
-                        <div class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/50 border-2 border-white text-xs font-bold z-10">
-                            ●
+                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
+                        <span class="absolute w-10 h-10 rounded-full bg-rose-500/40 animate-ping pointer-events-none"></span>
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-rose-700 to-rose-500 text-white flex items-center justify-center shadow-2xl shadow-rose-500/70 border-2 border-white text-base font-bold z-10 transition-transform group-hover:scale-110">
+                            🏬
                         </div>
-                        <div class="absolute left-7 px-2 py-0.5 rounded bg-rose-950/90 border border-rose-500/40 text-[10px] font-mono font-bold text-rose-300 shadow-md whitespace-nowrap z-20">
-                            ${node.name.split(' ')[0]} (Dest)
+                        <div class="absolute left-10 px-2.5 py-1 rounded-lg bg-[#180a0f]/95 border border-rose-500/60 text-[11px] font-mono font-bold text-rose-300 shadow-2xl whitespace-nowrap z-20 flex items-center gap-1.5 backdrop-blur-md">
+                            <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+                            <span>DEST STORE: ${node.name.split(' ')[0]}</span>
                         </div>
                     </div>
                 `;
             } else if (isGhat) {
+                // Mountain Pass / Ghat Hazard Node
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center">
-                        <div class="w-4 h-4 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-[9px] text-amber-300 font-bold">
-                            ⚠
+                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
+                        <div class="w-5 h-5 rounded-full bg-amber-500/25 border border-amber-400 flex items-center justify-center text-xs text-amber-300 font-bold shadow-lg shadow-amber-500/30">
+                            ⛰️
                         </div>
-                        <div class="hidden group-hover:block absolute left-5 px-1.5 py-0.5 rounded bg-black/80 border border-amber-500/30 text-[9px] font-mono text-amber-300 whitespace-nowrap z-20">
+                        <div class="hidden group-hover:flex absolute left-6 px-2 py-0.5 rounded bg-black/90 border border-amber-500/40 text-[9px] font-mono text-amber-300 whitespace-nowrap z-20 items-center gap-1">
+                            <span>⛰️ Ghat Summit:</span> ${node.name}
+                        </div>
+                    </div>
+                `;
+            } else if (isPort) {
+                // Major Sea Port / Container Hub
+                el.innerHTML = `
+                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
+                        <div class="w-4 h-4 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-[10px] text-cyan-300 shadow">
+                            ⚓
+                        </div>
+                        <div class="hidden group-hover:block absolute left-5 px-1.5 py-0.5 rounded bg-black/85 border border-cyan-500/30 text-[9px] font-mono text-cyan-300 whitespace-nowrap z-20">
                             ${node.name}
                         </div>
                     </div>
                 `;
             } else {
+                // Standard Transit Junction / Regional Node
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center">
+                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
                         <div class="w-2.5 h-2.5 rounded-full bg-slate-400/60 border border-slate-200/40 hover:scale-150 hover:bg-indigo-400 transition-transform"></div>
                         <div class="hidden group-hover:block absolute left-4 px-1.5 py-0.5 rounded bg-[#121214]/90 border border-white/10 text-[9px] font-mono text-gray-200 whitespace-nowrap z-20">
                             ${node.name.split(' ')[0]}
@@ -513,11 +598,14 @@ export class MapCN {
                 `;
             }
 
+            const headerRole = isOrigin ? '🏭 Origin Warehouse Terminal' : isDest ? '🏬 Destination Store Terminal' : isGhat ? '⛰️ Western Ghat Corridor' : isPort ? '⚓ Major Sea Port' : (node.hub_type || 'Regional Hub');
+            const headerColor = isOrigin ? 'text-emerald-400' : isDest ? 'text-rose-400' : isGhat ? 'text-amber-400' : isPort ? 'text-cyan-400' : 'text-indigo-400';
+
             const popupHTML = `
-                <div class="p-3 bg-[#121214]/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-md text-xs font-sans min-w-[210px]">
+                <div class="p-3 bg-[#121214]/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-md text-xs font-sans min-w-[220px]">
                     <div class="flex items-center justify-between gap-2 mb-1.5 pb-1 border-b border-white/10">
-                        <span class="text-[10px] font-mono uppercase font-bold ${isOrigin ? 'text-emerald-400' : isDest ? 'text-rose-400' : isGhat ? 'text-amber-400' : 'text-indigo-400'}">
-                            ${isOrigin ? 'Origin Terminal' : isDest ? 'Destination Terminal' : isGhat ? 'Ghat Corridor' : node.hub_type || 'Trade Hub'}
+                        <span class="text-[10px] font-mono uppercase font-bold ${headerColor}">
+                            ${headerRole}
                         </span>
                         <span class="text-[9px] text-gray-500 font-mono">${node.id}</span>
                     </div>
@@ -529,12 +617,12 @@ export class MapCN {
                     </div>
                     <div class="mt-2.5 pt-2 border-t border-white/10 grid grid-cols-2 gap-1.5">
                         <button onclick="window.setAsOrigin && window.setAsOrigin('${node.id}')"
-                            class="py-1 px-2 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono transition text-center font-bold">
-                            ▲ Set Origin
+                            class="py-1 px-2 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[10px] font-mono transition text-center font-bold">
+                            🏭 Set Origin
                         </button>
                         <button onclick="window.setAsDestination && window.setAsDestination('${node.id}')"
-                            class="py-1 px-2 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[10px] font-mono transition text-center font-bold">
-                            ● Set Dest
+                            class="py-1 px-2 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-[10px] font-mono transition text-center font-bold">
+                            🏬 Set Dest
                         </button>
                     </div>
                 </div>
@@ -566,15 +654,15 @@ export class MapCN {
 
         this.renderMarkers();
 
-        const u = this.nodes.find(n => n.id === originId);
-        const v = this.nodes.find(n => n.id === destId);
+        const u = this.getNodeCoords(originId, this.nodes.find(n => n.id === originId));
+        const v = this.getNodeCoords(destId, this.nodes.find(n => n.id === destId));
         if (u && v && this.map) {
             try {
                 const bounds = new LngLatBounds();
                 bounds.extend([u.lng, u.lat]);
                 bounds.extend([v.lng, v.lat]);
                 this.map.fitBounds(bounds, {
-                    padding: { top: 70, bottom: 70, left: 70, right: 70 },
+                    padding: { top: 80, bottom: 80, left: 80, right: 80 },
                     maxZoom: 9.5,
                     duration: 800
                 });
@@ -799,18 +887,24 @@ export class MapCN {
 
         // Nodes
         this.nodes.forEach(node => {
-            const pt = toXY(node.lat, node.lng);
+            const coords = this.getNodeCoords(node.id, node);
+            const pt = toXY(coords ? coords.lat : node.lat, coords ? coords.lng : node.lng);
             const isOrigin = this.currentOriginId === node.id;
             const isDest = this.currentDestId === node.id;
 
             ctx.beginPath();
             ctx.fillStyle = isOrigin ? '#10b981' : isDest ? '#ef4444' : '#64748b';
-            ctx.arc(pt.x, pt.y, isOrigin || isDest ? 6 : 3.5, 0, Math.PI * 2);
+            ctx.arc(pt.x, pt.y, isOrigin || isDest ? 6.5 : 3.5, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.fillStyle = isOrigin ? '#34d399' : isDest ? '#f87171' : '#94a3b8';
-            ctx.font = '10px -apple-system, sans-serif';
-            ctx.fillText(node.name.split(' ')[0], pt.x + 8, pt.y + 3);
+            ctx.font = isOrigin || isDest ? 'bold 11px -apple-system, sans-serif' : '10px -apple-system, sans-serif';
+            const label = isOrigin
+                ? `🏭 ${node.name.split(' ')[0]} (Warehouse)`
+                : isDest
+                    ? `🏬 ${node.name.split(' ')[0]} (Store)`
+                    : node.name.split(' ')[0];
+            ctx.fillText(label, pt.x + 8, pt.y + 3);
         });
     }
 

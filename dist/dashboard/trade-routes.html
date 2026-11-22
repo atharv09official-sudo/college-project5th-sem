@@ -39,9 +39,9 @@
             box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
         }
     </style>
-  <script type="module" crossorigin src="/assets/tradeRoutes-iv18iqkU.js"></script>
+  <script type="module" crossorigin src="/assets/tradeRoutes-B6NPCXMF.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="stylesheet" crossorigin href="/assets/flowgrid-DiTh5G-Z.css">
+  <link rel="stylesheet" crossorigin href="/assets/flowgrid-Dbqvwdeu.css">
   <link rel="stylesheet" crossorigin href="/assets/styles-CvZ3AnkW.css">
 </head>
 
@@ -105,14 +105,20 @@
                     <!-- Origin & Destination -->
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">Origin Terminal</label>
+                            <label class="block text-xs font-medium text-gray-400 mb-1 flex items-center justify-between">
+                                <span>Origin Terminal</span>
+                                <span class="text-[10px] font-mono text-emerald-400">🏭 Warehouse</span>
+                            </label>
                             <select id="origin-select"
                                 class="w-full bg-[#18181b] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none">
                                 <option value="">Loading hubs...</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1">Destination Terminal</label>
+                            <label class="block text-xs font-medium text-gray-400 mb-1 flex items-center justify-between">
+                                <span>Destination Terminal</span>
+                                <span class="text-[10px] font-mono text-rose-400">🏬 Store</span>
+                            </label>
                             <select id="destination-select"
                                 class="w-full bg-[#18181b] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none">
                                 <option value="">Loading hubs...</option>
@@ -250,13 +256,12 @@
                         <h2 class="text-sm font-semibold text-white">Module 9: Interactive Vector Trade Map</h2>
                         <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">@mapcn/map</span>
                     </div>
-                    <div class="flex items-center gap-2 text-[10px] font-mono">
+                    <div class="flex items-center gap-2.5 text-[10px] font-mono">
+                        <span class="flex items-center gap-1 text-emerald-400">🏭 Warehouse</span>
+                        <span class="flex items-center gap-1 text-rose-400">🏬 Store</span>
+                        <span class="flex items-center gap-1 text-amber-400">⛰️ Ghat</span>
                         <span class="flex items-center gap-1 text-indigo-400"><span
-                                class="w-2 h-2 rounded-full bg-indigo-500"></span> Recommended</span>
-                        <span class="flex items-center gap-1 text-emerald-400"><span
-                                class="w-2 h-2 rounded-full bg-emerald-500"></span> Alternative</span>
-                        <span class="flex items-center gap-1 text-amber-400"><span
-                                class="w-2 h-2 rounded-full bg-amber-500"></span> Ghat Pass</span>
+                                class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Route</span>
                     </div>
                 </div>
 
