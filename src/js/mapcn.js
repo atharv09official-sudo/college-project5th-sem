@@ -6,6 +6,7 @@
  */
 
 import * as maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 const { Map, Marker, Popup, LngLatBounds } = maplibregl;
 
 // Robust, 100% Free basemap styles: OpenFreeMap Dark vector, Esri Satellite, and Dark Invert OSM
@@ -108,6 +109,43 @@ export const PREDEFINED_MAHARASHTRA_COORDINATES = {
     'GOA_MORMUGAO': { id: 'GOA_MORMUGAO', name: 'Mormugao Port (Goa)', city: 'Mormugao', state: 'Goa', lat: 15.4124, lng: 73.8052, hub_type: 'PORT', defaultRole: 'warehouse', icon: '⚓' }
 };
 
+/**
+ * Predefined Maharashtra Core Freight Corridors (Base Infrastructure Grid).
+ * Guaranteed to connect all trade hubs instantly without waiting for network API latency.
+ */
+export const PREDEFINED_CORRIDORS = [
+    { from: "MUM_JNPT", to: "MUM_PANVEL", distance_km: 28.5, name: "JNPT Port Access Corridor (NH-348)", is_ghat: false },
+    { from: "MUM_CENTRAL", to: "MUM_PANVEL", distance_km: 42.0, name: "Sion-Panvel Expressway", is_ghat: false },
+    { from: "MUM_BHIWANDI", to: "MUM_THANE", distance_km: 16.5, name: "Bhiwandi-Thane Bypass (NH-848)", is_ghat: false },
+    { from: "MUM_THANE", to: "MUM_PANVEL", distance_km: 34.0, name: "Thane-Belapur Corridor", is_ghat: false },
+    { from: "MUM_BHIWANDI", to: "MUM_PANVEL", distance_km: 48.0, name: "JNPT-Bhiwandi Dedicated Freight Route (NH-48 Ext)", is_ghat: false },
+    { from: "MUM_PANVEL", to: "KHANDALA", distance_km: 54.0, name: "Mumbai-Pune Expressway (Ghat Section)", is_ghat: true },
+    { from: "MUM_PANVEL", to: "KHANDALA", distance_km: 58.5, name: "Old NH-48 Khopoli Ghat Highway", is_ghat: true },
+    { from: "KHANDALA", to: "LONAVALA", distance_km: 5.2, name: "Khandala-Lonavala Crest Section", is_ghat: false },
+    { from: "LONAVALA", to: "PUNE_CHAKAN", distance_km: 46.0, name: "Lonavala-Talegaon-Chakan Industrial Highway", is_ghat: false },
+    { from: "LONAVALA", to: "PUNE_CITY", distance_km: 64.0, name: "Mumbai-Pune Expressway (Pune Foothills)", is_ghat: false },
+    { from: "PUNE_CHAKAN", to: "PUNE_CITY", distance_km: 32.0, name: "Pune Ring Road Link", is_ghat: false },
+    { from: "PUNE_CITY", to: "SHIRWAL", distance_km: 52.0, name: "NH-48 Pune-Shirwal Expressway", is_ghat: false },
+    { from: "SHIRWAL", to: "SATARA", distance_km: 60.0, name: "NH-48 Shirwal-Satara Corridor (Khambatki Ghat)", is_ghat: true },
+    { from: "SATARA", to: "KARAD", distance_km: 54.0, name: "NH-48 6-Lane Concrete Highway", is_ghat: false },
+    { from: "KARAD", to: "KOLHAPUR", distance_km: 72.0, name: "NH-48 Karad-Kolhapur Industrial Corridor", is_ghat: false },
+    { from: "KOLHAPUR", to: "BELAGAVI", distance_km: 105.0, name: "NH-48 Golden Quadrilateral (Karnataka Border)", is_ghat: false },
+    { from: "KOLHAPUR", to: "GOA_MORMUGAO", distance_km: 210.0, name: "NH-748 Amboli Ghat Trade Route", is_ghat: true },
+    { from: "MUM_THANE", to: "KASARA", distance_km: 78.0, name: "NH-160 Mumbai-Agra Highway (Shahapur Corridor)", is_ghat: false },
+    { from: "KASARA", to: "IGATPURI", distance_km: 16.0, name: "Thal Ghat (Kasara Ghat) Heavy Monsoon Section", is_ghat: true },
+    { from: "IGATPURI", to: "NASHIK", distance_km: 48.0, name: "NH-160 Plateau Highway", is_ghat: false },
+    { from: "NASHIK", to: "PUNE_CHAKAN", distance_km: 175.0, name: "NH-60 Nashik-Pune Industrial Corridor", is_ghat: false },
+    { from: "NASHIK", to: "AURANGABAD", distance_km: 190.0, name: "Samruddhi Mahamarg (Expressway Spur)", is_ghat: false },
+    { from: "PUNE_CITY", to: "AHMEDNAGAR", distance_km: 122.0, name: "State Highway 27 Pune-Nagar 4-Lane", is_ghat: false },
+    { from: "AHMEDNAGAR", to: "AURANGABAD", distance_km: 114.0, name: "NH-753F Ahmednagar-Aurangabad Corridor", is_ghat: false },
+    { from: "AURANGABAD", to: "JALNA", distance_km: 62.0, name: "Samruddhi Expressway Central Link", is_ghat: false },
+    { from: "JALNA", to: "NAGPUR", distance_km: 420.0, name: "Hindu Hrudaysamrat Balasaheb Thackeray Samruddhi Mahamarg", is_ghat: false },
+    { from: "PUNE_CITY", to: "SOLAPUR", distance_km: 250.0, name: "NH-65 Pune-Solapur 4-Lane Highway", is_ghat: false },
+    { from: "SOLAPUR", to: "KOLHAPUR", distance_km: 235.0, name: "NH-166 Solapur-Sangli-Kolhapur Industrial Route", is_ghat: false },
+    { from: "MUM_THANE", to: "SURAT", distance_km: 265.0, name: "NH-48 Western Freight Corridor (Mumbai-Gujarat)", is_ghat: false },
+    { from: "SURAT", to: "AHMEDABAD", distance_km: 260.0, name: "NE-1 / NH-48 Vadodara-Ahmedabad Expressway", is_ghat: false }
+];
+
 const MAPCN_DARK_STYLE = MAPCN_STYLES.dark;
 
 function hasWebGL() {
@@ -124,20 +162,20 @@ export class MapCN {
         this.containerId = containerId;
         this.container = document.getElementById(containerId);
         this.options = Object.assign({
-            center: [74.45, 18.65], // Maharashtra freight center
-            zoom: 6.8,
-            pitch: 28,
-            bearing: -5,
+            center: [73.5, 18.9], // Central Maharashtra Trade Corridor centroid (Mumbai-Pune-Nashik)
+            zoom: 7.4,
+            pitch: 0, // Clean planar perspective for zero distortion
+            bearing: 0,
             interactive: true
         }, options);
 
         this.map = null;
         this.markers = [];
-        this.nodes = [];
-        this.corridors = [];
+        this.nodes = Object.values(PREDEFINED_MAHARASHTRA_COORDINATES);
+        this.corridors = PREDEFINED_CORRIDORS;
         this.currentOriginId = null;
         this.currentDestId = null;
-        this.is3D = true;
+        this.is3D = false;
         this.currentStyle = 'dark';
         this.routeBadgeMarker = null;
         this.cachedRecommended = null;
@@ -164,6 +202,7 @@ export class MapCN {
                 if (settled) return;
                 settled = true;
                 try {
+                    this.map?.resize();
                     this.initLayers();
                     this.addCustomControls();
                 } catch (e) {
@@ -180,8 +219,7 @@ export class MapCN {
                     zoom: this.options.zoom,
                     pitch: this.options.pitch,
                     bearing: this.options.bearing,
-                    attributionControl: false,
-                    trackResize: false // Prevent infinite ResizeObserver loop
+                    attributionControl: false
                 });
 
                 this.map.on('load', complete);
@@ -190,7 +228,6 @@ export class MapCN {
                 this.map.on('error', (e) => {
                     const msg = e?.error?.message || String(e);
                     console.warn('[mapcn] Map warning:', msg);
-                    // Automatic fail-over to zero-key dark canvas raster style if vector fails
                     if (!this.map.isStyleLoaded() && !this._triedFallbackStyle) {
                         this._triedFallbackStyle = true;
                         console.info('[mapcn] Switching to fallback dark style');
@@ -198,7 +235,7 @@ export class MapCN {
                     }
                 });
 
-                // Fail-safe timeout: 3500ms allows vector styles sufficient time to resolve
+                // Fail-safe timeout: 3500ms
                 setTimeout(complete, 3500);
             } catch (err) {
                 console.warn('[mapcn] MapLibre GL failed to mount. Falling back to 2D Canvas:', err);
@@ -234,12 +271,15 @@ export class MapCN {
     }
 
     buildCorridorFeatures() {
+        const corridorsToUse = (this.corridors && this.corridors.length > 0) ? this.corridors : PREDEFINED_CORRIDORS;
         const features = [];
-        this.corridors.forEach((c) => {
-            const uObj = this.nodes.find(n => n.id === c.from_node);
-            const vObj = this.nodes.find(n => n.id === c.to_node);
-            const u = this.getNodeCoords(c.from_node, uObj);
-            const v = this.getNodeCoords(c.to_node, vObj);
+        corridorsToUse.forEach((c) => {
+            const fromId = c.from_node || c.from || c.source;
+            const toId = c.to_node || c.to || c.target;
+            const uObj = this.nodes.find(n => n.id === fromId);
+            const vObj = this.nodes.find(n => n.id === toId);
+            const u = this.getNodeCoords(fromId, uObj);
+            const v = this.getNodeCoords(toId, vObj);
             if (u && v && typeof u.lat === 'number' && typeof v.lat === 'number') {
                 features.push({
                     type: 'Feature',
@@ -248,10 +288,10 @@ export class MapCN {
                         coordinates: [[u.lng, u.lat], [v.lng, v.lat]]
                     },
                     properties: {
-                        corridor_id: c.corridor_id,
-                        highway: c.highway_code,
-                        distance_km: c.distance_km,
-                        is_ghat: c.is_ghat_section
+                        corridor_id: c.corridor_code || c.corridor_id || c.name || `${fromId}-${toId}`,
+                        name: c.corridor_name || c.name || `${fromId}-${toId}`,
+                        distance_km: c.distance_km || 0,
+                        is_ghat: !!(c.is_ghat || c.is_ghat_section)
                     }
                 });
             }
@@ -285,7 +325,9 @@ export class MapCN {
     initLayers() {
         if (!this.map) return;
         if (!this.map.isStyleLoaded()) {
-            this.map.once('style.load', () => this.initLayers());
+            this.map.once('styledata', () => {
+                if (this.map.isStyleLoaded()) this.initLayers();
+            });
             return;
         }
 
@@ -306,7 +348,7 @@ export class MapCN {
                 paint: {
                     'line-color': '#38bdf8',
                     'line-width': 3.5,
-                    'line-opacity': 0.25,
+                    'line-opacity': 0.35,
                     'line-blur': 2
                 }
             });
@@ -318,8 +360,8 @@ export class MapCN {
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: {
                     'line-color': '#93c5fd',
-                    'line-width': 1.6,
-                    'line-opacity': 0.45,
+                    'line-width': 1.8,
+                    'line-opacity': 0.55,
                     'line-dasharray': [2, 2]
                 }
             });
@@ -332,7 +374,41 @@ export class MapCN {
             } catch (e) { }
         }
 
-        // 2. Alternative Routes Source & Layer
+        // 2. Direct Origin-Destination Transit Corridor Preview Line
+        if (!this.map.getSource('preview-corridor')) {
+            this.map.addSource('preview-corridor', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            this.map.addLayer({
+                id: 'preview-corridor-glow',
+                type: 'line',
+                source: 'preview-corridor',
+                layout: { 'line-join': 'round', 'line-cap': 'round' },
+                paint: {
+                    'line-color': '#34d399',
+                    'line-width': 6.0,
+                    'line-opacity': 0.3,
+                    'line-blur': 3
+                }
+            });
+
+            this.map.addLayer({
+                id: 'preview-corridor-line',
+                type: 'line',
+                source: 'preview-corridor',
+                layout: { 'line-join': 'round', 'line-cap': 'round' },
+                paint: {
+                    'line-color': '#34d399',
+                    'line-width': 2.5,
+                    'line-opacity': 0.85,
+                    'line-dasharray': [3, 2]
+                }
+            });
+        }
+
+        // 3. Alternative Routes Source & Layer
         if (!this.map.getSource('alt-routes')) {
             this.map.addSource('alt-routes', {
                 type: 'geojson',
@@ -353,7 +429,7 @@ export class MapCN {
             });
         }
 
-        // 3. Recommended Route Source & Glow Casing Layers
+        // 4. Recommended Route Source & Glow Casing Layers
         if (!this.map.getSource('recommended-route')) {
             this.map.addSource('recommended-route', {
                 type: 'geojson',
@@ -532,68 +608,72 @@ export class MapCN {
             const isPort = (node.hub_type === 'PORT') || (node.id || '').includes('JNPT') || (node.id || '').includes('MORMUGAO') || (node.id || '').includes('SURAT');
 
             const el = document.createElement('div');
-            el.className = 'mapcn-marker group cursor-pointer relative';
+            el.className = 'mapcn-marker group cursor-pointer relative pointer-events-auto';
 
             if (isOrigin) {
-                // High-visibility Warehouse Origin Asset Marker
+                // High-visibility Warehouse Origin Asset Marker (Centered above GPS coordinate)
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
-                        <span class="absolute w-10 h-10 rounded-full bg-emerald-500/40 animate-ping pointer-events-none"></span>
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-700 to-emerald-500 text-white flex items-center justify-center shadow-2xl shadow-emerald-500/70 border-2 border-white text-base font-bold z-10 transition-transform group-hover:scale-110">
-                            🏭
-                        </div>
-                        <div class="absolute left-10 px-2.5 py-1 rounded-lg bg-[#0a1410]/95 border border-emerald-500/60 text-[11px] font-mono font-bold text-emerald-300 shadow-2xl whitespace-nowrap z-20 flex items-center gap-1.5 backdrop-blur-md">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <div class="mapcn-node-pin flex flex-col items-center pointer-events-auto z-30">
+                        <div class="px-2 py-0.5 mb-1 rounded bg-[#0a1812]/95 border border-emerald-500/70 text-[10px] font-mono font-bold text-emerald-300 shadow-2xl whitespace-nowrap flex items-center gap-1.5 backdrop-blur-md">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                             <span>ORIGIN WAREHOUSE: ${node.name.split(' ')[0]}</span>
+                        </div>
+                        <div class="relative flex items-center justify-center">
+                            <span class="absolute w-8 h-8 rounded-full bg-emerald-500/40 animate-ping pointer-events-none"></span>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-400 text-white flex items-center justify-center shadow-xl shadow-emerald-500/60 border-2 border-white text-sm font-bold z-10 transition-transform group-hover:scale-110">
+                                🏭
+                            </div>
                         </div>
                     </div>
                 `;
             } else if (isDest) {
-                // High-visibility Store Destination Asset Marker
+                // High-visibility Store Destination Asset Marker (Centered above GPS coordinate)
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
-                        <span class="absolute w-10 h-10 rounded-full bg-rose-500/40 animate-ping pointer-events-none"></span>
-                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-rose-700 to-rose-500 text-white flex items-center justify-center shadow-2xl shadow-rose-500/70 border-2 border-white text-base font-bold z-10 transition-transform group-hover:scale-110">
-                            🏬
-                        </div>
-                        <div class="absolute left-10 px-2.5 py-1 rounded-lg bg-[#180a0f]/95 border border-rose-500/60 text-[11px] font-mono font-bold text-rose-300 shadow-2xl whitespace-nowrap z-20 flex items-center gap-1.5 backdrop-blur-md">
-                            <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+                    <div class="mapcn-node-pin flex flex-col items-center pointer-events-auto z-30">
+                        <div class="px-2 py-0.5 mb-1 rounded bg-[#1a0a10]/95 border border-rose-500/70 text-[10px] font-mono font-bold text-rose-300 shadow-2xl whitespace-nowrap flex items-center gap-1.5 backdrop-blur-md">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
                             <span>DEST STORE: ${node.name.split(' ')[0]}</span>
+                        </div>
+                        <div class="relative flex items-center justify-center">
+                            <span class="absolute w-8 h-8 rounded-full bg-rose-500/40 animate-ping pointer-events-none"></span>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-600 to-rose-400 text-white flex items-center justify-center shadow-xl shadow-rose-500/60 border-2 border-white text-sm font-bold z-10 transition-transform group-hover:scale-110">
+                                🏬
+                            </div>
                         </div>
                     </div>
                 `;
             } else if (isGhat) {
                 // Mountain Pass / Ghat Hazard Node
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
-                        <div class="w-5 h-5 rounded-full bg-amber-500/25 border border-amber-400 flex items-center justify-center text-xs text-amber-300 font-bold shadow-lg shadow-amber-500/30">
-                            ⛰️
+                    <div class="mapcn-node-pin flex flex-col items-center pointer-events-auto z-20">
+                        <div class="hidden group-hover:block px-1.5 py-0.5 mb-1 rounded bg-black/90 border border-amber-500/40 text-[9px] font-mono text-amber-300 whitespace-nowrap shadow z-20">
+                            ⛰️ ${node.name}
                         </div>
-                        <div class="hidden group-hover:flex absolute left-6 px-2 py-0.5 rounded bg-black/90 border border-amber-500/40 text-[9px] font-mono text-amber-300 whitespace-nowrap z-20 items-center gap-1">
-                            <span>⛰️ Ghat Summit:</span> ${node.name}
+                        <div class="w-5 h-5 rounded-full bg-amber-500/30 border border-amber-400 flex items-center justify-center text-[10px] text-amber-300 shadow">
+                            ⛰️
                         </div>
                     </div>
                 `;
             } else if (isPort) {
                 // Major Sea Port / Container Hub
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
-                        <div class="w-4 h-4 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-[10px] text-cyan-300 shadow">
-                            ⚓
+                    <div class="mapcn-node-pin flex flex-col items-center pointer-events-auto z-20">
+                        <div class="hidden group-hover:block px-1.5 py-0.5 mb-1 rounded bg-black/90 border border-cyan-500/40 text-[9px] font-mono text-cyan-300 whitespace-nowrap shadow z-20">
+                            ⚓ ${node.name}
                         </div>
-                        <div class="hidden group-hover:block absolute left-5 px-1.5 py-0.5 rounded bg-black/85 border border-cyan-500/30 text-[9px] font-mono text-cyan-300 whitespace-nowrap z-20">
-                            ${node.name}
+                        <div class="w-4 h-4 rounded-full bg-cyan-500/30 border border-cyan-400 flex items-center justify-center text-[9px] text-cyan-300 shadow">
+                            ⚓
                         </div>
                     </div>
                 `;
             } else {
                 // Standard Transit Junction / Regional Node
                 el.innerHTML = `
-                    <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
-                        <div class="w-2.5 h-2.5 rounded-full bg-slate-400/60 border border-slate-200/40 hover:scale-150 hover:bg-indigo-400 transition-transform"></div>
-                        <div class="hidden group-hover:block absolute left-4 px-1.5 py-0.5 rounded bg-[#121214]/90 border border-white/10 text-[9px] font-mono text-gray-200 whitespace-nowrap z-20">
+                    <div class="mapcn-node-pin flex flex-col items-center pointer-events-auto z-10">
+                        <div class="hidden group-hover:block px-1.5 py-0.5 mb-1 rounded bg-[#121214]/90 border border-white/10 text-[9px] font-mono text-gray-200 whitespace-nowrap shadow z-20">
                             ${node.name.split(' ')[0]}
                         </div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-slate-400/60 border border-slate-200/40 hover:scale-150 hover:bg-indigo-400 transition-transform"></div>
                     </div>
                 `;
             }
@@ -634,8 +714,11 @@ export class MapCN {
                 className: 'mapcn-shadcn-popup'
             }).setHTML(popupHTML);
 
-            const marker = new Marker({ element: el })
-                .setLngLat([node.lng, node.lat])
+            const coords = this.getNodeCoords(node.id, node);
+            const lngLat = coords ? [coords.lng, coords.lat] : [node.lng, node.lat];
+
+            const marker = new Marker({ element: el, anchor: 'center' })
+                .setLngLat(lngLat)
                 .setPopup(popup)
                 .addTo(this.map);
 
@@ -658,16 +741,72 @@ export class MapCN {
         const v = this.getNodeCoords(destId, this.nodes.find(n => n.id === destId));
         if (u && v && this.map) {
             try {
-                const bounds = new LngLatBounds();
-                bounds.extend([u.lng, u.lat]);
-                bounds.extend([v.lng, v.lat]);
-                this.map.fitBounds(bounds, {
-                    padding: { top: 80, bottom: 80, left: 80, right: 80 },
-                    maxZoom: 9.5,
-                    duration: 800
+                // Update direct preview corridor line
+                const previewSource = this.map.getSource('preview-corridor');
+                if (previewSource) {
+                    previewSource.setData({
+                        type: 'FeatureCollection',
+                        features: [{
+                            type: 'Feature',
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: [[u.lng, u.lat], [v.lng, v.lat]]
+                            },
+                            properties: { name: 'Transit Preview Corridor' }
+                        }]
+                    });
+                }
+
+                // Explicit bounding box with balanced margins
+                const minLng = Math.min(u.lng, v.lng);
+                const maxLng = Math.max(u.lng, v.lng);
+                const minLat = Math.min(u.lat, v.lat);
+                const maxLat = Math.max(u.lat, v.lat);
+                const padLng = Math.max(0.4, (maxLng - minLng) * 0.4);
+                const padLat = Math.max(0.4, (maxLat - minLat) * 0.4);
+
+                this.map.fitBounds([
+                    [minLng - padLng, minLat - padLat],
+                    [maxLng + padLng, maxLat + padLat]
+                ], {
+                    padding: { top: 90, bottom: 70, left: 70, right: 70 },
+                    maxZoom: 9.6,
+                    duration: 600
                 });
-            } catch (e) { }
+            } catch (e) {
+                console.warn('[mapcn] highlightSelection fitBounds warning:', e);
+            }
         }
+    }
+
+    fitToCorridors() {
+        if (this.isFallback || !this.map) return;
+        try {
+            const allCoords = this.nodes.length > 0 ? this.nodes : Object.values(PREDEFINED_MAHARASHTRA_COORDINATES);
+            let minLng = 180, maxLng = -180, minLat = 90, maxLat = -90;
+            allCoords.forEach(n => {
+                const c = this.getNodeCoords(n.id, n);
+                if (c && typeof c.lng === 'number' && typeof c.lat === 'number') {
+                    if (c.lng < minLng) minLng = c.lng;
+                    if (c.lng > maxLng) maxLng = c.lng;
+                    if (c.lat < minLat) minLat = c.lat;
+                    if (c.lat > maxLat) maxLat = c.lat;
+                }
+            });
+            if (minLng < maxLng && minLat < maxLat) {
+                this.map.fitBounds([
+                    [minLng - 0.25, minLat - 0.25],
+                    [maxLng + 0.25, maxLat + 0.25]
+                ], {
+                    padding: { top: 70, bottom: 60, left: 60, right: 60 },
+                    duration: 700
+                });
+            }
+        } catch (e) { }
+    }
+
+    resetView() {
+        this.fitToCorridors();
     }
 
     setOptimizationRoutes(recommendedRoute, rankedRoutes = []) {

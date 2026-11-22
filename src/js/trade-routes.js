@@ -86,10 +86,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadHistory();
 
     // 2. Reactive origin/destination selection updates
+    const updateBreadcrumb = () => {
+        if (!originSelect || !destSelect || !breadcrumbSteps) return;
+        const uText = originSelect.options[originSelect.selectedIndex]?.textContent || originSelect.value;
+        const vText = destSelect.options[destSelect.selectedIndex]?.textContent || destSelect.value;
+        if (originSelect.value && destSelect.value) {
+            breadcrumbSteps.innerHTML = `<span class="text-emerald-300 font-bold font-mono">${uText}</span> <span class="text-gray-400">➔</span> <span class="text-rose-300 font-bold font-mono">${vText}</span> <span class="text-[10px] text-gray-500 font-normal ml-1.5">(Ready to optimize)</span>`;
+        }
+    };
+
     const onSelectionChange = () => {
         if (mapcn) {
             mapcn.highlightSelection(originSelect.value, destSelect.value);
         }
+        updateBreadcrumb();
     };
     originSelect.addEventListener('change', onSelectionChange);
     destSelect.addEventListener('change', onSelectionChange);
@@ -97,15 +107,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 3. Mount mapcn Map Component
     try {
         mapcn = new MapCN('mapcn-trade-map', {
-            center: [74.5, 18.6],
-            zoom: 6.8,
-            pitch: 28
+            center: [73.5, 18.9],
+            zoom: 7.4,
+            pitch: 0
         });
         await mapcn.init();
         if (networkNodes.length > 0) {
             mapcn.setNetwork(networkNodes, networkCorridors);
-            mapcn.highlightSelection(originSelect.value, destSelect.value);
         }
+        mapcn.highlightSelection(originSelect.value, destSelect.value);
+        updateBreadcrumb();
+
+        // Safety layout synchronization
+        setTimeout(() => {
+            mapcn.map?.resize();
+            mapcn.highlightSelection(originSelect.value, destSelect.value);
+            updateBreadcrumb();
+        }, 200);
     } catch (e) {
         console.warn('[trade-routes] mapcn init error:', e);
     }

@@ -5,7 +5,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Trade Route Optimizer</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
     <style>
+        /* MapLibre GL Positioning & Layout Guarantees */
+        .maplibregl-map {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .maplibregl-canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+        .maplibregl-canvas {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .maplibregl-marker {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            will-change: transform;
+            pointer-events: auto;
+        }
+
         .network-canvas-container {
             position: relative;
             background: radial-gradient(circle at 50% 50%, #15161e 0%, #0c0d12 100%);
@@ -39,9 +65,10 @@
             box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
         }
     </style>
-  <script type="module" crossorigin src="/assets/tradeRoutes-B6NPCXMF.js"></script>
+  <script type="module" crossorigin src="/assets/tradeRoutes-BrL9Vv2n.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="stylesheet" crossorigin href="/assets/flowgrid-Dbqvwdeu.css">
+  <link rel="stylesheet" crossorigin href="/assets/tradeRoutes-Y3Rwdjno.css">
+  <link rel="stylesheet" crossorigin href="/assets/flowgrid-iIrGenAX.css">
   <link rel="stylesheet" crossorigin href="/assets/styles-CvZ3AnkW.css">
 </head>
 
@@ -272,14 +299,11 @@
 
                     <!-- Floating Map Info Pill -->
                     <div
-                        class="absolute top-3 left-3 z-10 bg-[#121214]/85 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[11px] font-mono text-gray-300 shadow-xl pointer-events-none">
-                        <div class="flex items-center gap-2 mb-0.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-                            <span class="font-bold text-white uppercase tracking-wider text-[10px]">mapcn • Vector
-                                Engine</span>
-                        </div>
-                        <div class="text-gray-400 text-[10px]">Maharashtra Freight Corridors</div>
-                        <div id="hover-node-info" class="text-indigo-300 text-[10px] mt-0.5">Click hub pin for telemetry & routing</div>
+                        class="absolute top-3 left-3 z-10 bg-[#121214]/85 backdrop-blur-md border border-white/10 rounded-lg px-2.5 py-1 text-[10px] font-mono text-gray-300 shadow-xl pointer-events-none flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                        <span class="font-bold text-white uppercase tracking-wider">mapcn</span>
+                        <span class="text-gray-500">•</span>
+                        <span id="hover-node-info" class="text-indigo-300">Click hub pin for telemetry</span>
                     </div>
 
                     <!-- Floating Live Route Telemetry HUD -->
