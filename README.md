@@ -97,7 +97,56 @@ flowchart TD
 
 ---
 
-## 4. The 11 Core System Modules
+## 4. Project Directory Structure
+
+```text
+c:\clg\pro\PLAN-A
+├── app/                        # FastAPI Application Layer
+│   ├── api/                    # API Routers (v1 REST endpoints & legacy router)
+│   │   ├── v1/                 # Endpoints (trade-routes, inventory, plans, ai, auth, etc.)
+│   │   └── legacy_router.py    # Compatibility routes for frontend widgets
+│   ├── core/                   # Application settings, security, and enums
+│   ├── db/                     # Database sessions and schema initializers
+│   ├── models/                 # SQLAlchemy ORM entities
+│   ├── schemas/                # Pydantic request & response models
+│   ├── services/               # Domain services (inventory, decision guard, master data)
+│   └── main.py                 # FastAPI application instance & static mount
+├── dashboard/                  # Dashboard HTML Web Templates (17 pages)
+│   ├── index.html              # Landing Page
+│   ├── trade-routes.html       # AI-Powered Trade Route Map (mapcn)
+│   ├── dashboard.html          # Executive Operations Dashboard
+│   ├── plan-generator.html     # Constrained Dispatch & Allocation Engine
+│   ├── inventory-health.html   # Expiry-Aware Stock & DOS Monitor
+│   ├── road-risk.html          # Maharashtra Ghats & Corridor Hazards
+│   ├── import-studio.html      # Master Data CSV Preflight Validator
+│   └── ...                     # Additional analytical & utility views
+├── models/                     # AI / ML Algorithmic Models
+│   ├── anomaly_detector.py     # Isolation Forest Demand Anomaly Detector
+│   ├── neural_demand_forecaster.py  # Neural & Quantile Demand Forecasters
+│   ├── road_risk_predictor.py  # Gradient Boosting Delay & Hazard Predictor
+│   ├── stock_optimizer.py      # Constrained Dispatch & Allocation (OR-Tools)
+│   └── ollama_intelligence.py  # LLM Decision Guard & Disruption Parser
+├── src/                        # Core Engine & Frontend Source
+│   ├── css/                    # Tailwind source, styles, and vector map styles
+│   ├── js/                     # Client scripts, toast alerts, mapcn vector renderer
+│   ├── data/                   # SQLite database (flowgrid.db) & road network graph JSON
+│   ├── routing/                # Dijkstra, A*, Multi-Objective Scorer, Alternative Routes
+│   └── utils/                  # Geospatial calculations, weather, risk & news feeds
+├── assets/                     # Media, images, videos, and generated export reports
+├── tests/                      # Automated Test Suite (pytest, 26 verified tests)
+├── app.py                      # Flask Backend Entry Point (Port 5005)
+├── run.py                      # FastAPI Backend Entry Point (Port 8000)
+├── dev.js                      # Unified Dual-Server Runner (Vite + Backend)
+├── index.html                  # Root landing page (served by Vite)
+├── vite.config.js              # Vite bundler, proxy & partial content streaming
+├── tailwind.config.js          # Tailwind CSS theme & typography configuration
+├── requirements.txt            # Python dependencies
+└── package.json                # Node.js dependencies & scripts
+```
+
+---
+
+## 5. The 11 Core System Modules
 
 ### Module 1: User Input & Constraint Validation
 * Collects and sanitizes: Origin hub, Destination terminal, Payload weight (kg/tons), Cargo volume (m³), Designated vehicle category, Delivery deadline (hours), and 4 priority weights.
