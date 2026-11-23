@@ -1,37 +1,62 @@
-/*
- * SupplyGuard AI — premium visual styles
- * Load after Tailwind so these component styles take precedence where intended.
- */
+/* ==========================================================================
+   SupplyGuard AI & HETVAYA FlowGrid — Premium Cyber-Logistics Visual Styles
+   Unified Design Tokens, Elevated Dark Glassmorphism & High-Contrast Telemetry
+   ========================================================================== */
 
 :root {
     color-scheme: dark;
 
-    --color-bg: #0f1115;
-    --color-surface: #050509;
-    --color-text: #e2e8f0;
-    --color-text-strong: #f1f5f9;
-    --color-muted: #94a3b8;
+    /* Surfaces & Themes */
+    --color-bg: #09090b;
+    --color-surface: #121215;
+    --color-surface-elevated: #18181d;
+    --color-surface-card: #141418;
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-hover: rgba(255, 255, 255, 0.16);
 
-    --glass-bg: rgb(22 24 28 / 70%);
-    --glass-border: rgb(255 255 255 / 8%);
+    /* Glassmorphism */
+    --glass-bg: rgba(18, 18, 22, 0.78);
+    --glass-bg-elevated: rgba(24, 24, 30, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-elevated: rgba(255, 255, 255, 0.14);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 
-    --neon-blue: #6366f1;
+    /* Text */
+    --color-text: #f1f5f9;
+    --color-text-strong: #ffffff;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #64748b;
+
+    /* Logistics Status & Neon Accents */
+    --neon-blue: #3b82f6;
+    --neon-indigo: #6366f1;
     --neon-purple: #a855f7;
     --neon-green: #34d399;
+    --neon-emerald: #10b981;
     --neon-red: #ef4444;
+    --neon-rose: #f43f5e;
     --neon-yellow: #eab308;
+    --neon-amber: #f59e0b;
     --neon-sky: #38bdf8;
+    --neon-cyan: #06b6d4;
 
+    /* Radii */
+    --radius-xs: 0.25rem;
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.25rem;
 
-    --transition-fast: 180ms ease;
+    /* Transitions */
+    --transition-fast: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 240ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 400ms cubic-bezier(0.16, 1, 0.3, 1);
     --motion-enter: 420ms cubic-bezier(0.2, 0.7, 0.25, 1);
 }
 
 /* --------------------------------------------------------------------------
-   Base
+   1. Base & Global Resets
    -------------------------------------------------------------------------- */
 
 html,
@@ -45,9 +70,7 @@ body {
 
 body {
     margin: 0;
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     letter-spacing: -0.012em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -60,42 +83,55 @@ code,
 kbd,
 samp,
 .tabular-nums {
-    font-family:
-        ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono",
-        "Roboto Mono", Menlo, Consolas, monospace;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", "Roboto Mono", Menlo, Consolas, monospace;
     font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings: "tnum" 1, "zero" 1;
 }
 
 ::selection {
-    background: rgb(99 102 241 / 30%);
-    color: #fff;
+    background: rgba(99, 102, 241, 0.35);
+    color: #ffffff;
 }
 
 /* --------------------------------------------------------------------------
-   Glass surfaces
+   2. Glassmorphic Surfaces & Containers
    -------------------------------------------------------------------------- */
 
 .glass-panel {
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
     box-shadow:
-        0 4px 20px -1px rgb(0 0 0 / 20%),
-        0 2px 4px -1px rgb(0 0 0 / 10%),
-        inset 0 1px 0 rgb(255 255 255 / 5%);
+        0 8px 32px 0 rgba(0, 0, 0, 0.37),
+        0 2px 6px 0 rgba(0, 0, 0, 0.15),
+        var(--glass-highlight);
     -webkit-backdrop-filter: blur(16px);
     backdrop-filter: blur(16px);
     transition:
         border-color var(--transition-fast),
         background-color var(--transition-fast),
-        box-shadow var(--transition-fast);
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
 }
 
 .glass-panel:hover {
-    border-color: rgb(148 163 184 / 20%);
+    border-color: var(--color-border-hover);
     box-shadow:
-        0 8px 24px -8px rgb(0 0 0 / 38%),
-        inset 0 1px 0 rgb(255 255 255 / 5%);
+        0 12px 36px 0 rgba(0, 0, 0, 0.45),
+        var(--glass-highlight);
+}
+
+.glass-panel-elevated {
+    border: 1px solid var(--glass-border-elevated);
+    background: var(--glass-bg-elevated);
+    box-shadow:
+        0 16px 48px -8px rgba(0, 0, 0, 0.6),
+        0 4px 12px rgba(0, 0, 0, 0.35),
+        var(--glass-highlight);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
 }
 
 .backdrop-blur-glass {
@@ -104,7 +140,7 @@ samp,
 }
 
 .shadow-glass {
-    box-shadow: 0 24px 80px rgb(15 23 42 / 75%);
+    box-shadow: 0 24px 80px rgba(15, 23, 42, 0.75);
 }
 
 .gradient-border {
@@ -112,15 +148,15 @@ samp,
     border-radius: var(--radius-lg);
     background:
         linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box,
-        linear-gradient(135deg, var(--neon-blue), var(--neon-purple)) border-box;
+        linear-gradient(135deg, var(--neon-indigo), var(--neon-purple)) border-box;
 }
 
 /* --------------------------------------------------------------------------
-   Typography
+   3. Typography & Metrics
    -------------------------------------------------------------------------- */
 
 .text-metric-lg {
-    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
     background-clip: text;
     color: transparent;
     -webkit-background-clip: text;
@@ -133,10 +169,10 @@ samp,
 }
 
 .text-label {
-    color: var(--color-muted);
-    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    font-size: 0.6875rem;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
@@ -147,40 +183,64 @@ samp,
 
 .glow-text {
     text-shadow:
-        0 0 10px rgb(99 102 241 / 50%),
-        0 0 20px rgb(99 102 241 / 30%);
+        0 0 12px rgba(99, 102, 241, 0.6),
+        0 0 24px rgba(99, 102, 241, 0.3);
 }
 
 /* --------------------------------------------------------------------------
-   Borders and status colors
+   4. Status Glows & Borders
    -------------------------------------------------------------------------- */
 
+.glow-emerald {
+    box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.32);
+}
+
+.glow-amber {
+    box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.32);
+}
+
+.glow-rose {
+    box-shadow: 0 0 25px -4px rgba(244, 63, 94, 0.32);
+}
+
+.glow-indigo {
+    box-shadow: 0 0 25px -4px rgba(99, 102, 241, 0.32);
+}
+
+.glow-cyan {
+    box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.32);
+}
+
+.glow-purple {
+    box-shadow: 0 0 25px -4px rgba(168, 85, 247, 0.32);
+}
+
 .glow-border-blue {
-    border-color: rgb(99 102 241 / 50%);
+    border-color: rgba(99, 102, 241, 0.5);
     box-shadow:
-        0 0 15px rgb(99 102 241 / 30%),
-        inset 0 0 15px rgb(99 102 241 / 10%);
+        0 0 15px rgba(99, 102, 241, 0.3),
+        inset 0 0 12px rgba(99, 102, 241, 0.1);
 }
 
 .glow-border-green {
-    border-color: rgb(52 211 153 / 50%);
+    border-color: rgba(52, 211, 153, 0.5);
     box-shadow:
-        0 0 15px rgb(52 211 153 / 30%),
-        inset 0 0 15px rgb(52 211 153 / 10%);
+        0 0 15px rgba(52, 211, 153, 0.3),
+        inset 0 0 12px rgba(52, 211, 153, 0.1);
 }
 
 .glow-border-red {
-    border-color: rgb(239 68 68 / 50%);
+    border-color: rgba(239, 68, 68, 0.5);
     box-shadow:
-        0 0 15px rgb(239 68 68 / 30%),
-        inset 0 0 15px rgb(239 68 68 / 10%);
+        0 0 15px rgba(239, 68, 68, 0.3),
+        inset 0 0 12px rgba(239, 68, 68, 0.1);
 }
 
 .glow-border-purple {
-    border-color: rgb(168 85 247 / 50%);
+    border-color: rgba(168, 85, 247, 0.5);
     box-shadow:
-        0 0 15px rgb(168 85 247 / 30%),
-        inset 0 0 15px rgb(168 85 247 / 10%);
+        0 0 15px rgba(168, 85, 247, 0.3),
+        inset 0 0 12px rgba(168, 85, 247, 0.1);
 }
 
 .text-neo-blue {
@@ -191,27 +251,38 @@ samp,
     color: var(--neon-sky);
 }
 
-.risk-high {
-    border-color: rgb(239 68 68 / 40%);
-    background-color: rgb(239 68 68 / 20%);
+/* Risk Level Indicators */
+.risk-critical {
+    border-color: rgba(239, 68, 68, 0.5);
+    background-color: rgba(239, 68, 68, 0.22);
+    color: #fca5a5;
 }
 
-.risk-medium {
-    border-color: rgb(234 179 8 / 40%);
-    background-color: rgb(234 179 8 / 20%);
+.risk-high {
+    border-color: rgba(244, 63, 94, 0.45);
+    background-color: rgba(244, 63, 94, 0.18);
+    color: #fda4af;
+}
+
+.risk-medium,
+.risk-moderate {
+    border-color: rgba(245, 158, 11, 0.45);
+    background-color: rgba(245, 158, 11, 0.18);
+    color: #fde047;
 }
 
 .risk-low {
-    border-color: rgb(34 197 94 / 40%);
-    background-color: rgb(34 197 94 / 20%);
+    border-color: rgba(16, 185, 129, 0.45);
+    background-color: rgba(16, 185, 129, 0.18);
+    color: #86efac;
 }
 
 /* --------------------------------------------------------------------------
-   Scrollbars
+   5. Custom Lean Scrollbars
    -------------------------------------------------------------------------- */
 
 .custom-scrollbar {
-    scrollbar-color: #333 #0b0b0d;
+    scrollbar-color: #3f3f46 rgba(9, 9, 11, 0.6);
     scrollbar-width: thin;
 }
 
@@ -221,34 +292,43 @@ samp,
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    border-radius: 3px;
-    background: #0b0b0d;
+    border-radius: 4px;
+    background: rgba(9, 9, 11, 0.6);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    border-radius: 3px;
-    background: #333;
-    transition: background-color 200ms ease;
+    border-radius: 4px;
+    background: #27272a;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background-color var(--transition-fast);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #3f3f46;
 }
 
 /* --------------------------------------------------------------------------
-   Form controls
+   6. Form Controls & High-Tech Inputs
    -------------------------------------------------------------------------- */
 
+/* Universal & Corridor Select Styling */
 #real-from,
 #real-to,
 #real-mode,
 #real-currency,
 #real-value,
 #origin-select,
-#dest-select {
-    border: 1px solid rgb(148 163 184 / 60%);
-    background-color: var(--color-surface);
+#dest-select,
+.form-input,
+.form-select {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(18, 18, 22, 0.85);
     color: #e5e7eb;
+    border-radius: var(--radius-md);
+    transition:
+        border-color var(--transition-fast),
+        background-color var(--transition-fast),
+        box-shadow var(--transition-fast);
 }
 
 #real-from:focus,
@@ -257,10 +337,15 @@ samp,
 #real-currency:focus,
 #real-value:focus,
 #origin-select:focus,
-#dest-select:focus {
-    border-color: var(--neon-blue);
+#dest-select:focus,
+.form-input:focus,
+.form-select:focus {
+    border-color: var(--neon-indigo);
     outline: none;
-    box-shadow: 0 0 0 1px rgb(99 102 241 / 50%);
+    background-color: rgba(24, 24, 30, 0.95);
+    box-shadow:
+        0 0 0 3px rgba(99, 102, 241, 0.2),
+        0 0 12px rgba(99, 102, 241, 0.25);
 }
 
 #real-from option,
@@ -269,15 +354,16 @@ samp,
 #real-currency option,
 #real-value option,
 #origin-select option,
-#dest-select option {
-    background-color: var(--color-surface);
+#dest-select option,
+.form-select option {
+    background-color: #121215;
     color: #e5e7eb;
 }
 
 .input-glass {
-    border: 1px solid rgb(255 255 255 / 10%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
-    background: rgb(0 0 0 / 20%);
+    background: rgba(0, 0, 0, 0.25);
     color: var(--color-text);
     font-size: 0.875rem;
     padding: 0.625rem 0.75rem;
@@ -288,28 +374,81 @@ samp,
 }
 
 .input-glass::placeholder {
-    color: rgb(148 163 184 / 50%);
+    color: rgba(148, 163, 184, 0.5);
 }
 
 .input-glass:focus {
-    border-color: var(--neon-blue);
+    border-color: var(--neon-indigo);
     outline: none;
-    background: rgb(0 0 0 / 40%);
+    background: rgba(0, 0, 0, 0.45);
     box-shadow:
-        0 0 0 3px rgb(99 102 241 / 10%),
-        0 0 0 1px rgb(99 102 241 / 50%);
+        0 0 0 3px rgba(99, 102, 241, 0.18),
+        0 0 0 1px rgba(99, 102, 241, 0.5);
+}
+
+/* Custom Interactive Sliders */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #27272a;
+    border-radius: 9999px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #10b981;
+    cursor: pointer;
+    border: 2px solid #09090b;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.65);
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.22);
+    background: #34d399;
+    box-shadow: 0 0 18px rgba(52, 211, 153, 0.85);
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.9);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #10b981;
+    cursor: pointer;
+    border: 2px solid #09090b;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.65);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+input[type="range"]::-moz-range-track {
+    height: 6px;
+    background: #27272a;
+    border-radius: 9999px;
 }
 
 .focus-glow:focus-visible,
 button:focus-visible,
 a:focus-visible {
-    outline: 2px solid var(--neon-blue);
-    outline-offset: 3px;
-    box-shadow: 0 0 0 4px rgb(99 102 241 / 25%);
+    outline: 2px solid var(--neon-indigo);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
 }
 
 /* --------------------------------------------------------------------------
-   Buttons and interaction states
+   7. Buttons, Badges & Micro-Interactions
    -------------------------------------------------------------------------- */
 
 .btn-glow {
@@ -321,10 +460,12 @@ a:focus-visible {
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg,
-            transparent,
-            rgb(255 255 255 / 20%),
-            transparent);
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
     content: "";
     pointer-events: none;
     transition: transform 500ms ease;
@@ -340,22 +481,22 @@ a:focus-visible {
 }
 
 .is-active {
-    border-color: var(--neon-blue) !important;
-    box-shadow: 0 0 15px rgb(99 102 241 / 30%) !important;
+    border-color: var(--neon-indigo) !important;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3) !important;
 }
 
 .is-success {
-    border-color: var(--neon-green) !important;
-    box-shadow: 0 0 15px rgb(52 211 153 / 30%) !important;
+    border-color: var(--neon-emerald) !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3) !important;
 }
 
 .is-error {
-    border-color: var(--neon-red) !important;
-    box-shadow: 0 0 15px rgb(239 68 68 / 30%) !important;
+    border-color: var(--neon-rose) !important;
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.3) !important;
 }
 
 /* --------------------------------------------------------------------------
-   Tooltips
+   8. Tooltips & Modals
    -------------------------------------------------------------------------- */
 
 .tooltip {
@@ -364,14 +505,14 @@ a:focus-visible {
 
 .tooltip::before {
     position: absolute;
-    z-index: 10;
+    z-index: 50;
     bottom: calc(100% + 0.5rem);
     left: 50%;
     visibility: hidden;
     transform: translate(-50%, 4px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
-    background: var(--glass-bg);
+    background: var(--glass-bg-elevated);
     padding: 0.5rem 0.75rem;
     color: var(--color-text);
     content: attr(data-tooltip);
@@ -380,8 +521,9 @@ a:focus-visible {
     opacity: 0;
     pointer-events: none;
     white-space: nowrap;
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
     transition:
         opacity 160ms ease,
         transform 160ms ease,
@@ -397,36 +539,31 @@ a:focus-visible {
 }
 
 /* --------------------------------------------------------------------------
-   Loading and animation effects
+   9. Animations & Visual Telemetry
    -------------------------------------------------------------------------- */
 
 @keyframes pulse-ring {
     0% {
         transform: scale(0.8);
         opacity: 0.5;
-        box-shadow: 0 0 0 0 rgb(99 102 241 / 70%);
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
     }
-
     70% {
         transform: scale(1);
         opacity: 1;
-        box-shadow: 0 0 0 10px rgb(99 102 241 / 0%);
+        box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
     }
-
     100% {
         transform: scale(0.8);
         opacity: 0.5;
-        box-shadow: 0 0 0 0 rgb(99 102 241 / 0%);
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
     }
 }
 
 @keyframes float {
-
-    0%,
-    100% {
+    0%, 100% {
         transform: translateY(0);
     }
-
     50% {
         transform: translateY(-5px);
     }
@@ -436,7 +573,6 @@ a:focus-visible {
     from {
         background-position: -200% center;
     }
-
     to {
         background-position: 200% center;
     }
@@ -447,12 +583,9 @@ a:focus-visible {
         top: 0;
         opacity: 0;
     }
-
-    10%,
-    90% {
+    10%, 90% {
         opacity: 0.5;
     }
-
     100% {
         top: 100%;
         opacity: 0;
@@ -464,7 +597,6 @@ a:focus-visible {
         transform: translateY(8px);
         opacity: 0;
     }
-
     to {
         transform: translateY(0);
         opacity: 1;
@@ -476,7 +608,6 @@ a:focus-visible {
         transform: translateY(6px) scale(0.985);
         opacity: 0;
     }
-
     to {
         transform: translateY(0) scale(1);
         opacity: 1;
@@ -503,10 +634,12 @@ a:focus-visible {
 
 .animate-shimmer,
 .skeleton {
-    background-image: linear-gradient(90deg,
-            transparent 0%,
-            rgb(255 255 255 / 10%) 50%,
-            transparent 100%);
+    background-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
 }
@@ -517,9 +650,9 @@ a:focus-visible {
     top: 0;
     left: 0;
     width: 100%;
-    height: 5px;
-    background: rgb(99 102 241 / 50%);
-    box-shadow: 0 0 10px rgb(99 102 241 / 80%);
+    height: 4px;
+    background: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
     animation: scan 6s linear infinite;
     opacity: 0.3;
     pointer-events: none;
@@ -539,6 +672,7 @@ main h3,
 .text-metric-lg,
 #risk-score,
 #stat-best-profit,
+#stat-total-routes,
 #stat-total-rows,
 [id^="kpi-"],
 #ai-confidence-score {
@@ -551,7 +685,7 @@ main h3,
 }
 
 /* --------------------------------------------------------------------------
-   Charts and comparison layout
+   10. Charts, Tables & Layout Helpers
    -------------------------------------------------------------------------- */
 
 .chart-container {
@@ -571,8 +705,22 @@ main h3,
     min-height: 0;
 }
 
+.network-canvas-container {
+    position: relative;
+    background: radial-gradient(circle at 50% 50%, #15161e 0%, #0c0d12 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.matrix-table th,
+.matrix-table td {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+}
+
 /* --------------------------------------------------------------------------
-   Hero layout
+   11. Hero Layout
    -------------------------------------------------------------------------- */
 
 #hero-landing-section {
@@ -623,7 +771,7 @@ main h3,
 }
 
 /* --------------------------------------------------------------------------
-   Responsive
+   12. Responsive Breakpoints
    -------------------------------------------------------------------------- */
 
 @media (max-width: 1024px) {
@@ -661,16 +809,18 @@ main h3,
 }
 
 /* --------------------------------------------------------------------------
-   Print
+   13. Print & Accessibility Overrides
    -------------------------------------------------------------------------- */
 
 @media print {
-    .glass-panel {
+    .glass-panel,
+    .glass-panel-elevated {
         border: 1px solid #e5e7eb !important;
-        background: #fff !important;
+        background: #ffffff !important;
         box-shadow: none !important;
         -webkit-backdrop-filter: none !important;
         backdrop-filter: none !important;
+        color: #111827 !important;
     }
 
     .no-print {
@@ -678,35 +828,31 @@ main h3,
     }
 
     body {
-        background: #fff;
+        background: #ffffff;
         color: #111827;
     }
 }
 
-/* --------------------------------------------------------------------------
-   Preference and accessibility adaptations
-   -------------------------------------------------------------------------- */
-
 @media (prefers-color-scheme: dark) {
     :root {
-        --glass-bg: rgb(22 24 28 / 80%);
-        --glass-border: rgb(255 255 255 / 10%);
+        --glass-bg: rgba(18, 18, 22, 0.82);
+        --glass-border: rgba(255, 255, 255, 0.1);
     }
 }
 
 @media (prefers-contrast: more) {
     :root {
-        --glass-bg: rgb(0 0 0 / 95%);
-        --glass-border: rgb(255 255 255 / 35%);
+        --glass-bg: rgba(0, 0, 0, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.4);
     }
 
-    .glass-panel {
+    .glass-panel,
+    .glass-panel-elevated {
         border-width: 2px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {
