@@ -46,7 +46,63 @@ COUNTRY_COORDS = {
     "Mexico": (23.6345, -102.5528),
     "Indonesia": (-0.7893, 113.9213),
     "Afghanistan": (33.9391, 67.7100),
-    "Belarus": (53.7098, 27.9534)
+    "Belarus": (53.7098, 27.9534),
+    "Albania": (41.1533, 20.1683),
+    "Algeria": (28.0339, 1.6596),
+    "Argentina": (-38.4161, -63.6167),
+    "Austria": (47.5162, 14.5501),
+    "Bangladesh": (23.6850, 90.3563),
+    "Belgium": (50.5039, 4.4699),
+    "Bolivia": (-16.2902, -63.5887),
+    "Chile": (-35.6751, -71.5430),
+    "Colombia": (4.5709, -74.2973),
+    "Czech Republic": (49.8175, 15.4730),
+    "Denmark": (56.2639, 9.5018),
+    "Egypt": (26.8206, 30.8025),
+    "Ethiopia": (9.1450, 40.4897),
+    "Finland": (61.9241, 25.7482),
+    "Greece": (39.0742, 21.8243),
+    "Hungary": (47.1625, 19.5033),
+    "Iran": (32.4279, 53.6880),
+    "Iraq": (33.2232, 43.6793),
+    "Ireland": (53.1424, -7.6921),
+    "Israel": (31.0461, 34.8516),
+    "Kazakhstan": (48.0196, 66.9237),
+    "Kenya": (-0.0236, 37.9062),
+    "Malaysia": (4.2105, 101.9758),
+    "Mongolia": (46.8625, 103.8467),
+    "Morocco": (31.7917, -7.0926),
+    "Myanmar": (21.9162, 95.9560),
+    "Nepal": (28.3949, 84.1240),
+    "New Zealand": (-40.9006, 174.8860),
+    "Nigeria": (9.0820, 8.6753),
+    "Norway": (60.4720, 8.4689),
+    "Pakistan": (30.3753, 69.3451),
+    "Paraguay": (-23.4425, -58.4438),
+    "Peru": (-9.1899, -75.0152),
+    "Philippines": (12.8797, 121.7740),
+    "Poland": (51.9194, 19.1451),
+    "Portugal": (39.3999, -8.2245),
+    "Saudi Arabia": (23.8859, 45.0792),
+    "Slovakia": (48.6690, 19.6990),
+    "Sri Lanka": (7.8731, 80.7718),
+    "Sweden": (60.1282, 18.6435),
+    "Switzerland": (46.8182, 8.2275),
+    "Taiwan": (23.6978, 120.9605),
+    "Thailand": (15.8700, 100.9925),
+    "Turkey": (38.9637, 35.2433),
+    "Ukraine": (48.3794, 31.1656),
+    "Uzbekistan": (41.3775, 64.5853),
+    "Venezuela": (6.4238, -66.5897),
+    "Vietnam": (14.0583, 108.2772),
+    "Hong Kong": (22.3193, 114.1694),
+    "Kuwait": (29.3117, 47.4818),
+    "Qatar": (25.3548, 51.1839),
+    "Jordan": (30.5852, 36.2384),
+    "Cambodia": (12.5657, 104.9910),
+    "Ghana": (7.9465, -1.0232),
+    "Romania": (45.9432, 24.9668),
+    "Korea, Republic of": (35.9078, 127.7669)
 }
 
 # Major Ports Database (Expanded for demo "Real World" feel)
@@ -134,17 +190,31 @@ def _save_coords_cache(data):
 
 PERSISTENT_COORDS = _load_coords_cache()
 
-@lru_cache(maxsize=200)
+@lru_cache(maxsize=300)
 def get_country_coordinates(country_name):
     """
     Get (lat, lon) for a country.
-    Uses cached list first, then persistent cache, then Photon API.
+    Uses in-memory list first, then persistent cache, then case-insensitive lookup, then Photon API.
     """
+    if not country_name:
+        return None
+        
+    # 1. Exact match
     if country_name in COUNTRY_COORDS:
         return COUNTRY_COORDS[country_name]
     if country_name in PERSISTENT_COORDS:
         return PERSISTENT_COORDS[country_name]
-    
+        
+    # 2. Case-insensitive / normalized lookup
+    name_clean = country_name.strip().lower()
+    for k, v in COUNTRY_COORDS.items():
+        if k.strip().lower() == name_clean:
+            return v
+    for k, v in PERSISTENT_COORDS.items():
+        if k.strip().lower() == name_clean:
+            return v
+            
+    # 3. Dynamic Geocoder with safety timeout
     try:
         location = geolocator.geocode(country_name)
         if location:
@@ -162,6 +232,88 @@ def calculate_distance(coord1, coord2):
     if not coord1 or not coord2:
         return 0
     return geodesic(coord1, coord2).km
+
+def check_mode_feasibility(from_country, to_country, distance_km):
+    """
+    Evaluates physical connectivity and logistics feasibility for Sea, Air, and Road modes.
+    Returns status (FEASIBLE / BLOCKED) and human-readable engineering reasoning.
+    """
+    from_info = COUNTRY_LOGISTICS.get(from_country, {})
+    to_info = COUNTRY_LOGISTICS.get(to_country, {})
+    
+    from_landlocked = from_info.get('landlocked', False)
+    to_landlocked = to_info.get('landlocked', False)
+    from_cont = from_info.get('continent', 'Unknown')
+    to_cont = to_info.get('continent', 'Unknown')
+    is_island_from = from_country in ISLAND_COUNTRIES
+    is_island_to = to_country in ISLAND_COUNTRIES
+
+    # 1. Air Feasibility
+    air_feasible = distance_km > 0
+    air_reason = "Direct international air cargo flight corridor accessible via commercial freighters."
+
+    # 2. Sea Feasibility
+    sea_feasible = True
+    sea_reason = "Maritime container lane active via deep-sea port terminals."
+    if from_landlocked and to_landlocked:
+        sea_feasible = False
+        sea_reason = f"Both {from_country} and {to_country} are landlocked with zero coastline or deepwater seaport access."
+    elif from_landlocked:
+        sea_feasible = True
+        sea_reason = f"{from_country} is landlocked; requires rail/road feeder drayage to nearest coastal port before ocean transit."
+    elif to_landlocked:
+        sea_feasible = True
+        sea_reason = f"{to_country} is landlocked; container discharges at destination seaport followed by cross-border intermodal rail/truck transit."
+    elif from_cont == to_cont and distance_km < 600 and not is_island_from and not is_island_to:
+        sea_feasible = False
+        sea_reason = f"Short inland distance ({distance_km:.0f} km) makes ocean transit logistically redundant versus road/rail."
+
+    # 3. Road Feasibility
+    road_feasible = False
+    road_reason = "Separated by oceanic body; contiguous trucking corridor physically impossible."
+
+    if (from_country == "United Kingdom" and to_country == "Ireland") or \
+       (from_country == "Ireland" and to_country == "United Kingdom"):
+        road_feasible = True
+        road_reason = "Truck freight feasible via Irish Sea Ro-Ro freight ferries."
+    elif is_island_from or is_island_to:
+        road_feasible = False
+        road_reason = f"Island territory ({from_country if is_island_from else to_country}) has no contiguous highway or bridge link across ocean."
+    elif from_cont == to_cont and from_cont != 'Unknown':
+        road_feasible = True
+        road_reason = f"Contiguous continental highway network across {from_cont} is fully accessible."
+    elif (from_cont == 'Europe' and to_cont == 'Asia') or (from_cont == 'Asia' and to_cont == 'Europe'):
+        road_feasible = True
+        road_reason = "Trans-Eurasian road/rail freight corridor available."
+    elif (from_cont == 'Africa' and to_cont == 'Asia') or (from_cont == 'Asia' and to_cont == 'Africa'):
+        road_feasible = True
+        road_reason = "Middle East / Sinai land bridge provides connecting highway access."
+    elif (from_cont == 'North America' and to_cont == 'South America') or (from_cont == 'South America' and to_cont == 'North America'):
+        road_feasible = False
+        road_reason = "Darien Gap break prevents contiguous highway transit between North and South America."
+
+    if road_feasible and distance_km > 12000:
+        road_feasible = False
+        road_reason = f"Exceeds maximum commercial trucking operational radius ({distance_km:.0f} km > 12,000 km)."
+
+    return {
+        "sea": {
+            "feasible": sea_feasible,
+            "status": "FEASIBLE" if sea_feasible else "BLOCKED",
+            "reason": sea_reason
+        },
+        "air": {
+            "feasible": air_feasible,
+            "status": "FEASIBLE" if air_feasible else "BLOCKED",
+            "reason": air_reason
+        },
+        "road": {
+            "feasible": road_feasible,
+            "status": "FEASIBLE" if road_feasible else "BLOCKED",
+            "reason": road_reason
+        }
+    }
+
 
 def analyze_route_options(from_country, to_country, distance_km):
     """

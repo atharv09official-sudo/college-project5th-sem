@@ -1,3 +1,4 @@
+import re
 from functools import lru_cache
 from typing import List, Dict, Any
 
@@ -33,14 +34,14 @@ RISK_KEYWORDS = {
     "border closure": 7,
     "port closure": 7,
     "cyber attack": 7,
-    "crisis": 7,
-    "disruption": 7,
     "high risk": 7,
     
     # MODERATE
     "strike": 6,
     "labour action": 6,
     "civil unrest": 6,
+    "crisis": 5,
+    "disruption": 4,
     "flood": 5,
     "storm warning": 5,
     "severe weather": 5,
@@ -111,62 +112,87 @@ def _check_negation(text: str, index: int) -> bool:
             return True
     return False
 
+KNOWN_CONFLICT_HOTSPOTS = {
+    "ukraine", "russia", "syria", "yemen", "sudan", "somalia", "afghanistan",
+    "myanmar", "israel", "lebanon", "gaza", "iran", "red sea", "haiti"
+}
+
 @lru_cache(maxsize=500)
-def calculate_risk_score(text: str) -> Dict[str, Any]:
+def calculate_risk_score(text: str, target_location: str = "") -> Dict[str, Any]:
     """
     Analyzes text and returns a risk assessment dictionary.
     Output keys: score (0-10), risk_level, reasons (list), recommendation
+    Uses strict regex word boundaries and contextual classification to eliminate false positives
+    (e.g., 'war' in 'warehouse', or mentions of external conflicts in foreign countries).
     """
     clean_text = _clean_text(text)
+    target_clean = (target_location or "").lower().strip()
     
     found_risks = []
     max_severity = 0
     total_severity = 0
     
     for keyword, severity in RISK_KEYWORDS.items():
-        if keyword in clean_text:
-            # Find index to check negation
-            idx = clean_text.find(keyword)
+        # Match whole word / boundary only to eliminate substring false positives
+        pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
+        match = re.search(pattern, clean_text)
+        if match:
+            idx = match.start()
             if _check_negation(clean_text, idx):
                 continue
                 
+            effective_severity = severity
+            context_label = f"Detected '{keyword}' (Severity: {severity})"
+
+            # 1. Economic / trade war check (e.g., 'trade war', 'price war' is economic, not military severity 10)
+            if keyword == "war" and re.search(r'\b(trade|price|tech|tariff|bidding|currency)\s+war\b', clean_text):
+                effective_severity = 4
+                context_label = "Detected 'trade/economic war' (Severity: 4)"
+
+            # 2. External conflict ripple check (if war headline mentions another country while evaluating a safe hub)
+            elif severity >= 8 and target_clean and target_clean not in KNOWN_CONFLICT_HOTSPOTS:
+                for hs in KNOWN_CONFLICT_HOTSPOTS:
+                    if hs in clean_text and target_clean != hs:
+                        effective_severity = 4
+                        context_label = f"Detected external regional tension ({hs}: '{keyword}')"
+                        break
+
             found_risks.append({
                 "keyword": keyword,
-                "severity": severity,
-                "context": f"Detected '{keyword}' (Severity: {severity})"
+                "severity": effective_severity,
+                "context": context_label
             })
             
-            if severity > max_severity:
-                max_severity = severity
-            total_severity += severity
+            if effective_severity > max_severity:
+                max_severity = effective_severity
+            total_severity += effective_severity
 
     # Scoring Logic
-    # Base score is heavily influenced by the highest severity found.
-    # We also add a small factor for the NUMBER of risks found (density).
-    
     if not found_risks:
         return {
-            "score": 0.5,
+            "score": 1.5,
             "risk_level": "Low",
             "recommendation": "Recommended",
-            "reasons": ["No major risk signals detected; baseline operational risk only."]
+            "reasons": ["No critical risk signals detected; baseline operational corridor index."],
+            "raw_matches": []
         }
         
-    # Formula: Max Severity (70% weight) + Density (30% weight)
-    # Density: min(3.0, count * 0.5)
-    density_score = min(3.0, len(found_risks) * 0.5)
+    density_score = min(3.0, len(found_risks) * 0.4)
     
-    # If Max Severity is 10 (Critical), score is automatically 10.
+    # If Max Severity is 10 (Critical war/armed conflict), score is 9.5 - 10.0
     if max_severity >= 10:
         final_score = 10.0
+    elif max_severity >= 8:
+        final_score = min(9.0, max_severity + (density_score * 0.3))
+    elif max_severity >= 6:
+        final_score = min(7.5, max_severity + (density_score * 0.3))
     else:
-        final_score = max_severity + (density_score * 0.5) # Add a bit, but don't overinflate
-        final_score = min(9.9, final_score)
+        final_score = max(1.5, min(5.5, max_severity * 0.8 + (density_score * 0.3)))
         
     final_score = round(final_score, 1)
     
     # Determine Level & Recommendation
-    if final_score >= 8.0:
+    if final_score >= 7.5:
         risk_level = "High"
         recommendation = "Not Recommended"
     elif final_score >= 4.0:
@@ -177,9 +203,8 @@ def calculate_risk_score(text: str) -> Dict[str, Any]:
         recommendation = "Recommended"
         
     # Format Reasons
-    # Sort by severity desc
     found_risks.sort(key=lambda x: x['severity'], reverse=True)
-    reasons = [r['context'] for r in found_risks[:5]] # Top 5 reasons
+    reasons = [r['context'] for r in found_risks[:5]]
     
     if len(found_risks) > 5:
         reasons.append(f"And {len(found_risks) - 5} other lower-level risk indicators.")

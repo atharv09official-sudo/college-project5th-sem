@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,25 +14,29 @@
         }
     </style>
 </head>
+
 <body class="bg-dark-bg text-gray-100 min-h-screen flex flex-col font-sans">
 
     <!-- Top Navigation -->
     <nav class="glass-panel sticky top-0 z-50 px-6 h-16 flex items-center justify-between border-b border-white/10">
         <div class="flex items-center gap-6">
-            <a href="/" class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+            <a href="/"
+                class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
                 HETVAYA FlowGrid
             </a>
             <div class="hidden md:flex items-center gap-5 text-sm font-medium text-gray-400">
                 <a href="/dashboard" class="hover:text-white transition">Overview</a>
-                <a href="/trade-routes" class="text-indigo-400 hover:text-indigo-300 transition">Trade Route Map (mapcn)</a>
-                <a href="/plan-generator" class="hover:text-white transition">Plan Generator</a>
-                <a href="/inventory-health" class="text-emerald-400 border-b-2 border-emerald-400 pb-1 font-semibold">Inventory Health & DOS</a>
+                <a href="/trade-routes" class="text-indigo-400 hover:text-indigo-300 transition">Trade Route Map
+                    (mapcn)</a>
+                <a href="/inventory-health"
+                    class="text-emerald-400 border-b-2 border-emerald-400 pb-1 font-semibold">Inventory Health & DOS</a>
                 <a href="/road-risk" class="hover:text-white transition">Road Risk & Ghats</a>
                 <a href="/import-studio" class="hover:text-white transition">Import Studio</a>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <span class="text-xs px-2.5 py-1 rounded bg-white/5 border border-white/10 text-gray-300">Maharashtra Hubs Active</span>
+            <span class="text-xs px-2.5 py-1 rounded bg-white/5 border border-white/10 text-gray-300">Maharashtra Hubs
+                Active</span>
         </div>
     </nav>
 
@@ -39,17 +44,22 @@
     <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
 
         <!-- Header -->
-        <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div
+            class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-white flex items-center gap-3">
                     Multi-Echelon Inventory Health & Days of Supply (DOS)
-                    <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Formula Calibrated</span>
+                    <span
+                        class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Formula
+                        Calibrated</span>
                 </h1>
                 <p class="text-sm text-gray-400 mt-1">
-                    Continuous monitoring of Kirana store Days of Supply (DOS = OnHand / DailyDemand) and regional depot capacity utilization.
+                    Continuous monitoring of Kirana store Days of Supply (DOS = OnHand / DailyDemand) and regional depot
+                    capacity utilization.
                 </p>
             </div>
-            <button onclick="loadHealthData()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition flex items-center gap-2">
+            <button onclick="loadHealthData()"
+                class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition flex items-center gap-2">
                 🔄 Refresh Live Telemetry
             </button>
         </div>
@@ -91,11 +101,14 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h3 class="text-lg font-bold text-white flex items-center gap-2">
                     Store-SKU Replenishment & Health Table
-                    <span id="nodes-count-badge" class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300">0 nodes</span>
+                    <span id="nodes-count-badge" class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300">0
+                        nodes</span>
                 </h3>
                 <div class="flex items-center gap-2">
-                    <input id="search-filter" oninput="filterTable()" type="text" placeholder="Filter store or SKU..." class="bg-dark-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none w-48">
-                    <select id="status-filter" onchange="filterTable()" class="bg-dark-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none">
+                    <input id="search-filter" oninput="filterTable()" type="text" placeholder="Filter store or SKU..."
+                        class="bg-dark-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none w-48">
+                    <select id="status-filter" onchange="filterTable()"
+                        class="bg-dark-card border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none">
                         <option value="ALL">All Statuses</option>
                         <option value="CRITICAL_STOCKOUT_RISK">Critical (&lt; 2d)</option>
                         <option value="LOW_STOCK">Low Stock (2-4d)</option>
@@ -137,7 +150,7 @@
             try {
                 const res = await fetch('/api/v1/inventory/health');
                 const data = await res.json();
-                
+
                 // KPIs
                 document.getElementById('kpi-critical').innerText = data.summary.critical_stockout_risk;
                 document.getElementById('kpi-low').innerText = data.summary.low_stock;
@@ -223,7 +236,7 @@
         }
 
         function getHealthStatusClass(status) {
-            switch(status) {
+            switch (status) {
                 case 'CRITICAL_STOCKOUT_RISK': return 'bg-red-500/20 text-red-300 border border-red-500/30';
                 case 'LOW_STOCK': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
                 case 'BALANCED': return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
@@ -248,4 +261,5 @@
     </script>
     <script type="module" src="/src/js/motion.js"></script>
 </body>
+
 </html>

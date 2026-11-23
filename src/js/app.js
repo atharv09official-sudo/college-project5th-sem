@@ -1,10 +1,14 @@
 import { UI } from './ui.js';
 import { Dashboard } from './dashboard.js';
 import { Settings } from './settings.js';
+import { SmoothDropdown } from './smooth-dropdown.js';
 
 const initApp = () => {
     // Initialize UI utilities (Theme, Modals)
     UI.init();
+
+    // Auto-initialize Smooth Dropdowns for all select elements
+    SmoothDropdown.initAll();
 
     // Check if we are on the dashboard page
     const isDashboard = document.getElementById('dashboard-app');

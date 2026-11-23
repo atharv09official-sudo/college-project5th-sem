@@ -2,6 +2,7 @@ import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
 import datetime
+import re
 from typing import List, Dict, Any
 from functools import lru_cache
 
@@ -30,7 +31,7 @@ def fetch_google_news_rss(query: str) -> List[Dict[str, Any]]:
             headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         )
         
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=3) as response:
             if response.status != 200:
                 return []
             xml_content = response.read()
@@ -61,13 +62,17 @@ def fetch_google_news_rss(query: str) -> List[Dict[str, Any]]:
             except ValueError:
                 pass
 
+            # Clean up HTML tags from description if present
+            clean_summary = re.sub(r'<[^>]+>', ' ', description).strip()
+            clean_summary = re.sub(r'\s+', ' ', clean_summary)
+
             items.append({
                 "id": f"gn-{hash(link)}",
                 "title": title,
                 "url": link,
                 "date": formatted_date,
                 "source": source,
-                "summary": description, # Google News description is often HTML, might need cleaning but acceptable for now
+                "summary": clean_summary or title,
                 "severity": "Unknown", # To be filled by risk engine if needed
                 "meta_fetched_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "meta_is_live": True,

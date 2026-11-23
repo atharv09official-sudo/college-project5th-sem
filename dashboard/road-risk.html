@@ -3,218 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Road Risk & Ghats - HETVAYA FlowGrid</title>
+    <title>Road Risk & Ghats Telemetry - SupplyGuard AI</title>
     <link rel="stylesheet" href="/src/css/flowgrid.css">
     <style>
+        /* Custom Modern Glassmorphic & Cyber-Logistics Theme */
         .glass-panel {
-            background: rgba(18, 18, 20, 0.85);
-            backdrop-filter: blur(12px);
+            background: rgba(18, 18, 22, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .glass-panel-elevated {
+            background: rgba(24, 24, 29, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+        }
+        .glow-amber {
+            box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.25);
+        }
+        .glow-rose {
+            box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.25);
+        }
+        .glow-indigo {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25);
+        }
+
+        /* Custom Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #27272a;
+            border-radius: 9999px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            border: 2px solid #09090b;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #34d399;
+        }
+        input[type=range]::-webkit-slider-thumb:active {
+            transform: scale(0.95);
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
         }
     </style>
 </head>
-<body class="bg-dark-bg text-gray-100 min-h-screen flex flex-col font-sans">
+<body class="bg-[#09090b] text-gray-100 min-h-screen flex flex-col font-sans select-none antialiased selection:bg-emerald-500/30 selection:text-emerald-300">
 
-    <!-- Top Navigation -->
-    <nav class="glass-panel sticky top-0 z-50 px-6 h-16 flex items-center justify-between border-b border-white/10">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#09090b]/80 backdrop-blur-xl sticky top-0 z-50 px-6 h-16 flex items-center justify-between border-b border-white/10 shadow-xs">
         <div class="flex items-center gap-6">
-            <a href="/" class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-                HETVAYA FlowGrid
+            <a href="/" class="text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 tracking-tight flex items-center gap-2">
+                <span>SupplyGuard</span>
+                <span class="text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono font-bold">AI</span>
             </a>
-            <div class="hidden md:flex items-center gap-5 text-sm font-medium text-gray-400">
-                <a href="/dashboard" class="hover:text-white transition">Overview</a>
-                <a href="/trade-routes" class="text-indigo-400 hover:text-indigo-300 transition">Trade Route Map (mapcn)</a>
-                <a href="/plan-generator" class="hover:text-white transition">Plan Generator</a>
-                <a href="/inventory-health" class="hover:text-white transition">Inventory Health & DOS</a>
-                <a href="/road-risk" class="text-emerald-400 border-b-2 border-emerald-400 pb-1 font-semibold">Road Risk & Ghats</a>
-                <a href="/import-studio" class="hover:text-white transition">Import Studio</a>
+            <div class="hidden md:flex items-center gap-5 text-xs font-semibold text-gray-400">
+                <a href="/dashboard" class="hover:text-white transition">Dashboard</a>
+                <a href="/analysis" class="hover:text-white transition">Analysis</a>
+                <a href="/routes" class="hover:text-white transition">Routes</a>
+                <a href="/map" class="hover:text-white transition">Risk Map</a>
+                <a href="/road-risk" class="text-emerald-400 border-b-2 border-emerald-400 pb-1 font-bold">Road Risk &amp; Ghats</a>
+                <a href="/intelligence" class="hover:text-white transition">Intelligence</a>
+                <a href="/reports" class="hover:text-white transition">Reports</a>
             </div>
         </div>
-        <span class="text-xs px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Western Ghats Live</span>
+
+        <div class="flex items-center gap-3">
+            <a href="/trade-routes" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition text-xs font-semibold">
+                <span>⚡ Trade Optimizer</span>
+            </a>
+            <div class="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">
+                <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="font-mono text-gray-300">Western Ghats Live</span>
+            </div>
+        </div>
     </nav>
 
     <!-- Main Container -->
-    <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
+    <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
 
-        <!-- Header -->
-        <div class="glass-panel p-6 rounded-2xl">
-            <h1 class="text-2xl font-bold text-white flex items-center gap-3">
-                Maharashtra Road-Risk & Western Ghats Transit Intelligence
-                <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">ML Calibrated</span>
-            </h1>
-            <p class="text-sm text-gray-400 mt-1">
-                Monsoon transit delay regressor and dynamic freight surcharge engine for Western Ghat corridors (Khandala, Kasara, Bhor ghats) coupled with Decision Guardrail protection.
-            </p>
-        </div>
+        <!-- Page Hero Banner -->
+        <div class="glass-panel p-6 md:p-8 rounded-3xl relative overflow-hidden border border-white/10">
+            <div class="absolute -right-16 -top-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            <!-- Simulator Input Controls -->
-            <div class="glass-panel p-6 rounded-2xl space-y-4">
-                <div class="flex justify-between items-center border-b border-white/10 pb-3">
-                    <h3 class="text-lg font-bold text-white">Corridor Hazard & Weather Controls</h3>
-                    <select id="preset-corridor" onchange="applyPreset()" class="bg-dark-card border border-white/10 rounded-lg px-2.5 py-1 text-xs text-emerald-300 outline-none">
-                        <option value="khandala">Khandala Ghat (NH-48 Monsoon)</option>
-                        <option value="kasara">Kasara Ghat (NH-160 Heavy Rain)</option>
-                        <option value="bhor">Bhor Ghat (Steep Gradient)</option>
-                        <option value="plains">Pune-Kolhapur Plains (Dry)</option>
-                    </select>
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-1.5">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl">⛰️</span>
+                        <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
+                            Maharashtra Corridor Risk &amp; Western Ghats Transit Telemetry
+                        </h1>
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            IMD Verified ML
+                        </span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-gray-400 max-w-3xl leading-relaxed">
+                        Monsoon transit delay regressor and dynamic freight surcharge engine for high-gradient Western Ghat corridors (Khandala, Kasara, and Bhor Ghats) calibrated with active telemetry and Decision Guardrail protection.
+                    </p>
                 </div>
 
-                <div class="space-y-4 text-xs">
+                <div class="flex items-center gap-3">
+                    <div class="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-right">
+                        <span class="block text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Active Model</span>
+                        <span class="text-xs font-mono font-bold text-emerald-300">GradientBoosting v2.4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2-Column Grid: Controls & Surcharge Math -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Simulator Input Controls (7 Columns) -->
+            <div class="lg:col-span-7 glass-panel p-6 rounded-3xl space-y-5 border border-white/10">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-emerald-400 text-sm font-bold">⚙️</span>
+                        <h2 class="text-sm font-bold text-white tracking-tight uppercase">Corridor Hazards &amp; Environmental Feeds</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-gray-400 font-medium">Quick Preset:</span>
+                        <select id="preset-corridor" onchange="applyPreset()" class="bg-[#18181b] border border-white/15 rounded-xl px-3 py-1.5 text-xs font-semibold text-emerald-400 focus:outline-none focus:border-emerald-500 transition shadow-inner">
+                            <option value="khandala">NH-48 Khandala Ghat (Monsoon Rain)</option>
+                            <option value="kasara">NH-160 Kasara Ghat (Heavy Torrent)</option>
+                            <option value="bhor">Bhor Ghat (Steep Gradient Surcharge)</option>
+                            <option value="plains">Pune-Kolhapur Plains (Dry Highway)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
                     <!-- Rainfall Slider -->
-                    <div>
-                        <div class="flex justify-between text-gray-300 mb-1">
-                            <span>Rainfall (IMD Monsoon Feed):</span>
-                            <span id="lbl-rainfall" class="font-bold text-emerald-400">65 mm</span>
+                    <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-medium text-gray-300 flex items-center gap-1.5">
+                                <span>🌧️</span> Rainfall Precipitation (IMD Feed):
+                            </span>
+                            <span id="lbl-rainfall" class="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">65 mm</span>
                         </div>
-                        <input id="slider-rainfall" oninput="updateCalculation()" type="range" min="0" max="150" value="65" class="w-full accent-emerald-500">
+                        <input id="slider-rainfall" oninput="updateCalculation()" type="range" min="0" max="150" value="65">
+                        <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                            <span>0 mm (Clear)</span>
+                            <span>75 mm (Heavy)</span>
+                            <span>150 mm (Extreme Cloudburst)</span>
+                        </div>
                     </div>
 
                     <!-- Visibility Slider -->
-                    <div>
-                        <div class="flex justify-between text-gray-300 mb-1">
-                            <span>Corridor Visibility:</span>
-                            <span id="lbl-visibility" class="font-bold text-emerald-400">4.0 km</span>
+                    <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-medium text-gray-300 flex items-center gap-1.5">
+                                <span>🌫️</span> Corridor Fog / Optical Visibility:
+                            </span>
+                            <span id="lbl-visibility" class="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">4.0 km</span>
                         </div>
-                        <input id="slider-visibility" oninput="updateCalculation()" type="range" min="1" max="15" step="0.5" value="4.0" class="w-full accent-emerald-500">
+                        <input id="slider-visibility" oninput="updateCalculation()" type="range" min="0.5" max="15" step="0.5" value="4.0">
+                        <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                            <span>0.5 km (Dense Ghat Fog)</span>
+                            <span>5.0 km</span>
+                            <span>15.0 km (Clear Horizon)</span>
+                        </div>
                     </div>
 
-                    <!-- Pothole Index -->
-                    <div>
-                        <div class="flex justify-between text-gray-300 mb-1">
-                            <span>Pothole & Surface Risk Index:</span>
-                            <span id="lbl-potholes" class="font-bold text-emerald-400">0.70</span>
+                    <!-- Pothole & Surface Risk Index -->
+                    <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-medium text-gray-300 flex items-center gap-1.5">
+                                <span>🚧</span> Surface Degradation / Pothole Index:
+                            </span>
+                            <span id="lbl-potholes" class="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">0.70</span>
                         </div>
-                        <input id="slider-potholes" oninput="updateCalculation()" type="range" min="0" max="1" step="0.05" value="0.70" class="w-full accent-emerald-500">
+                        <input id="slider-potholes" oninput="updateCalculation()" type="range" min="0" max="1" step="0.05" value="0.70">
+                        <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                            <span>0.00 (Fresh Asphalt)</span>
+                            <span>0.50 (Moderate Ruts)</span>
+                            <span>1.00 (Severe Monsoon Rutting)</span>
+                        </div>
                     </div>
 
-                    <!-- Congestion Index -->
-                    <div>
-                        <div class="flex justify-between text-gray-300 mb-1">
-                            <span>Traffic Congestion Index:</span>
-                            <span id="lbl-traffic" class="font-bold text-emerald-400">0.80</span>
+                    <!-- Traffic Congestion Index -->
+                    <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-medium text-gray-300 flex items-center gap-1.5">
+                                <span>🚦</span> Traffic Density &amp; Bottleneck Index:
+                            </span>
+                            <span id="lbl-traffic" class="font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">0.80</span>
                         </div>
-                        <input id="slider-traffic" oninput="updateCalculation()" type="range" min="0" max="1" step="0.05" value="0.80" class="w-full accent-emerald-500">
+                        <input id="slider-traffic" oninput="updateCalculation()" type="range" min="0" max="1" step="0.05" value="0.80">
+                        <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                            <span>0.00 (Free Flow)</span>
+                            <span>0.50 (Dense Truck Freight)</span>
+                            <span>1.00 (Gridlocked Ghat Pass)</span>
+                        </div>
                     </div>
 
                     <!-- Toggles -->
-                    <div class="grid grid-cols-2 gap-4 pt-2">
-                        <label class="flex items-center gap-2 cursor-pointer text-gray-300 bg-white/5 p-2.5 rounded-xl border border-white/5">
-                            <input id="chk-waterlogging" onchange="updateCalculation()" type="checkbox" checked class="accent-emerald-500">
-                            <span>Waterlogging Active</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <label class="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 cursor-pointer transition">
+                            <span class="text-xs font-semibold text-gray-200 flex items-center gap-2">
+                                <span>🌊</span> Waterlogging Active
+                            </span>
+                            <input id="chk-waterlogging" onchange="updateCalculation()" type="checkbox" checked class="h-4 w-4 rounded accent-emerald-500 cursor-pointer">
                         </label>
-                        <label class="flex items-center gap-2 cursor-pointer text-gray-300 bg-white/5 p-2.5 rounded-xl border border-white/5">
-                            <input id="chk-ghat" onchange="updateCalculation()" type="checkbox" checked class="accent-emerald-500">
-                            <span>Western Ghat Corridor</span>
+                        <label class="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 cursor-pointer transition">
+                            <span class="text-xs font-semibold text-gray-200 flex items-center gap-2">
+                                <span>⛰️</span> Steep Ghat Gradient
+                            </span>
+                            <input id="chk-ghat" onchange="updateCalculation()" type="checkbox" checked class="h-4 w-4 rounded accent-emerald-500 cursor-pointer">
                         </label>
                     </div>
 
-                    <!-- Diesel Price -->
-                    <div class="grid grid-cols-2 gap-4 pt-1">
-                        <div>
-                            <span class="text-gray-400">Current Diesel Price (₹/L):</span>
-                            <input id="num-diesel" oninput="updateCalculation()" type="number" step="0.5" value="94.50" class="w-full mt-1 bg-dark-card border border-white/10 rounded-xl px-3 py-1.5 text-white font-mono outline-none">
+                    <!-- Diesel & Freight Base Inputs -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div class="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1.5">
+                            <label for="num-diesel" class="block text-[11px] font-semibold text-gray-400">Current Diesel Rate (₹/L):</label>
+                            <input id="num-diesel" oninput="updateCalculation()" type="number" step="0.5" value="94.50" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 transition shadow-inner">
                         </div>
-                        <div>
-                            <span class="text-gray-400">Base Freight (₹):</span>
-                            <input id="num-freight" oninput="updateCalculation()" type="number" step="100" value="2500" class="w-full mt-1 bg-dark-card border border-white/10 rounded-xl px-3 py-1.5 text-white font-mono outline-none">
+                        <div class="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1.5">
+                            <label for="num-freight" class="block text-[11px] font-semibold text-gray-400">Base Corridor Freight (₹):</label>
+                            <input id="num-freight" oninput="updateCalculation()" type="number" step="100" value="2500" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 transition shadow-inner">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Prediction Results & Surcharge Output -->
-            <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between space-y-4">
-                <div>
-                    <h3 class="text-lg font-bold text-white border-b border-white/10 pb-3">Predicted Transit Risk & Freight Surcharge</h3>
+            <!-- Prediction Results & Dynamic Surcharge (5 Columns) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
 
-                    <div class="grid grid-cols-2 gap-4 mt-4">
-                        <div class="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
-                            <span class="text-xs text-gray-400">Hazard Severity</span>
-                            <p id="res-hazard" class="text-2xl font-black text-red-400">HIGH</p>
-                            <span id="res-conf" class="text-[11px] text-gray-400">Confidence: 89%</span>
+                <!-- Real-Time Hazard Cards -->
+                <div class="glass-panel p-6 rounded-3xl space-y-5 border border-white/10 glow-emerald">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h2 class="text-sm font-bold text-white tracking-tight uppercase flex items-center gap-2">
+                            <span>📡</span> ML Hazard Telemetry
+                        </h2>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400 font-mono">Live Ingestion</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1 relative overflow-hidden">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-gray-400">Hazard Severity</span>
+                            <p id="res-hazard" class="text-3xl font-black text-rose-400 tracking-tight">HIGH</p>
+                            <span id="res-conf" class="text-[11px] font-mono text-emerald-400">Confidence: 89%</span>
                         </div>
-                        <div class="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
-                            <span class="text-xs text-gray-400">Predicted Delay</span>
-                            <p id="res-delay" class="text-2xl font-black text-amber-400">85 mins</p>
-                            <span id="res-delay-hr" class="text-[11px] text-gray-400">~1.42 hours</span>
+
+                        <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1 relative overflow-hidden">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-gray-400">Predicted Delay</span>
+                            <p id="res-delay" class="text-3xl font-black text-amber-400 tracking-tight">85 mins</p>
+                            <span id="res-delay-hr" class="text-[11px] font-mono text-amber-300">~1.42 hours</span>
                         </div>
                     </div>
 
-                    <!-- Dynamic Surcharge Math -->
-                    <div class="bg-black/30 p-4 rounded-xl mt-4 space-y-2 border border-white/5 text-xs">
-                        <div class="flex justify-between text-gray-300">
-                            <span>Base Corridor Freight:</span>
-                            <span id="res-base-cost" class="font-bold text-white">₹2,500.00</span>
+                    <!-- Dynamic Freight Math Output -->
+                    <div class="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2.5 text-xs">
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span class="text-gray-400">Base Corridor Freight:</span>
+                            <span id="res-base-cost" class="font-mono font-bold text-white text-sm">₹2,500.00</span>
                         </div>
-                        <div class="flex justify-between text-gray-300">
-                            <span>Fuel Surcharge (&Delta;Diesel):</span>
-                            <span id="res-fuel-sur" class="text-amber-300 font-semibold">+₹21.62</span>
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span class="text-gray-400">Fuel Delta Surcharge:</span>
+                            <span id="res-fuel-sur" class="font-mono font-semibold text-amber-300">+₹21.62</span>
                         </div>
-                        <div class="flex justify-between text-gray-300">
-                            <span>Delay Impact Surcharge:</span>
-                            <span id="res-delay-sur" class="text-amber-300 font-semibold">+₹531.25</span>
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span class="text-gray-400">Transit Delay Surcharge:</span>
+                            <span id="res-delay-sur" class="font-mono font-semibold text-amber-300">+₹531.25</span>
                         </div>
-                        <div class="flex justify-between text-sm font-bold text-emerald-400 pt-2 border-t border-white/10">
-                            <span>Adjusted Total Freight:</span>
-                            <span id="res-total-freight">₹3,052.87 (+22.1%)</span>
+                        <div class="pt-2.5 border-t border-white/10 flex justify-between items-center text-sm font-bold">
+                            <span class="text-emerald-400">Adjusted Total Freight:</span>
+                            <span id="res-total-freight" class="font-mono text-emerald-300 text-base font-black">₹3,052.87 (+22.1%)</span>
                         </div>
                     </div>
 
-                    <div class="mt-4 p-3 rounded-xl bg-white/5 border border-white/5">
-                        <span class="text-[11px] text-gray-400 uppercase font-semibold">Operational Recommendation:</span>
-                        <p id="res-recommendation" class="text-xs font-bold text-amber-300 mt-1">REROUTE_OR_DELAY_DISPATCH</p>
+                    <!-- Operational Recommendation -->
+                    <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+                        <span class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold block">Decision Guardrail Action:</span>
+                        <p id="res-recommendation" class="text-xs font-bold font-mono text-amber-400 mt-0.5">REROUTE_OR_DELAY_DISPATCH</p>
+                    </div>
+
+                    <div class="text-[10px] text-gray-500 font-mono text-center">
+                        Formula: Base &times; (1.0 + &alpha;<sub>fuel</sub>&middot;&Delta;Diesel/Base + &beta;<sub>delay</sub>&middot;Delay/60)
                     </div>
                 </div>
 
-                <div class="text-[11px] text-gray-400 font-mono">
-                    Formula: Base &times; (1.0 + &alpha;<sub>fuel</sub>&middot;&Delta;Diesel/Base + &beta;<sub>delay</sub>&middot;Delay/60)
-                </div>
             </div>
 
         </div>
 
-        <!-- Maharashtra Decision Guardrail Simulator (Module 8) -->
-        <div class="glass-panel p-6 rounded-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-white/10 pb-3">
+        <!-- Module 8: Decision Guardrail Simulator (Deduplication, Margin Threshold, Replan) -->
+        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-5 border border-white/10">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
                 <div>
-                    <h3 class="text-lg font-bold text-white">Module 8: Decision Guardrails Simulator</h3>
-                    <p class="text-xs text-gray-400">Tests idempotency deduplication, &gt;60m stale event cutoff, &lt;2% materiality margin threshold, and driver breakdown reassignment.</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-indigo-400 text-base font-bold">🛡️</span>
+                        <h2 class="text-sm font-bold text-white tracking-tight uppercase">Module 8: Maharashtra Decision Guardrails</h2>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">
+                        Production safety guards evaluating event idempotency, &gt;60m stale telemetry cutoffs, &lt;2% materiality thresholds, and driver fleet reassignment.
+                    </p>
                 </div>
-                <span class="text-xs px-2.5 py-1 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">MaharashtraDecisionGuard</span>
+                <span class="text-[10px] font-mono font-bold px-3 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                    DecisionGuardrail Invariant
+                </span>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button onclick="testGuardrail('minor_delay')" class="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-left border border-white/10 transition">
-                    <p class="text-xs font-bold text-white">1. Minor Delay (&lt; 2%)</p>
-                    <p class="text-[11px] text-gray-400 mt-1">10 min delay (₹120 impact). Replan suppressed.</p>
+            <!-- Scenario Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <button onclick="testGuardrail('minor_delay')" class="group p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-left border border-white/10 hover:border-emerald-500/40 transition-all duration-200 shadow-sm hover:scale-[1.01]" type="button">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-white group-hover:text-emerald-300 transition">1. Minor Delay (&lt;2%)</span>
+                        <span class="text-[10px] text-emerald-400">🛡️</span>
+                    </div>
+                    <p class="text-[11px] text-gray-400 leading-snug">10 min delay (₹120 impact). Sub-threshold: replan suppressed.</p>
                 </button>
-                <button onclick="testGuardrail('severe_disruption')" class="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-left border border-white/10 transition">
-                    <p class="text-xs font-bold text-white">2. Severe Disruption</p>
-                    <p class="text-[11px] text-gray-400 mt-1">85 min delay (&gt;2% margin). Triggers replan.</p>
+
+                <button onclick="testGuardrail('severe_disruption')" class="group p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-left border border-white/10 hover:border-rose-500/40 transition-all duration-200 shadow-sm hover:scale-[1.01]" type="button">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-white group-hover:text-rose-300 transition">2. Severe Disruption</span>
+                        <span class="text-[10px] text-rose-400">⚡</span>
+                    </div>
+                    <p class="text-[11px] text-gray-400 leading-snug">85 min delay (Kasara landslide). Crosses threshold: triggers replan.</p>
                 </button>
-                <button onclick="testGuardrail('duplicate_event')" class="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-left border border-white/10 transition">
-                    <p class="text-xs font-bold text-white">3. Duplicate Event</p>
-                    <p class="text-[11px] text-gray-400 mt-1">Identical hash. Rejects duplicate.</p>
+
+                <button onclick="testGuardrail('duplicate_event')" class="group p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-left border border-white/10 hover:border-amber-500/40 transition-all duration-200 shadow-sm hover:scale-[1.01]" type="button">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-white group-hover:text-amber-300 transition">3. Duplicate Telemetry</span>
+                        <span class="text-[10px] text-amber-400">🔁</span>
+                    </div>
+                    <p class="text-[11px] text-gray-400 leading-snug">Identical payload hash. Idempotent guard cleanly deduplicates.</p>
                 </button>
-                <button onclick="testGuardrail('driver_breakdown')" class="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-left border border-white/10 transition">
-                    <p class="text-xs font-bold text-white">4. Driver Breakdown</p>
-                    <p class="text-[11px] text-gray-400 mt-1">Fleet breakdown. Unassigns and swaps vehicle.</p>
+
+                <button onclick="testGuardrail('driver_breakdown')" class="group p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-left border border-white/10 hover:border-purple-500/40 transition-all duration-200 shadow-sm hover:scale-[1.01]" type="button">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-white group-hover:text-purple-300 transition">4. Vehicle Breakdown</span>
+                        <span class="text-[10px] text-purple-400">🚚</span>
+                    </div>
+                    <p class="text-[11px] text-gray-400 leading-snug">Fleet breakdown in Bhor Ghat. Unassigns and triggers secondary vehicle.</p>
                 </button>
             </div>
 
-            <!-- Guardrail Result Display -->
-            <div id="guardrail-output" class="bg-black/40 p-4 rounded-xl border border-white/10 hidden space-y-2">
-                <div class="flex justify-between items-center text-xs">
-                    <span id="guard-decision-badge" class="px-2.5 py-1 rounded font-bold uppercase bg-emerald-500/20 text-emerald-300">DECISION</span>
-                    <span id="guard-replan-status" class="text-gray-400">Replan: False</span>
+            <!-- Guardrail Result Display Banner -->
+            <div id="guardrail-output" class="hidden p-5 rounded-2xl bg-black/50 border border-white/15 space-y-2.5 transition-all">
+                <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                        <span id="guard-decision-badge" class="px-2.5 py-1 rounded-md font-mono font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            DECISION
+                        </span>
+                        <span id="guard-replan-status" class="text-xs text-gray-300 font-mono">
+                            Replan: False
+                        </span>
+                    </div>
+                    <span class="text-[10px] font-mono text-gray-500">Audit Trail: OK</span>
                 </div>
-                <p id="guard-reason-text" class="text-xs text-gray-200">--</p>
+                <p id="guard-reason-text" class="text-xs text-gray-200 leading-relaxed font-sans font-medium">--</p>
             </div>
         </div>
 
     </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-6 px-6 border-t border-white/10 text-center text-xs text-gray-500">
+        SupplyGuard AI &bull; Maharashtra Road-Risk ML &bull; Western Ghats Transit Telemetry
+    </footer>
 
     <script>
         async function updateCalculation() {
@@ -251,8 +429,8 @@
                 const data = await res.json();
 
                 document.getElementById('res-hazard').innerText = data.hazard_severity;
-                document.getElementById('res-hazard').className = 'text-2xl font-black ' + 
-                    (data.hazard_severity === 'HIGH' ? 'text-red-400' : data.hazard_severity === 'MEDIUM' ? 'text-amber-400' : 'text-emerald-400');
+                document.getElementById('res-hazard').className = 'text-3xl font-black ' + 
+                    (data.hazard_severity === 'HIGH' ? 'text-rose-400' : data.hazard_severity === 'MEDIUM' ? 'text-amber-400' : 'text-emerald-400');
                 
                 document.getElementById('res-conf').innerText = 'Confidence: ' + Math.round(data.hazard_confidence * 100) + '%';
                 document.getElementById('res-delay').innerText = data.predicted_delay_minutes + ' mins';
@@ -357,7 +535,7 @@
                 document.getElementById('guard-replan-status').innerText = 'Replan Triggered: ' + (data.replan_triggered ? 'YES ⚡' : 'NO 🛡️');
                 document.getElementById('guard-reason-text').innerText = data.reason;
             } catch (err) {
-                alert('Guardrail test error: ' + err);
+                console.error('Guardrail test error:', err);
             }
         }
 

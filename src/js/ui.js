@@ -270,20 +270,23 @@ export const UI = {
         if (!el) return;
 
         el.className = 'px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider';
+        const safeLevel = (level || 'Low').toString().toLowerCase();
         
-        switch (level.toLowerCase()) {
+        switch (safeLevel) {
             case 'low':
                 el.classList.add('bg-green-500/20', 'text-green-400', 'border', 'border-green-500/30');
                 break;
             case 'medium':
+            case 'moderate':
                 el.classList.add('bg-yellow-500/20', 'text-yellow-400', 'border', 'border-yellow-500/30');
                 break;
             case 'high':
+            case 'critical':
                 el.classList.add('bg-red-500/20', 'text-red-400', 'border', 'border-red-500/30');
                 break;
             default:
-                el.classList.add('bg-gray-500/20', 'text-gray-400');
+                el.classList.add('bg-gray-500/20', 'text-gray-400', 'border', 'border-gray-500/30');
         }
-        el.textContent = level;
+        el.textContent = level || 'Low';
     }
 };

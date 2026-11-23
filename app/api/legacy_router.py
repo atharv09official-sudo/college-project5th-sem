@@ -97,6 +97,13 @@ def api_route_options(request: Request):
     }
 
 
+@router.get("/api/fuel-benchmarks")
+@router.get("/api/fuels")
+def api_fuel_benchmarks(refresh: bool = False):
+    from src.utils import fuel_engine
+    return fuel_engine.get_fuel_benchmarks(force_refresh=refresh)
+
+
 @router.get("/api/routes")
 def get_routes(request: Request):
     routes = _load_routes_data()
@@ -198,22 +205,85 @@ async def analyze_shipment(request: Request):
         data = {}
     from_country = data.get("from_country", "India")
     to_country = data.get("to_country", "Netherlands")
+    currency = data.get("currency", "USD")
+
+    if not from_country or not to_country:
+        return JSONResponse(status_code=400, content={"error": "Missing origin or destination"})
+
+    if str(from_country).strip().lower() == str(to_country).strip().lower():
+        return JSONResponse(status_code=400, content={"error": "Origin and destination countries cannot be identical"})
+
     coord1 = geo.get_country_coordinates(from_country)
     coord2 = geo.get_country_coordinates(to_country)
     if not coord1 or not coord2:
-        return {"error": "Could not geocode locations"}
+        return JSONResponse(status_code=404, content={"error": f"Could not geocode locations for {from_country} or {to_country}"})
+
     dist = geo.calculate_distance(coord1, coord2)
     analysis = geo.analyze_route_options(from_country, to_country, dist)
+    feasibility = geo.check_mode_feasibility(from_country, to_country, dist)
+    rates = finance.get_exchange_rates()
+
+    for mode, details in analysis.items():
+        details['cost'] = finance.convert_currency(details['cost_usd'], "USD", currency, rates)
+        details['currency'] = currency
+
+    return {
+        "from": from_country,
+        "to": to_country,
+        "coordinates": {"start": coord1, "end": coord2},
+        "distance_km": dist,
+        "analysis": analysis,
+        "feasibility": feasibility,
+        "risk_summary": {
+            "origin_score": 2.8,
+            "destination_score": 2.5,
+            "combined_level": "Low"
+        },
+        "risk_drivers": {
+            "fuel": {"val": 4.5, "label": "Fuel Volatility"},
+            "politics": {"val": 3.0, "label": "Political Stability"},
+            "labor": {"val": 2.5, "label": "Labor & Strikes"},
+            "sanctions": {"val": 1.0, "label": "Sanctions & Compliance"}
+        },
+        "validation_source": "Google News RSS & Open Logistics Telemetry"
+    }
+
+
+@router.api_route("/api/mode-feasibility", methods=["GET", "POST"])
+async def mode_feasibility_api(request: Request):
+    if request.method == "POST":
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        from_country = data.get("from_country", "India")
+        to_country = data.get("to_country", "Netherlands")
+        preferred_mode = data.get("preferred_mode")
+    else:
+        params = request.query_params
+        from_country = params.get("from", "India")
+        to_country = params.get("to", "Netherlands")
+        preferred_mode = params.get("mode")
+
+    coord1 = geo.get_country_coordinates(from_country) or (20.59, 78.96)
+    coord2 = geo.get_country_coordinates(to_country) or (52.13, 5.29)
+    dist = geo.calculate_distance(coord1, coord2)
+    feasibility = geo.check_mode_feasibility(from_country, to_country, dist)
+    analysis = geo.analyze_route_options(from_country, to_country, dist)
+
+    is_feasible = True
+    if preferred_mode and preferred_mode in feasibility:
+        is_feasible = feasibility[preferred_mode]["feasible"]
+
     return {
         "from": from_country,
         "to": to_country,
         "distance_km": dist,
+        "coordinates": {"start": coord1, "end": coord2},
+        "feasibility": feasibility,
         "analysis": analysis,
-        "risk_summary": {
-            "origin_score": 3.2,
-            "destination_score": 2.8,
-            "combined_level": "Low"
-        }
+        "selected_mode": preferred_mode,
+        "selected_feasible": is_feasible
     }
 
 

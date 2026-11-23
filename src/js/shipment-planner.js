@@ -2,6 +2,7 @@
 import { GlobeMap } from './map-fast.js';
 import { SmoothToast } from './smooth-toast.js';
 import { UI } from './ui.js';
+import { SmoothDropdown } from './smooth-dropdown.js';
 
 export class ShipmentPlanner {
     constructor() {
@@ -26,6 +27,9 @@ export class ShipmentPlanner {
     }
 
     async init() {
+        // Init Smooth Dropdowns for selects on page
+        SmoothDropdown.initAll();
+
         // Init 3D Globe
         this.map = new GlobeMap('globe-container');
         this.map.init();

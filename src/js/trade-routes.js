@@ -5,6 +5,7 @@
  */
 
 import { MapCN } from './mapcn.js';
+import { SmoothDropdown } from './smooth-dropdown.js';
 
 let networkNodes = [];
 let networkCorridors = [];
@@ -80,6 +81,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupWeightIndicator();
     setupVehicleHints();
     setupModal();
+
+    // 0. Auto-initialize custom smooth dropdowns
+    SmoothDropdown.initAll();
 
     // 1. Load data first so form dropdowns and history are immediately functional
     await loadNetworkData();
@@ -168,6 +172,11 @@ async function loadNetworkData() {
         originSelect.value = 'MUM_BHIWANDI';
         destSelect.value = 'PUNE_CITY';
 
+        // Refresh custom smooth dropdowns with newly populated network hubs
+        if (originSelect._smoothDropdown) originSelect._smoothDropdown.refresh();
+        if (destSelect._smoothDropdown) destSelect._smoothDropdown.refresh();
+        if (vehicleSelect._smoothDropdown) vehicleSelect._smoothDropdown.refresh();
+
         if (mapcn) {
             mapcn.setNetwork(networkNodes, networkCorridors);
             mapcn.highlightSelection(originSelect.value, destSelect.value);
@@ -181,28 +190,32 @@ async function loadNetworkData() {
 // 3. Sliders & Dynamic Weight Handling
 // ==========================================
 function setupSliders() {
+    if (!sliderTime || !sliderCost || !sliderDist || !sliderRisk) return;
+
     const updateLabels = () => {
-        lblTime.textContent = `${sliderTime.value}%`;
-        lblCost.textContent = `${sliderCost.value}%`;
-        lblDist.textContent = `${sliderDist.value}%`;
-        lblRisk.textContent = `${sliderRisk.value}%`;
+        if (lblTime) lblTime.textContent = `${sliderTime.value}%`;
+        if (lblCost) lblCost.textContent = `${sliderCost.value}%`;
+        if (lblDist) lblDist.textContent = `${sliderDist.value}%`;
+        if (lblRisk) lblRisk.textContent = `${sliderRisk.value}%`;
     };
 
     [sliderTime, sliderCost, sliderDist, sliderRisk].forEach(slider => {
-        slider.addEventListener('input', updateLabels);
+        if (slider) slider.addEventListener('input', updateLabels);
     });
 
-    btnNormalize.addEventListener('click', () => {
-        const sum = parseFloat(sliderTime.value) + parseFloat(sliderCost.value) + parseFloat(sliderDist.value) + parseFloat(sliderRisk.value);
-        if (sum > 0) {
-            sliderTime.value = Math.round((parseFloat(sliderTime.value) / sum) * 100);
-            sliderCost.value = Math.round((parseFloat(sliderCost.value) / sum) * 100);
-            sliderDist.value = Math.round((parseFloat(sliderDist.value) / sum) * 100);
-            sliderRisk.value = 100 - (parseInt(sliderTime.value) + parseInt(sliderCost.value) + parseInt(sliderDist.value));
-            updateLabels();
-            showToast('Weights normalized to 100%', 'info');
-        }
-    });
+    if (btnNormalize) {
+        btnNormalize.addEventListener('click', () => {
+            const sum = parseFloat(sliderTime.value) + parseFloat(sliderCost.value) + parseFloat(sliderDist.value) + parseFloat(sliderRisk.value);
+            if (sum > 0) {
+                sliderTime.value = Math.round((parseFloat(sliderTime.value) / sum) * 100);
+                sliderCost.value = Math.round((parseFloat(sliderCost.value) / sum) * 100);
+                sliderDist.value = Math.round((parseFloat(sliderDist.value) / sum) * 100);
+                sliderRisk.value = 100 - (parseInt(sliderTime.value) + parseInt(sliderCost.value) + parseInt(sliderDist.value));
+                updateLabels();
+                showToast('Weights normalized to 100%', 'info');
+            }
+        });
+    }
 }
 
 function setupWeightIndicator() {
@@ -248,12 +261,15 @@ optForm.addEventListener('submit', async (e) => {
         return;
     }
 
-    const sumWeights = parseFloat(sliderTime.value) + parseFloat(sliderCost.value) + parseFloat(sliderDist.value) + parseFloat(sliderRisk.value);
-    const norm = sumWeights > 0 ? sumWeights : 100.0;
-    const wTime = parseFloat(sliderTime.value) / norm;
-    const wCost = parseFloat(sliderCost.value) / norm;
-    const wDist = parseFloat(sliderDist.value) / norm;
-    const wRisk = parseFloat(sliderRisk.value) / norm;
+    let wTime = 0.35, wCost = 0.35, wDist = 0.15, wRisk = 0.15;
+    if (sliderTime && sliderCost && sliderDist && sliderRisk) {
+        const sumWeights = parseFloat(sliderTime.value) + parseFloat(sliderCost.value) + parseFloat(sliderDist.value) + parseFloat(sliderRisk.value);
+        const norm = sumWeights > 0 ? sumWeights : 100.0;
+        wTime = parseFloat(sliderTime.value) / norm;
+        wCost = parseFloat(sliderCost.value) / norm;
+        wDist = parseFloat(sliderDist.value) / norm;
+        wRisk = parseFloat(sliderRisk.value) / norm;
+    }
 
     btnSubmit.disabled = true;
     btnText.textContent = 'Computing Dijkstra & A* Paths...';

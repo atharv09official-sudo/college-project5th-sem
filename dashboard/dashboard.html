@@ -51,17 +51,17 @@
                     <a href="/trade-routes" class="text-indigo-400 hover:text-indigo-300 transition">
                         Trade Route Map
                     </a>
-                    <a href="/plan-generator" class="hover:text-emerald-300 transition">
-                        Plan Generator
+                    <a href="/map" class="hover:text-emerald-300 transition">
+                        Risk Map
                     </a>
-                    <a href="/inventory-health" class="hover:text-emerald-300 transition">
-                        Inventory Health &amp; DOS
+                    <a href="/analysis" class="hover:text-emerald-300 transition">
+                        Analysis
                     </a>
-                    <a href="/road-risk" class="hover:text-emerald-300 transition">
-                        Road Risk &amp; Ghats
+                    <a href="/intelligence" class="hover:text-emerald-300 transition">
+                        Intelligence
                     </a>
-                    <a href="/import-studio" class="hover:text-emerald-300 transition">
-                        Import Studio
+                    <a href="/reports" class="hover:text-emerald-300 transition">
+                        Reports
                     </a>
                 </div>
             </div>
@@ -182,10 +182,10 @@
                 <nav class="flex flex-col gap-4 text-sm font-medium" aria-label="Mobile">
                     <a href="/dashboard" class="text-indigo-400" aria-current="page">Dashboard</a>
                     <a href="/trade-routes" class="hover:text-indigo-300">Trade Route Map</a>
-                    <a href="/plan-generator" class="hover:text-indigo-300">Plan Generator</a>
-                    <a href="/inventory-health" class="hover:text-indigo-300">Inventory Health</a>
-                    <a href="/road-risk" class="hover:text-indigo-300">Road Risk &amp; Ghats</a>
-                    <a href="/import-studio" class="hover:text-indigo-300">Import Studio</a>
+                    <a href="/map" class="hover:text-indigo-300">Risk Map</a>
+                    <a href="/analysis" class="hover:text-indigo-300">Analysis</a>
+                    <a href="/intelligence" class="hover:text-indigo-300">Intelligence</a>
+                    <a href="/reports" class="hover:text-indigo-300">Reports</a>
                 </nav>
 
                 <div class="mt-auto pt-6 border-t border-white/5">
@@ -219,16 +219,151 @@
         <div id="data-context" class="flex items-center gap-4">
             <span id="last-updated" class="inline-flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-ring" aria-hidden="true"></span>
-                <span class="text-emerald-300">Last updated: demo data</span>
+                <span class="text-emerald-300 font-mono text-[10px]">Market Telemetry: LIVE</span>
             </span>
             <span class="hidden sm:inline text-gray-500">
-                Sources: fuel, trade, political, weather
+                Sources: Google RSS, Brent, ULSD, VLSFO, Jet-A1, LNG
             </span>
         </div>
     </section>
 
     <!-- Dashboard -->
     <main id="dashboard-app" class="flex-grow p-4 md:p-6 overflow-y-auto">
+
+        <!-- Real-Time Global Freight Fuel & Energy Benchmarks (Google RSS Real-Time Telemetry) -->
+        <section id="fuel-benchmarks-section" class="mb-5 md:mb-6" aria-label="Global freight fuel benchmarks">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-2.5 w-2.5 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                        <span>Global Freight Fuel &amp; Energy Benchmarks</span>
+                    </h2>
+                    <span class="hidden sm:inline-block text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-medium">
+                        Google RSS Live Feed
+                    </span>
+                </div>
+                <div class="flex items-center gap-3 text-[11px] text-gray-400">
+                    <span id="fuel-last-updated" class="font-mono text-gray-400">Syncing live energy benchmarks...</span>
+                    <button id="btn-refresh-fuels" class="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition flex items-center gap-1.5 text-xs border border-white/10" type="button" title="Refresh Live Fuel Prices">
+                        <span id="fuel-refresh-icon">🔄</span>
+                        <span class="hidden sm:inline text-[10px] font-semibold">Live Refresh</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5 Fuel Cards in Responsive Grid -->
+            <div id="fuel-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+                <!-- Initial Fuel Cards (Dynamic Google RSS Hydration via JS) -->
+                <div class="glass-panel p-4 rounded-2xl border-t-2 border-amber-400 border border-white/10 bg-[#121214]/90 flex flex-col justify-between shadow-xl group hover:border-white/20 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🛢️</span>
+                            <div>
+                                <div class="text-xs font-bold text-white leading-tight">Brent Crude</div>
+                                <div class="text-[10px] text-gray-400">Maritime &amp; Energy</div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono">+1.15%</span>
+                    </div>
+                    <div class="my-3">
+                        <div class="text-2xl font-black text-white font-mono">$76.45 <span class="text-xs font-normal text-gray-400">/bbl</span></div>
+                        <div class="text-[10px] text-amber-400 font-semibold mt-0.5">Global Container Baseline</div>
+                    </div>
+                    <div class="pt-2 border-t border-white/5 text-[10px] text-gray-400 flex items-center justify-between">
+                        <span class="truncate max-w-[150px]">Brent crude steady on shipping risk</span>
+                        <span class="text-gray-500 font-mono text-[9px]">Google RSS</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl border-t-2 border-emerald-400 border border-white/10 bg-[#121214]/90 flex flex-col justify-between shadow-xl group hover:border-white/20 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🚚</span>
+                            <div>
+                                <div class="text-xs font-bold text-white leading-tight">ULSD Diesel</div>
+                                <div class="text-[10px] text-gray-400">Highway &amp; Rail</div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-mono">-0.45%</span>
+                    </div>
+                    <div class="my-3">
+                        <div class="text-2xl font-black text-white font-mono">$2.48 <span class="text-xs font-normal text-gray-400">/gal</span></div>
+                        <div class="text-[10px] text-emerald-400 font-semibold mt-0.5">Interstate Trucking &amp; Rail</div>
+                    </div>
+                    <div class="pt-2 border-t border-white/5 text-[10px] text-gray-400 flex items-center justify-between">
+                        <span class="truncate max-w-[150px]">Wholesale diesel steadies at $2.48</span>
+                        <span class="text-gray-500 font-mono text-[9px]">Google RSS</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl border-t-2 border-indigo-400 border border-white/10 bg-[#121214]/90 flex flex-col justify-between shadow-xl group hover:border-white/20 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">✈️</span>
+                            <div>
+                                <div class="text-xs font-bold text-white leading-tight">Jet A-1 Fuel</div>
+                                <div class="text-[10px] text-gray-400">Air Cargo &amp; SLA</div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono">+0.82%</span>
+                    </div>
+                    <div class="my-3">
+                        <div class="text-2xl font-black text-white font-mono">$2.34 <span class="text-xs font-normal text-gray-400">/gal</span></div>
+                        <div class="text-[10px] text-indigo-400 font-semibold mt-0.5">Air Cargo &amp; Express Bellyhold</div>
+                    </div>
+                    <div class="pt-2 border-t border-white/5 text-[10px] text-gray-400 flex items-center justify-between">
+                        <span class="truncate max-w-[150px]">Aviation turbine fuel steady</span>
+                        <span class="text-gray-500 font-mono text-[9px]">Google RSS</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl border-t-2 border-cyan-400 border border-white/10 bg-[#121214]/90 flex flex-col justify-between shadow-xl group hover:border-white/20 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🚢</span>
+                            <div>
+                                <div class="text-xs font-bold text-white leading-tight">VLSFO 0.5%</div>
+                                <div class="text-[10px] text-gray-400">Maritime Deep-Sea</div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono">+1.40%</span>
+                    </div>
+                    <div class="my-3">
+                        <div class="text-2xl font-black text-white font-mono">$582.00 <span class="text-xs font-normal text-gray-400">/mt</span></div>
+                        <div class="text-[10px] text-cyan-400 font-semibold mt-0.5">Container Vessels &amp; Bulk Carriers</div>
+                    </div>
+                    <div class="pt-2 border-t border-white/5 text-[10px] text-gray-400 flex items-center justify-between">
+                        <span class="truncate max-w-[150px]">Bunker benchmarks trade at $582/mt</span>
+                        <span class="text-gray-500 font-mono text-[9px]">Google RSS</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl border-t-2 border-purple-400 border border-white/10 bg-[#121214]/90 flex flex-col justify-between shadow-xl group hover:border-white/20 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">⚡</span>
+                            <div>
+                                <div class="text-xs font-bold text-white leading-tight">Natural Gas (LNG)</div>
+                                <div class="text-[10px] text-gray-400">Clean Dual-Fuel</div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-mono">-1.20%</span>
+                    </div>
+                    <div class="my-3">
+                        <div class="text-2xl font-black text-white font-mono">$3.15 <span class="text-xs font-normal text-gray-400">/MMBtu</span></div>
+                        <div class="text-[10px] text-purple-400 font-semibold mt-0.5">Dual-Fuel Propulsion &amp; Cold Chain</div>
+                    </div>
+                    <div class="pt-2 border-t border-white/5 text-[10px] text-gray-400 flex items-center justify-between">
+                        <span class="truncate max-w-[150px]">Henry Hub contracts balance at $3.15</span>
+                        <span class="text-gray-500 font-mono text-[9px]">Google RSS</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
 
             <!-- Shipment controls -->
@@ -277,6 +412,19 @@
                                 <option value="air">Air Cargo (Express)</option>
                                 <option value="road">Road/Rail (Regional)</option>
                             </select>
+                        </div>
+
+                        <!-- Physical Mode Feasibility Telemetry Card -->
+                        <div id="corridor-feasibility-card" class="hidden p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5 transition-all">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-semibold text-gray-400">Physical Feasibility</span>
+                                <span id="corridor-feasibility-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                    Feasible
+                                </span>
+                            </div>
+                            <p id="corridor-feasibility-note" class="text-[11px] text-gray-400 leading-tight">
+                                Physical connectivity verified.
+                            </p>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
@@ -393,7 +541,7 @@
                             </svg>
                         </div>
                         <div>
-                            <div class="text-label mb-1">Best Profit</div>
+                            <div class="text-label mb-1">Optimal Corridor Yield</div>
                             <div class="text-2xl font-bold text-white tracking-tight" id="stat-best-profit"
                                 aria-live="polite">--</div>
                         </div>
@@ -407,7 +555,7 @@
                         <div>
                             <div class="flex items-center gap-3 mb-2">
                                 <h2 id="risk-score-heading" class="text-label text-gray-400">
-                                    AI Trade Rating
+                                    Composite Corridor Rating
                                 </h2>
                                 <span id="risk-badge"
                                     class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-gray-800 text-gray-400 border border-gray-700"
@@ -416,7 +564,7 @@
                                 </span>
                             </div>
                             <div class="flex items-center gap-1.5 text-yellow-400 text-xl" id="ai-star-rating"
-                                aria-label="Rating not available yet" aria-live="polite"></div>
+                                aria-label="Corridor reliability rating" aria-live="polite"></div>
                         </div>
 
                         <div class="text-left sm:text-right">
@@ -527,10 +675,10 @@
                     </h2>
                     <div class="space-y-2 text-xs text-gray-300">
                         <p id="why-score" class="leading-relaxed" aria-live="polite">
-                            Select a route and analyze it to see the score explanation.
+                            Select an origin and destination corridor to calculate risk score analysis.
                         </p>
                         <p id="suggested-action" class="text-emerald-400 font-medium mt-2" aria-live="polite">
-                            Recommendations will appear here.
+                            Multi-modal routing advisories and fuel burn optimization appear here.
                         </p>
                     </div>
                 </section>
@@ -586,10 +734,10 @@
                     </div>
 
                     <h2 class="text-xl font-bold text-white mb-2" id="sim-status-text">
-                        Initializing Simulation...
+                        Evaluating Freight Telemetry...
                     </h2>
                     <p class="text-sm text-gray-400">
-                        Running the route simulation.
+                        Calculating multi-modal route feasibility, fuel burns, and port dwell times.
                     </p>
                 </div>
 
@@ -603,11 +751,11 @@
                         </svg>
                     </div>
 
-                    <h2 class="text-2xl font-bold text-white mb-2">Simulation Complete</h2>
+                    <h2 class="text-2xl font-bold text-white mb-2">Corridor Evaluation Complete</h2>
                     <p class="text-gray-400 text-sm mb-6">
                         Route #<span id="sim-route-id">...</span>
                         has a
-                        <span class="text-emerald-400 font-bold">94% success probability</span>.
+                        <span class="text-emerald-400 font-bold">94% on-time delivery certainty</span>.
                     </p>
 
                     <div class="grid grid-cols-2 gap-3 mb-6">

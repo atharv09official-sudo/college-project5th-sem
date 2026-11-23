@@ -77,18 +77,12 @@ def serve_dashboard():
 
 @app.get("/plan-generator")
 def serve_plan_generator():
-    path = os.path.join(DASHBOARD_DIR, "plan-generator.html")
-    if os.path.exists(path):
-        return FileResponse(path)
-    return FileResponse(os.path.join(DASHBOARD_DIR, "dashboard.html"))
+    return RedirectResponse(url="/trade-routes", status_code=302)
 
 
 @app.get("/inventory-health")
 def serve_inventory_health():
-    path = os.path.join(DASHBOARD_DIR, "inventory-health.html")
-    if os.path.exists(path):
-        return FileResponse(path)
-    return FileResponse(os.path.join(DASHBOARD_DIR, "dashboard.html"))
+    return RedirectResponse(url="/trade-routes", status_code=302)
 
 
 @app.get("/kirana-pos")
@@ -101,15 +95,12 @@ def serve_road_risk():
     path = os.path.join(DASHBOARD_DIR, "road-risk.html")
     if os.path.exists(path):
         return FileResponse(path)
-    return FileResponse(os.path.join(DASHBOARD_DIR, "dashboard.html"))
+    return RedirectResponse(url="/trade-routes", status_code=302)
 
 
 @app.get("/import-studio")
 def serve_import_studio():
-    path = os.path.join(DASHBOARD_DIR, "import-studio.html")
-    if os.path.exists(path):
-        return FileResponse(path)
-    return FileResponse(os.path.join(DASHBOARD_DIR, "dashboard.html"))
+    return RedirectResponse(url="/trade-routes", status_code=302)
 
 
 # Generic Dashboard Page Handler (supports /routes, /analysis, /reports, /map, etc.)

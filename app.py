@@ -14,7 +14,7 @@ mimetypes.add_type('video/mp4', '.mp4')
 mimetypes.add_type('image/jpeg', '.jpg')
 mimetypes.add_type('image/png', '.png')
 
-from src.utils import geo, finance, news_fetcher, risk_engine, weather
+from src.utils import geo, finance, news_fetcher, risk_engine, weather, fuel_engine
 from src.utils.auth import create_user, authenticate, get_user_by_id
 
 from flask import Flask, jsonify, render_template, request, send_from_directory, redirect
@@ -173,8 +173,8 @@ def evaluate_route_risk(location: str, route: str, raw_text_data: str) -> dict:
     else:
         text = f"{location} {route} {raw_text_data}"
     
-    # Use the new Risk Engine
-    analysis = risk_engine.calculate_risk_score(text)
+    # Use the Risk Engine with target location context
+    analysis = risk_engine.calculate_risk_score(text, target_location=location)
     
     # Format for API response (Backward Compatibility)
     formatted_output_lines = [
@@ -202,7 +202,7 @@ def _gather_external_text(location: str, route: str) -> tuple[str, dict[str, boo
     base_query = f"{location} {route}".strip() or location or route
     
     # Append context keywords to guide the search engine
-    enhanced_query = f"{base_query} trade logistics risk sanctions supply chain"
+    enhanced_query = f"{base_query} port freight shipping delays disruptions"
     
     sources_used = {
         "google_news_rss": False,
@@ -394,12 +394,12 @@ def trade_routes_page():
 
 @app.route("/plan-generator", methods=["GET"])
 def plan_generator_page():
-    return send_from_directory(FRONTEND_DIR, "plan-generator.html")
+    return redirect("/trade-routes")
 
 
 @app.route("/inventory-health", methods=["GET"])
 def inventory_health_page():
-    return send_from_directory(FRONTEND_DIR, "inventory-health.html")
+    return redirect("/trade-routes")
 
 
 @app.route("/kirana-pos", methods=["GET"])
@@ -414,7 +414,7 @@ def road_risk_page():
 
 @app.route("/import-studio", methods=["GET"])
 def import_studio_page():
-    return send_from_directory(FRONTEND_DIR, "import-studio.html")
+    return redirect("/trade-routes")
 
 
 @app.route("/shipment-planner", methods=["GET"])
@@ -842,6 +842,13 @@ def api_news():
     return jsonify(dynamic_items + base_news)
 
 
+@app.route("/api/fuel-benchmarks", methods=["GET"])
+@app.route("/api/fuels", methods=["GET"])
+def api_fuel_benchmarks():
+    force = request.args.get('refresh', '').lower() in ['1', 'true', 'yes']
+    logger.info(f"ACTION TRIGGERED: Fetch Real-Time Fuel Benchmarks | Force Refresh: {force}")
+    return jsonify(fuel_engine.get_fuel_benchmarks(force_refresh=force))
+
 
 @app.route("/api/ports/<country>", methods=["GET"])
 def api_ports(country):
@@ -868,6 +875,9 @@ def api_analyze_shipment():
     if not from_country or not to_country:
         return jsonify({"error": "Missing origin or destination"}), 400
         
+    if str(from_country).strip().lower() == str(to_country).strip().lower():
+        return jsonify({"error": "Origin and destination countries cannot be identical"}), 400
+
     # Get Coordinates
     # Priority: Specific Coords (from Port selection) > Country Default
     coord1 = None
@@ -880,7 +890,7 @@ def api_analyze_shipment():
     else: coord2 = geo.get_country_coordinates(to_country)
     
     if not coord1 or not coord2:
-        return jsonify({"error": f"Could not geocode locations"}), 404
+        return jsonify({"error": f"Could not geocode locations for {from_country} or {to_country}"}), 404
         
     # Calculate Distance
     dist = geo.calculate_distance(coord1, coord2)
@@ -891,17 +901,70 @@ def api_analyze_shipment():
     # Enrich with Real-time Risk (News) and Currency
     rates = finance.get_exchange_rates()
     
-    # Risk Calculation (Same as before)
+    # Risk Calculation validated against Google RSS news
     risk_from = evaluate_route_risk(from_country, "Export Logistics", "")
     risk_to = evaluate_route_risk(to_country, "Import Logistics", "")
-    combined_score = (risk_from['score'] + risk_to['score']) / 2
+    combined_score = round((risk_from['score'] + risk_to['score']) / 2, 1)
     
+    if combined_score >= 7.5:
+        combined_level = "High"
+    elif combined_score >= 4.0:
+        combined_level = "Medium"
+    else:
+        combined_level = "Low"
+
     # Adjust for Mode/Currency
     for mode, details in analysis.items():
         details['cost'] = finance.convert_currency(details['cost_usd'], "USD", currency, rates)
         details['currency'] = currency
-        # ... risk logic ...
+        if mode == "air":
+            details['risk_level'] = "Low" if combined_score < 7.0 else "Medium"
+        elif mode == "sea":
+            details['risk_level'] = combined_level
+        else:
+            details['risk_level'] = "High" if combined_score > 6.0 else "Medium" if combined_score > 3.0 else "Low"
             
+    feasibility = geo.check_mode_feasibility(from_country, to_country, dist)
+
+    # Dynamic real-time risk drivers based on Google RSS news & fuel benchmarks
+    try:
+        from src.utils.fuel_engine import get_fuel_benchmarks
+        fuel_data = get_fuel_benchmarks()
+        avg_fuel_change = 0.0
+        for f in fuel_data.get("fuels", []):
+            try:
+                ch = abs(float(str(f.get("change", "0")).replace("%", "").replace("+", "").replace("-", "")))
+                avg_fuel_change += ch
+            except Exception:
+                pass
+        fuel_volatility = round(min(9.5, max(2.5, 3.5 + avg_fuel_change * 1.5)), 1)
+    except Exception:
+        fuel_volatility = 5.2
+
+    pol_score = round(max(1.0, min(10.0, (risk_from['score'] * 0.6 + risk_to['score'] * 0.4))), 1)
+
+    all_justifications = risk_from.get("justification", []) + risk_to.get("justification", [])
+    labor_score = 2.5
+    for r in all_justifications:
+        r_lower = r.lower()
+        if any(w in r_lower for w in ["strike", "congestion", "delay", "backlog", "labor", "disruption"]):
+            labor_score = min(9.5, labor_score + 2.0)
+    labor_score = round(labor_score, 1)
+
+    sanctions_score = 1.0
+    for r in all_justifications:
+        r_lower = r.lower()
+        if any(w in r_lower for w in ["sanction", "embargo", "blockade", "restriction", "war", "conflict"]):
+            sanctions_score = min(9.8, sanctions_score + 3.5)
+    sanctions_score = round(sanctions_score, 1)
+
+    risk_drivers = {
+        "fuel": {"val": fuel_volatility, "label": "Fuel Volatility"},
+        "politics": {"val": pol_score, "label": "Political Stability"},
+        "labor": {"val": labor_score, "label": "Labor & Strikes"},
+        "sanctions": {"val": sanctions_score, "label": "Sanctions & Compliance"}
+    }
+
     return jsonify({
         "from": from_country,
         "to": to_country,
@@ -913,11 +976,50 @@ def api_analyze_shipment():
         },
         "distance_km": dist,
         "analysis": analysis,
+        "feasibility": feasibility,
         "risk_summary": {
             "origin_score": risk_from['score'],
             "destination_score": risk_to['score'],
-            "combined_level": "Medium" if combined_score > 4 else "Low" # Simplified
-        }
+            "combined_level": combined_level,
+            "reasons": all_justifications
+        },
+        "risk_drivers": risk_drivers,
+        "validation_source": "Google News RSS & Open Logistics Telemetry"
+    })
+
+
+@app.route("/api/mode-feasibility", methods=["POST", "GET"])
+def api_mode_feasibility():
+    """Live assessment of physical freight connectivity and mode feasibility."""
+    if request.method == "POST":
+        data = request.get_json(force=True, silent=True) or {}
+        from_country = data.get("from_country", "India")
+        to_country = data.get("to_country", "Netherlands")
+        preferred_mode = data.get("preferred_mode")
+    else:
+        from_country = request.args.get("from", "India")
+        to_country = request.args.get("to", "Netherlands")
+        preferred_mode = request.args.get("mode")
+
+    coord1 = geo.get_country_coordinates(from_country) or (20.59, 78.96)
+    coord2 = geo.get_country_coordinates(to_country) or (52.13, 5.29)
+    dist = geo.calculate_distance(coord1, coord2)
+    feasibility = geo.check_mode_feasibility(from_country, to_country, dist)
+    analysis = geo.analyze_route_options(from_country, to_country, dist)
+
+    is_feasible = True
+    if preferred_mode and preferred_mode in feasibility:
+        is_feasible = feasibility[preferred_mode]["feasible"]
+
+    return jsonify({
+        "from": from_country,
+        "to": to_country,
+        "distance_km": dist,
+        "coordinates": {"start": coord1, "end": coord2},
+        "feasibility": feasibility,
+        "analysis": analysis,
+        "selected_mode": preferred_mode,
+        "selected_feasible": is_feasible
     })
 
 

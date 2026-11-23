@@ -165,6 +165,14 @@ export class GlobeMap {
         this.routes = routes || [];
     }
 
+    renderRoutes(routes) {
+        this.setRoutes(routes);
+    }
+
+    highlightRoute(routeId) {
+        this.selectRoute(routeId);
+    }
+
     selectRoute(routeId) {
         this.selectedRouteId = routeId;
     }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,41 +14,49 @@
         }
     </style>
 </head>
+
 <body class="bg-dark-bg text-gray-100 min-h-screen flex flex-col font-sans">
 
     <!-- Top Navigation -->
     <nav class="glass-panel sticky top-0 z-50 px-6 h-16 flex items-center justify-between border-b border-white/10">
         <div class="flex items-center gap-6">
-            <a href="/" class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+            <a href="/"
+                class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
                 HETVAYA FlowGrid
             </a>
             <div class="hidden md:flex items-center gap-5 text-sm font-medium text-gray-400">
                 <a href="/dashboard" class="hover:text-white transition">Overview</a>
-                <a href="/trade-routes" class="text-indigo-400 hover:text-indigo-300 transition">Trade Route Map (mapcn)</a>
-                <a href="/plan-generator" class="hover:text-white transition">Plan Generator</a>
+                <a href="/trade-routes" class="text-indigo-400 hover:text-indigo-300 transition">Trade Route Map
+                    (mapcn)</a>
                 <a href="/inventory-health" class="hover:text-white transition">Inventory Health & DOS</a>
                 <a href="/road-risk" class="hover:text-white transition">Road Risk & Ghats</a>
-                <a href="/import-studio" class="text-emerald-400 border-b-2 border-emerald-400 pb-1 font-semibold">Import Studio</a>
+                <a href="/import-studio"
+                    class="text-emerald-400 border-b-2 border-emerald-400 pb-1 font-semibold">Import Studio</a>
             </div>
         </div>
-        <span class="text-xs px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Pre-Flight Checks Active</span>
+        <span
+            class="text-xs px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Pre-Flight
+            Checks Active</span>
     </nav>
 
     <!-- Main Container -->
     <main class="flex-1 p-6 max-w-6xl mx-auto w-full space-y-6">
 
         <!-- Header -->
-        <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div
+            class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-white flex items-center gap-3">
                     Master Data Import Studio & Pre-Flight Validator
                 </h1>
                 <p class="text-sm text-gray-400 mt-1">
-                    Validates 6 core master datasets against missing headers, duplicate keys, negative values, date formatting, and foreign key referential integrity.
+                    Validates 6 core master datasets against missing headers, duplicate keys, negative values, date
+                    formatting, and foreign key referential integrity.
                 </p>
             </div>
             <div class="flex items-center gap-2">
-                <select id="dataset-type-select" onchange="loadTemplate()" class="bg-dark-card border border-white/10 rounded-xl px-3 py-2 text-xs text-emerald-300 font-semibold outline-none cursor-pointer">
+                <select id="dataset-type-select" onchange="loadTemplate()"
+                    class="bg-dark-card border border-white/10 rounded-xl px-3 py-2 text-xs text-emerald-300 font-semibold outline-none cursor-pointer">
                     <option value="warehouses">1. Warehouses (warehouses.csv)</option>
                     <option value="stores">2. Retail Stores (stores.csv)</option>
                     <option value="products">3. Products & SKUs (products.csv)</option>
@@ -63,16 +72,24 @@
             <div class="flex justify-between items-center border-b border-white/10 pb-3">
                 <span class="text-xs font-bold text-gray-300 uppercase tracking-wider">CSV Data Payload</span>
                 <div class="flex items-center gap-2">
-                    <button onclick="loadTemplate()" class="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs">Load Valid Sample</button>
-                    <button onclick="injectErrorSample()" class="px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 text-xs">Inject Error Sample</button>
+                    <button onclick="loadTemplate()"
+                        class="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs">Load Valid
+                        Sample</button>
+                    <button onclick="injectErrorSample()"
+                        class="px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 text-xs">Inject
+                        Error Sample</button>
                 </div>
             </div>
 
-            <textarea id="csv-content-input" rows="8" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs font-mono text-emerald-300 outline-none focus:border-emerald-500/50" placeholder="Paste CSV lines here..."></textarea>
+            <textarea id="csv-content-input" rows="8"
+                class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-xs font-mono text-emerald-300 outline-none focus:border-emerald-500/50"
+                placeholder="Paste CSV lines here..."></textarea>
 
             <div class="flex justify-between items-center pt-2">
-                <span class="text-[11px] text-gray-400">Pre-flight checks run in-memory before database persistence.</span>
-                <button onclick="runPreflightValidation()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold shadow-lg shadow-emerald-500/20 text-xs transition">
+                <span class="text-[11px] text-gray-400">Pre-flight checks run in-memory before database
+                    persistence.</span>
+                <button onclick="runPreflightValidation()"
+                    class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold shadow-lg shadow-emerald-500/20 text-xs transition">
                     ✓ Run Pre-Flight Validation
                 </button>
             </div>
@@ -100,7 +117,8 @@
             </div>
 
             <!-- Warnings Box -->
-            <div id="warnings-container" class="hidden bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl space-y-2">
+            <div id="warnings-container"
+                class="hidden bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl space-y-2">
                 <h4 class="text-xs font-bold text-amber-300 uppercase flex items-center gap-1.5">
                     ⚠️ Referential Warnings:
                 </h4>
@@ -136,16 +154,16 @@
         function injectErrorSample() {
             const dataset = document.getElementById('dataset-type-select').value;
             if (dataset === 'warehouses') {
-                document.getElementById('csv-content-input').value = 
+                document.getElementById('csv-content-input').value =
                     "code,name,city,state,latitude,longitude,capacity_cases\n" +
                     "WH-BHIWANDI,Bhiwandi Central Depot,Bhiwandi,Maharashtra,19.2967,73.0631,80000\n" +
                     "WH-BHIWANDI,Duplicate Bhiwandi,Bhiwandi,Maharashtra,19.2967,73.0631,-500\n"; // duplicate PK and negative capacity
             } else if (dataset === 'inventory_batches') {
-                document.getElementById('csv-content-input').value = 
+                document.getElementById('csv-content-input').value =
                     "warehouse_code,product_code,lot_number,quantity,expiry_date\n" +
                     "WH-INVALID-HUB,SKU-UNKNOWN,LOT-ERR-01,-200,INVALID-DATE-31\n"; // invalid FKs, negative quantity, invalid date
             } else {
-                document.getElementById('csv-content-input').value = 
+                document.getElementById('csv-content-input').value =
                     "unknown_column,foo,bar\n1,2,3\n"; // missing required headers
             }
         }
@@ -161,7 +179,7 @@
             try {
                 const res = await fetch('/api/v1/master-data/validate', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         dataset_type: dataset,
                         csv_content: content
@@ -231,4 +249,5 @@
     </script>
     <script type="module" src="/src/js/motion.js"></script>
 </body>
+
 </html>

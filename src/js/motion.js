@@ -1,3 +1,11 @@
+import { SmoothDropdown } from './smooth-dropdown.js';
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => SmoothDropdown.initAll());
+} else {
+    SmoothDropdown.initAll();
+}
+
 const metricSelector = '.text-metric-lg, #risk-score, #stat-best-profit, #stat-total-rows, [id^="kpi-"], #ai-confidence-score';
 const metrics = new Set(document.querySelectorAll(metricSelector));
 

@@ -23,9 +23,9 @@
     <!-- Navigation -->
     <header>
         <nav class="fixed top-0 left-0 right-0 z-50 w-full bg-transparent border-0 border-transparent shadow-none" aria-label="Main navigation">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="w-full px-6 sm:px-10 lg:px-14">
                 <div class="flex items-center justify-between h-20">
-                    <div class="flex items-center gap-6 lg:gap-10">
+                    <div class="flex items-center gap-6 lg:gap-10 flex-shrink-0">
                         <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-black/10 text-slate-900 transition"
                             type="button" aria-label="Open navigation menu" aria-controls="mobile-menu"
                             aria-expanded="false">
@@ -37,48 +37,48 @@
                         </button>
 
                         <a href="/"
-                            class="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-1.5"
+                            class="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-1.5 whitespace-nowrap flex-shrink-0"
                             aria-label="SupplyGuard AI home">
                             <span class="text-slate-950 font-black drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)]">SupplyGuard</span>
                             <span class="text-indigo-900 font-extrabold tracking-wide drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)]">AI</span>
                         </a>
 
-                        <div class="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-bold tracking-wide">
+                        <div class="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-bold tracking-wide whitespace-nowrap flex-shrink-0">
                             <a href="/trade-routes"
-                                class="group transition-all duration-200 py-1.5 px-2.5 rounded-lg hover:bg-black/5">
-                                <span class="text-indigo-950 font-extrabold group-hover:text-indigo-800 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
+                                class="whitespace-nowrap flex-shrink-0 group transition-all duration-200 py-1.5 px-3 rounded-lg hover:bg-black/5">
+                                <span class="whitespace-nowrap inline-block text-indigo-950 font-extrabold group-hover:text-indigo-800 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
                                     Trade Route Map
                                 </span>
                             </a>
-                            <a href="/plan-generator"
-                                class="group transition-all duration-200 py-1.5 px-2.5 rounded-lg hover:bg-black/5">
-                                <span class="text-slate-900 group-hover:text-indigo-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
-                                    Plan Generator
+                            <a href="/map"
+                                class="whitespace-nowrap flex-shrink-0 group transition-all duration-200 py-1.5 px-3 rounded-lg hover:bg-black/5">
+                                <span class="whitespace-nowrap inline-block text-slate-900 group-hover:text-indigo-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
+                                    Risk Map
                                 </span>
                             </a>
-                            <a href="/inventory-health"
-                                class="group transition-all duration-200 py-1.5 px-2.5 rounded-lg hover:bg-black/5">
-                                <span class="text-slate-900 group-hover:text-indigo-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
-                                    Inventory Health
+                            <a href="/dashboard"
+                                class="whitespace-nowrap flex-shrink-0 group transition-all duration-200 py-1.5 px-3 rounded-lg hover:bg-black/5">
+                                <span class="whitespace-nowrap inline-block text-slate-900 group-hover:text-indigo-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
+                                    Dashboard
                                 </span>
                             </a>
-                            <a href="/road-risk"
-                                class="group transition-all duration-200 py-1.5 px-2.5 rounded-lg hover:bg-black/5">
-                                <span class="text-slate-900 group-hover:text-indigo-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
-                                    Road Risk &amp; Ghats
+                            <a href="/intelligence"
+                                class="whitespace-nowrap flex-shrink-0 group transition-all duration-200 py-1.5 px-3 rounded-lg hover:bg-black/5">
+                                <span class="whitespace-nowrap inline-block text-slate-900 group-hover:text-indigo-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
+                                    Intelligence
                                 </span>
                             </a>
-                            <a href="/import-studio"
-                                class="group transition-all duration-200 py-1.5 px-2.5 rounded-lg hover:bg-black/5">
-                                <span class="text-slate-900 group-hover:text-indigo-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
-                                    Import Studio
+                            <a href="/reports"
+                                class="whitespace-nowrap flex-shrink-0 group transition-all duration-200 py-1.5 px-3 rounded-lg hover:bg-black/5">
+                                <span class="whitespace-nowrap inline-block text-slate-900 group-hover:text-indigo-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] transition-colors">
+                                    Reports
                                 </span>
                             </a>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3 sm:gap-5">
-                        <button id="theme-toggle" class="p-2 rounded-xl text-slate-900 hover:bg-black/10 transition drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)]" type="button"
+                    <div class="flex items-center gap-3 sm:gap-5 whitespace-nowrap flex-shrink-0">
+                        <button id="theme-toggle" class="p-2 rounded-xl text-slate-900 hover:bg-black/10 transition drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)] flex-shrink-0" type="button"
                             aria-label="Toggle color theme">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
                                 aria-hidden="true">
@@ -88,13 +88,13 @@
                             </svg>
                         </button>
 
-                        <a href="/login" class="text-sm font-bold text-slate-900 hover:text-indigo-950 transition px-3 py-1.5 rounded-lg hover:bg-black/5 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)]">
-                            <span>Log In</span>
+                        <a href="/login" class="whitespace-nowrap flex-shrink-0 text-sm font-bold text-slate-900 hover:text-indigo-950 transition px-3 py-1.5 rounded-lg hover:bg-black/5 drop-shadow-[0_1px_2px_rgba(255,255,255,0.85)]">
+                            <span class="whitespace-nowrap">Log In</span>
                         </a>
 
                         <a href="/signup"
-                            class="hidden sm:inline-flex items-center justify-center px-5 py-2.5 bg-slate-950 hover:bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-black/20 hover:shadow-black/30 transition transform hover:-translate-y-0.5">
-                            <span>Get Started</span>
+                            class="whitespace-nowrap flex-shrink-0 hidden sm:inline-flex items-center justify-center px-5 py-2.5 bg-slate-950 hover:bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-black/20 hover:shadow-black/30 transition transform hover:-translate-y-0.5">
+                            <span class="whitespace-nowrap">Get Started</span>
                         </a>
                     </div>
                 </div>
@@ -124,17 +124,17 @@
                     <a href="/trade-routes" class="hover:text-indigo-300 transition">
                         Trade Route Map
                     </a>
-                    <a href="/plan-generator" class="hover:text-indigo-300 transition">
-                        Plan Generator
+                    <a href="/map" class="hover:text-indigo-300 transition">
+                        Risk Map
                     </a>
-                    <a href="/inventory-health" class="hover:text-indigo-300 transition">
-                        Inventory Health
+                    <a href="/dashboard" class="hover:text-indigo-300 transition">
+                        Dashboard
                     </a>
-                    <a href="/road-risk" class="hover:text-indigo-300 transition">
-                        Road Risk &amp; Ghats
+                    <a href="/intelligence" class="hover:text-indigo-300 transition">
+                        Intelligence
                     </a>
-                    <a href="/import-studio" class="hover:text-indigo-300 transition">
-                        Import Studio
+                    <a href="/reports" class="hover:text-indigo-300 transition">
+                        Reports
                     </a>
 
                     <hr class="border-white/10 my-2">
@@ -151,8 +151,8 @@
     </header>
 
     <main id="main-content" class="flex-grow">
-        <!-- Hero: Fullscreen 1920x1080p Video with Lower-Right Call-to-Action Buttons -->
-        <section class="relative w-full h-screen min-h-[640px] max-h-[1080px] overflow-hidden bg-slate-950 flex flex-col justify-end">
+        <!-- Hero: Fullscreen 1920x1080p Video with Lower-Right Pinned Call-to-Action Buttons -->
+        <section id="hero-landing-section" class="relative w-full h-screen min-h-screen overflow-hidden bg-slate-950">
             <!-- Fullscreen 1080p MP4 Video Canvas -->
             <div class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
                 <video class="w-full h-full object-cover object-center"
@@ -161,20 +161,18 @@
                 </video>
             </div>
 
-            <!-- Lower Right Corner Buttons -->
-            <div class="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-8 pb-10 sm:pb-12 flex justify-end pointer-events-auto">
-                <div class="flex flex-col sm:flex-row items-center gap-4">
-                    <a href="/login"
-                        class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xl shadow-indigo-600/35 transition transform hover:scale-105 hover:-translate-y-0.5 text-center flex items-center justify-center gap-2">
-                        <span>Launch Platform</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
+            <!-- Lower Right Corner Buttons: Fixed to Bottom Right -->
+            <div class="absolute bottom-8 right-8 sm:bottom-12 sm:right-12 z-30 flex flex-col sm:flex-row items-center gap-4 pointer-events-auto">
+                <a href="/login"
+                    class="whitespace-nowrap px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-2xl shadow-indigo-600/40 transition transform hover:scale-105 hover:-translate-y-0.5 text-center flex items-center justify-center gap-2">
+                    <span class="whitespace-nowrap">Launch Platform</span>
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </a>
 
-                    <a href="/docs"
-                        class="w-full sm:w-auto px-8 py-3.5 bg-slate-950/75 hover:bg-slate-950 text-white backdrop-blur-md border border-white/20 rounded-xl font-bold shadow-lg transition transform hover:scale-105 hover:-translate-y-0.5 text-center">
-                        <span>View Documentation</span>
-                    </a>
-                </div>
+                <a href="/docs"
+                    class="whitespace-nowrap px-8 py-4 bg-slate-950/85 hover:bg-slate-950 text-white backdrop-blur-md border border-white/25 rounded-xl font-bold shadow-2xl transition transform hover:scale-105 hover:-translate-y-0.5 text-center">
+                    <span class="whitespace-nowrap">View Documentation</span>
+                </a>
             </div>
         </section>
 
