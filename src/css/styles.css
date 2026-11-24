@@ -862,3 +862,26 @@ main h3,
         transition-duration: 0.01ms !important;
     }
 }
+
+#btn-analyze,
+#btn-save-route {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+#btn-analyze > *,
+#btn-save-route > * {
+    flex: 0 0 auto;
+}
+
+#btn-analyze svg,
+#btn-save-route svg {
+    position: static;
+    display: block;
+    flex: 0 0 1rem;
+    margin: 0;
+}

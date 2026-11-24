@@ -118,12 +118,11 @@ KNOWN_CONFLICT_HOTSPOTS = {
 }
 
 @lru_cache(maxsize=500)
-def calculate_risk_score(text: str, target_location: str = "") -> Dict[str, Any]:
+def calculate_risk_score(text: str, target_location: str = "", from_location: str = "") -> Dict[str, Any]:
     """
     Analyzes text and returns a risk assessment dictionary.
-    Output keys: score (0-10), risk_level, reasons (list), recommendation
-    Uses strict regex word boundaries and contextual classification to eliminate false positives
-    (e.g., 'war' in 'warehouse', or mentions of external conflicts in foreign countries).
+    Incorporates authoritative corridor key point weights from routing_data.json (sanctions, landlocked, ports).
+    Output keys: score (0-10), risk_level, reasons (list), recommendation, routing_data
     """
     clean_text = _clean_text(text)
     target_clean = (target_location or "").lower().strip()
@@ -131,6 +130,31 @@ def calculate_risk_score(text: str, target_location: str = "") -> Dict[str, Any]
     found_risks = []
     max_severity = 0
     total_severity = 0
+    
+    # 0. Check routing_data.json authoritative weights
+    routing_data = None
+    if target_location:
+        try:
+            from src.utils.routing_weight_engine import routing_weight_engine
+            routing_data = routing_weight_engine.compute_routing_weights(from_location or target_location, target_location)
+            
+            if routing_data.get("sanctions_weight", 0.0) >= 0.8:
+                max_severity = max(max_severity, 10)
+                found_risks.append({
+                    "keyword": "sanctions",
+                    "severity": 10,
+                    "context": "Active trade sanctions / embargo on corridor (routing_data.json)"
+                })
+            elif routing_data.get("landlocked_transit_weight", 0.0) >= 0.7:
+                found_risks.append({
+                    "keyword": "landlocked",
+                    "severity": 4,
+                    "context": "Landlocked inland feeder transit requirement (routing_data.json)"
+                })
+                if max_severity < 4:
+                    max_severity = 4
+        except Exception:
+            pass
     
     for keyword, severity in RISK_KEYWORDS.items():
         # Match whole word / boundary only to eliminate substring false positives
@@ -174,7 +198,8 @@ def calculate_risk_score(text: str, target_location: str = "") -> Dict[str, Any]
             "risk_level": "Low",
             "recommendation": "Recommended",
             "reasons": ["No critical risk signals detected; baseline operational corridor index."],
-            "raw_matches": []
+            "raw_matches": [],
+            "routing_data": routing_data
         }
         
     density_score = min(3.0, len(found_risks) * 0.4)
@@ -214,5 +239,6 @@ def calculate_risk_score(text: str, target_location: str = "") -> Dict[str, Any]
         "risk_level": risk_level,
         "recommendation": recommendation,
         "reasons": reasons,
-        "raw_matches": found_risks
+        "raw_matches": found_risks,
+        "routing_data": routing_data
     }

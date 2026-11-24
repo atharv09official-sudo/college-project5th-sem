@@ -92,9 +92,6 @@ def serve_kirana_pos():
 
 @app.get("/road-risk")
 def serve_road_risk():
-    path = os.path.join(DASHBOARD_DIR, "road-risk.html")
-    if os.path.exists(path):
-        return FileResponse(path)
     return RedirectResponse(url="/trade-routes", status_code=302)
 
 

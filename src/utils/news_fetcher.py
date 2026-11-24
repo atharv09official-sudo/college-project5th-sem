@@ -92,3 +92,28 @@ def get_combined_news(query: str, location: str = "") -> List[Dict[str, Any]]:
     """
     full_query = f"{location} {query}".strip()
     return fetch_google_news_rss(full_query)
+
+def get_weighted_corridor_news(from_country: str, to_country: str) -> List[Dict[str, Any]]:
+    """
+    Fetches real-time Google News RSS articles prioritized by routing_data.json key points
+    (seaports, airports, landlocked dry ports, and trade sanctions).
+    """
+    from src.utils.routing_weight_engine import routing_weight_engine
+    queries = routing_weight_engine.build_weighted_search_queries(from_country, to_country)
+    
+    all_articles = []
+    seen_titles = set()
+    
+    for q in queries[:2]:
+        items = fetch_google_news_rss(q)
+        for it in items:
+            t = (it.get("title") or "").strip().lower()
+            if t and t not in seen_titles:
+                seen_titles.add(t)
+                all_articles.append(it)
+                
+    if not all_articles:
+        fallback_query = f"{from_country} {to_country} port freight shipping delays"
+        all_articles = fetch_google_news_rss(fallback_query)
+        
+    return all_articles[:10]

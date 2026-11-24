@@ -1,5 +1,8 @@
 import os
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Settings(BaseModel):
@@ -29,16 +32,26 @@ class Settings(BaseModel):
     STALE_EVENT_CUTOFF_MINUTES: int = 60
     MATERIALITY_THRESHOLD_PCT: float = 0.02  # 2% route margin
 
-    # Ollama LLM
+    # Ollama LLM & Free Cloud Reasoning
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_CLOUD_URL: str = os.getenv("OLLAMA_CLOUD_URL", "")
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.2:latest")
-    OLLAMA_TIMEOUT_SECONDS: int = 35
+    OLLAMA_TIMEOUT_SECONDS: int = 15
+
+    # Free Cloud AI Providers (OpenRouter / Groq)
+    OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+    OPENROUTER_MODEL_REASONING: str = os.getenv("OPENROUTER_MODEL_REASONING", "devstral/2-2512:free")
+    OPENROUTER_MODEL_FAST: str = os.getenv("OPENROUTER_MODEL_FAST", "mimo/v2-flash:free")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
 
     # Twilio / External
     TWILIO_ACCOUNT_SID: str = os.getenv("TWILIO_ACCOUNT_SID", "mock_sid")
     TWILIO_AUTH_TOKEN: str = os.getenv("TWILIO_AUTH_TOKEN", "mock_token")
     TWILIO_FROM_PHONE: str = os.getenv("TWILIO_FROM_PHONE", "+15005550006")
     SERPAPI_API_KEY: str = os.getenv("SERPAPI_API_KEY", "mock_key")
+
+    # Twelve Data market quotes (keep this key on the server)
+    TWELVE_DATA_API_KEY: str = os.getenv("TWELVE_DATA_API_KEY", "")
 
 
 settings = Settings()

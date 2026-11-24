@@ -14,8 +14,9 @@ mimetypes.add_type('video/mp4', '.mp4')
 mimetypes.add_type('image/jpeg', '.jpg')
 mimetypes.add_type('image/png', '.png')
 
-from src.utils import geo, finance, news_fetcher, risk_engine, weather, fuel_engine
+from src.utils import geo, finance, news_fetcher, risk_engine, weather, fuel_engine, energy_market
 from src.utils.auth import create_user, authenticate, get_user_by_id
+from models.ollama_intelligence import OllamaIntelligenceEngine
 
 from flask import Flask, jsonify, render_template, request, send_from_directory, redirect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -71,6 +72,7 @@ RISK_SCORE_MAX = _get_int_env("RISK_SCORE_MAX", 10)
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret_key_123_change_in_prod")
+ai_engine = OllamaIntelligenceEngine()
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -156,14 +158,14 @@ def _save_reports_data(reports: list) -> bool:
     return _save_json_file(REPORTS_DB_PATH, reports)
 
 
-def evaluate_route_risk(location: str, route: str, raw_text_data: str) -> dict:
+def evaluate_route_risk(location: str, route: str, raw_text_data: str, from_location: str = "") -> dict:
     """
-    Evaluates risk using the enhanced Risk Engine.
+    Evaluates risk using the enhanced Risk Engine with routing_data.json key-point weights.
     Fetches external data (News/Weather) if raw_text_data is empty.
     """
-    # If no raw text provided, gather it dynamically
+    # If no raw text provided, gather it dynamically using weighted queries
     if not raw_text_data:
-        gathered_text, _ = _gather_external_text(location, route)
+        gathered_text, _ = _gather_external_text(from_location or location, route)
         # Inject static risk profiles for known high-risk areas to ensure genuine baseline
         static_context = risk_engine.get_static_risk_keywords(location)
         if route:
@@ -173,8 +175,8 @@ def evaluate_route_risk(location: str, route: str, raw_text_data: str) -> dict:
     else:
         text = f"{location} {route} {raw_text_data}"
     
-    # Use the Risk Engine with target location context
-    analysis = risk_engine.calculate_risk_score(text, target_location=location)
+    # Use the Risk Engine with target location & corridor origin context
+    analysis = risk_engine.calculate_risk_score(text, target_location=location, from_location=from_location)
     
     # Format for API response (Backward Compatibility)
     formatted_output_lines = [
@@ -193,16 +195,16 @@ def evaluate_route_risk(location: str, route: str, raw_text_data: str) -> dict:
         "recommendation": analysis['recommendation'],
         "justification": analysis['reasons'],
         "formatted": formatted_output,
+        "routing_data": analysis.get("routing_data")
     }
 
 
 def _gather_external_text(location: str, route: str) -> tuple[str, dict[str, bool]]:
-    # Construct a more targeted query to ensure we get risk/logistics related news
-    # rather than just general diplomatic news.
+    # Construct targeted queries prioritized by routing_data.json key points (ports, airports, landlocked, sanctions)
     base_query = f"{location} {route}".strip() or location or route
     
-    # Append context keywords to guide the search engine
-    enhanced_query = f"{base_query} port freight shipping delays disruptions"
+    from src.utils.routing_weight_engine import routing_weight_engine
+    weighted_queries = routing_weight_engine.build_weighted_search_queries(location, route)
     
     sources_used = {
         "google_news_rss": False,
@@ -210,20 +212,33 @@ def _gather_external_text(location: str, route: str) -> tuple[str, dict[str, boo
     }
     parts: list[str] = []
     
-    # Fetch Real-Time News
-    if base_query:
-        # Use enhanced query for better relevance
+    # Fetch Real-Time News across top weighted queries
+    news_items = []
+    if weighted_queries:
+        for q in weighted_queries[:2]:
+            items = news_fetcher.fetch_google_news_rss(q)
+            if items:
+                news_items.extend(items)
+                
+    # If no results with weighted queries, fall back to base query
+    if not news_items and base_query:
+        enhanced_query = f"{base_query} port freight shipping delays disruptions"
         news_items = news_fetcher.get_combined_news(enhanced_query)
-        
-        # If no results with enhanced query, fall back to base query
         if not news_items:
             news_items = news_fetcher.get_combined_news(base_query)
             
-        if news_items:
-            # Extract summaries/titles for analysis
-            news_text = "\n".join([f"{item['title']}. {item['summary']}" for item in news_items])
-            parts.append(news_text)
-            sources_used["google_news_rss"] = True
+    if news_items:
+        # Deduplicate by title
+        seen_titles = set()
+        deduped = []
+        for item in news_items:
+            t = (item.get("title") or "").strip().lower()
+            if t and t not in seen_titles:
+                seen_titles.add(t)
+                deduped.append(item)
+        news_text = "\n".join([f"{item['title']}. {item['summary']}" for item in deduped[:8]])
+        parts.append(news_text)
+        sources_used["google_news_rss"] = True
             
     # Fetch Weather
     if location:
@@ -409,7 +424,7 @@ def kirana_pos_page():
 
 @app.route("/road-risk", methods=["GET"])
 def road_risk_page():
-    return send_from_directory(FRONTEND_DIR, "road-risk.html")
+    return redirect("/trade-routes")
 
 
 @app.route("/import-studio", methods=["GET"])
@@ -850,6 +865,15 @@ def api_fuel_benchmarks():
     return jsonify(fuel_engine.get_fuel_benchmarks(force_refresh=force))
 
 
+@app.route("/api/v1/energy-market", methods=["GET"])
+@app.route("/api/energy-market", methods=["GET"])
+def api_energy_market_quotes():
+    try:
+        return jsonify(energy_market.get_energy_market_quotes())
+    except energy_market.EnergyMarketError as error:
+        return jsonify({"detail": str(error)}), error.status_code
+
+
 @app.route("/api/ports/<country>", methods=["GET"])
 def api_ports(country):
     logger.info(f"ACTION TRIGGERED: Fetch Ports | Country: {country}")
@@ -901,12 +925,19 @@ def api_analyze_shipment():
     # Enrich with Real-time Risk (News) and Currency
     rates = finance.get_exchange_rates()
     
-    # Risk Calculation validated against Google RSS news
-    risk_from = evaluate_route_risk(from_country, "Export Logistics", "")
-    risk_to = evaluate_route_risk(to_country, "Import Logistics", "")
+    # Risk Calculation validated against Google RSS news with routing_data.json key points
+    from src.utils.routing_weight_engine import routing_weight_engine
+    routing_weights = routing_weight_engine.compute_routing_weights(from_country, to_country)
+
+    risk_from = evaluate_route_risk(from_country, "Export Logistics", "", from_location=from_country)
+    risk_to = evaluate_route_risk(to_country, "Import Logistics", "", from_location=from_country)
     combined_score = round((risk_from['score'] + risk_to['score']) / 2, 1)
     
-    if combined_score >= 7.5:
+    # If sanctions active in routing_data.json, ensure High risk classification
+    if routing_weights.get("sanctions_weight", 0.0) >= 0.8:
+        combined_score = max(combined_score, 9.2)
+        combined_level = "High"
+    elif combined_score >= 7.5:
         combined_level = "High"
     elif combined_score >= 4.0:
         combined_level = "Medium"
@@ -952,10 +983,14 @@ def api_analyze_shipment():
     labor_score = round(labor_score, 1)
 
     sanctions_score = 1.0
-    for r in all_justifications:
-        r_lower = r.lower()
-        if any(w in r_lower for w in ["sanction", "embargo", "blockade", "restriction", "war", "conflict"]):
-            sanctions_score = min(9.8, sanctions_score + 3.5)
+    if routing_weights.get("sanctions_weight", 0.0) >= 0.8:
+        sanctions_score = 9.8
+        all_justifications.insert(0, "CRITICAL: Active trade sanctions / embargo enforce strict compliance checks (routing_data.json).")
+    else:
+        for r in all_justifications:
+            r_lower = r.lower()
+            if any(w in r_lower for w in ["sanction", "embargo", "blockade", "restriction", "war", "conflict"]):
+                sanctions_score = min(9.8, sanctions_score + 3.5)
     sanctions_score = round(sanctions_score, 1)
 
     risk_drivers = {
@@ -964,6 +999,14 @@ def api_analyze_shipment():
         "labor": {"val": labor_score, "label": "Labor & Strikes"},
         "sanctions": {"val": sanctions_score, "label": "Sanctions & Compliance"}
     }
+
+    # Generate real-time fast multi-tier AI corridor reasoning
+    ai_intel = ai_engine.generate_corridor_llm_intelligence(
+        from_country=from_country,
+        to_country=to_country,
+        external_news=" ".join(all_justifications[:2]),
+        risk_summary={"combined_score": combined_score, "combined_level": combined_level}
+    )
 
     return jsonify({
         "from": from_country,
@@ -984,8 +1027,39 @@ def api_analyze_shipment():
             "reasons": all_justifications
         },
         "risk_drivers": risk_drivers,
-        "validation_source": "Google News RSS & Open Logistics Telemetry"
+        "routing_weights": routing_weights,
+        "routing_key_points": routing_weights.get("key_points", []),
+        "ai_intelligence": ai_intel,
+        "why_this_score": ai_intel.get("advisory", ""),
+        "validation_source": "Google News RSS & routing_data.json Key-Points Telemetry"
     })
+
+
+@app.route("/api/ai/corridor-intelligence", methods=["POST", "GET"])
+def api_corridor_intelligence():
+    """Generates fast multi-tier reasoning for trade corridors weighted by routing_data.json."""
+    if request.method == "POST":
+        data = request.get_json(force=True, silent=True) or {}
+        from_country = data.get("from_country", "India")
+        to_country = data.get("to_country", "Netherlands")
+        external_news = data.get("external_news", "")
+    else:
+        from_country = request.args.get("from", "India")
+        to_country = request.args.get("to", "Netherlands")
+        external_news = request.args.get("news", "")
+
+    intel = ai_engine.generate_corridor_llm_intelligence(
+        from_country=from_country,
+        to_country=to_country,
+        external_news=external_news
+    )
+    return jsonify(intel)
+
+
+@app.route("/api/ai/status", methods=["GET"])
+def api_ai_status():
+    """Returns status and diagnostic metrics of Ollama & free cloud AI engine."""
+    return jsonify(ai_engine.get_engine_status())
 
 
 @app.route("/api/mode-feasibility", methods=["POST", "GET"])

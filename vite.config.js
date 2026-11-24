@@ -42,7 +42,6 @@ function dashboardRouter() {
   const routes = [
     'dashboard',
     'trade-routes',
-    'road-risk',
     'routes',
     'analysis',
     'compare',
@@ -194,7 +193,6 @@ export default defineConfig({
         dashboardIndex: resolve(__dirname, 'dashboard/index.html'),
         dashboard: resolve(__dirname, 'dashboard/dashboard.html'),
         tradeRoutes: resolve(__dirname, 'dashboard/trade-routes.html'),
-        roadRisk: resolve(__dirname, 'dashboard/road-risk.html'),
         routes: resolve(__dirname, 'dashboard/routes.html'),
         analysis: resolve(__dirname, 'dashboard/analysis.html'),
         compare: resolve(__dirname, 'dashboard/compare.html'),

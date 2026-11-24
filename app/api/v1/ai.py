@@ -28,6 +28,12 @@ class DisruptionParseRequest(BaseModel):
     raw_text: str = "Driver reporting huge landslide and waterlogging on Khandala Ghat NH48, traffic halted, will delay at least 2 hours."
 
 
+class CorridorIntelligenceRequest(BaseModel):
+    from_country: str = "India"
+    to_country: str = "Netherlands"
+    external_news: str = ""
+
+
 @router.post("/road-risk", response_model=RoadRiskResponse)
 def predict_road_risk(payload: RoadRiskRequest):
     """
@@ -61,3 +67,23 @@ def parse_driver_disruption(payload: DisruptionParseRequest):
     Module 9: Converts unstructured driver voice/SMS messages into structured disruption records.
     """
     return ai_engine.parse_driver_disruption(payload.raw_text)
+
+
+@router.post("/corridor-intelligence")
+def generate_corridor_intelligence(payload: CorridorIntelligenceRequest):
+    """
+    Generates fast multi-tier reasoning for trade corridors weighted by routing_data.json.
+    """
+    return ai_engine.generate_corridor_llm_intelligence(
+        from_country=payload.from_country,
+        to_country=payload.to_country,
+        external_news=payload.external_news
+    )
+
+
+@router.get("/status")
+def get_ai_status():
+    """
+    Retrieves status of free cloud/Ollama AI engine, cache metrics, and latency diagnostics.
+    """
+    return ai_engine.get_engine_status()

@@ -223,9 +223,15 @@ async def analyze_shipment(request: Request):
     feasibility = geo.check_mode_feasibility(from_country, to_country, dist)
     rates = finance.get_exchange_rates()
 
+    from src.utils.routing_weight_engine import routing_weight_engine
+    routing_weights = routing_weight_engine.compute_routing_weights(from_country, to_country)
+
     for mode, details in analysis.items():
         details['cost'] = finance.convert_currency(details['cost_usd'], "USD", currency, rates)
         details['currency'] = currency
+
+    sanctions_val = 9.8 if routing_weights.get("sanctions_weight", 0.0) >= 0.8 else 1.0
+    combined_risk = "High" if sanctions_val >= 9.0 else "Low"
 
     return {
         "from": from_country,
@@ -235,17 +241,20 @@ async def analyze_shipment(request: Request):
         "analysis": analysis,
         "feasibility": feasibility,
         "risk_summary": {
-            "origin_score": 2.8,
-            "destination_score": 2.5,
-            "combined_level": "Low"
+            "origin_score": 9.2 if sanctions_val >= 9.0 else 2.8,
+            "destination_score": 9.0 if sanctions_val >= 9.0 else 2.5,
+            "combined_level": combined_risk,
+            "reasons": routing_weights.get("key_points", ["Baseline corridor connectivity validated."])
         },
         "risk_drivers": {
             "fuel": {"val": 4.5, "label": "Fuel Volatility"},
             "politics": {"val": 3.0, "label": "Political Stability"},
             "labor": {"val": 2.5, "label": "Labor & Strikes"},
-            "sanctions": {"val": 1.0, "label": "Sanctions & Compliance"}
+            "sanctions": {"val": sanctions_val, "label": "Sanctions & Compliance"}
         },
-        "validation_source": "Google News RSS & Open Logistics Telemetry"
+        "routing_weights": routing_weights,
+        "routing_key_points": routing_weights.get("key_points", []),
+        "validation_source": "Google News RSS & routing_data.json Key-Points Telemetry"
     }
 
 

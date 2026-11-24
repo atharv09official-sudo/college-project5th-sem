@@ -19,7 +19,6 @@ const weightInput = document.getElementById('weight-input');
 const tonIndicator = document.getElementById('ton-indicator');
 const volumeInput = document.getElementById('volume-input');
 const vehicleSelect = document.getElementById('vehicle-select');
-const vehicleSpecsHint = document.getElementById('vehicle-specs-hint');
 const deadlineInput = document.getElementById('deadline-input');
 
 const sliderTime = document.getElementById('slider-time');
@@ -91,10 +90,9 @@ const dashNewsCount = document.getElementById('dash-news-count');
 // ==========================================
 // 1. Initial Load & Setup
 // ==========================================
-document.addEventListener('DOMContentLoaded', async () => {
+const initTradeRoutes = async () => {
     setupSliders();
     setupWeightIndicator();
-    setupVehicleHints();
     setupTabs();
 
     // 0. Auto-initialize custom smooth dropdowns
@@ -137,12 +135,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         mapcn.highlightSelection(originSelect.value, destSelect.value);
         updateBreadcrumb();
 
-        // Safety layout synchronization
-        setTimeout(() => {
-            mapcn.map?.resize();
-            mapcn.highlightSelection(originSelect.value, destSelect.value);
-            updateBreadcrumb();
-        }, 200);
+        // Progressive layout synchronization
+        [100, 300, 700].forEach(delay => {
+            setTimeout(() => {
+                mapcn.map?.resize();
+                mapcn.highlightSelection(originSelect.value, destSelect.value);
+                updateBreadcrumb();
+            }, delay);
+        });
     } catch (e) {
         console.warn('[trade-routes] mapcn init error:', e);
     }
@@ -152,7 +152,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 5. Hydrate Live Dashboard telemetry tab from live session and APIs
     await loadLiveDashboardData();
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTradeRoutes);
+} else {
+    initTradeRoutes();
+}
 
 // ==========================================
 // 2. Load Road Network Data (Module 2)
@@ -246,20 +252,6 @@ function setupWeightIndicator() {
     });
 }
 
-function setupVehicleHints() {
-    const hints = {
-        'LCV_TATA_ACE': 'Max Payload: 1.5 Tons | Max Volume: 8.5 m³ | 14.5 km/l',
-        'MCV_EICHER_14T': 'Max Payload: 5.0 Tons | Max Volume: 24.0 m³ | 7.8 km/l',
-        'HCV_BHARATBENZ_16T': 'Max Payload: 16.0 Tons | Max Volume: 45.0 m³ | 4.5 km/l',
-        'TRAILER_40FT': 'Max Payload: 32.0 Tons | Max Volume: 80.0 m³ | 3.2 km/l (Ghat restricted)',
-        'EV_CARGO_VAN': 'Max Payload: 1.0 Tons | Max Volume: 6.0 m³ | Zero Emission EV'
-    };
-
-    vehicleSelect.addEventListener('change', () => {
-        vehicleSpecsHint.textContent = hints[vehicleSelect.value] || '';
-    });
-}
-
 // ==========================================
 // 4. Tab Switching & Live Telemetry Controls
 // ==========================================
@@ -319,7 +311,7 @@ async function executeOptimization(options = {}) {
     }
 
     if (btnSubmit) btnSubmit.disabled = true;
-    if (btnText) btnText.textContent = 'Computing Dijkstra & A* Paths...';
+    if (btnText) btnText.textContent = 'Optimizing Route...';
 
     try {
         const payload = {
@@ -359,7 +351,7 @@ async function executeOptimization(options = {}) {
         }
     } finally {
         if (btnSubmit) btnSubmit.disabled = false;
-        if (btnText) btnText.textContent = 'Execute Dijkstra & A* Optimization';
+        if (btnText) btnText.textContent = 'Optimize Route';
     }
 }
 

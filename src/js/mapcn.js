@@ -9,7 +9,7 @@ import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 const { Map, Marker, Popup, LngLatBounds } = maplibregl;
 
-// Robust, 100% Free basemap styles: Esri Dark Gray (No key, zero watermark), Esri Satellite, and OpenFreeMap vector
+// Robust, 100% Free basemap styles: Esri Dark Gray, Esri Satellite, and OpenFreeMap vector
 export const MAPCN_STYLES = {
     dark: {
         version: 8,
@@ -166,9 +166,9 @@ const MAPCN_DARK_STYLE = MAPCN_STYLES.dark;
 function hasWebGL() {
     try {
         const c = document.createElement('canvas');
-        return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl')));
     } catch (e) {
-        return false;
+        return true;
     }
 }
 
@@ -199,6 +199,8 @@ export class MapCN {
         this.isFallback = false;
         this.fallbackCanvas = null;
         this.fallbackCtx = null;
+        this.routeGeometryCache = new Map();
+        this.routeRenderVersion = 0;
     }
 
     async init() {
@@ -234,7 +236,9 @@ export class MapCN {
                     zoom: this.options.zoom,
                     pitch: this.options.pitch,
                     bearing: this.options.bearing,
-                    attributionControl: false
+                    attributionControl: false,
+                    fadeDuration: 0,
+                    renderWorldCopies: false
                 });
 
                 this.map.on('load', complete);
@@ -247,8 +251,10 @@ export class MapCN {
                     console.debug('[mapcn] Map note:', msg);
                 });
 
-                // Fail-safe timeout: 3500ms
-                setTimeout(complete, 3500);
+                // Safety timeout: ensure layers & controls mount even if event timing varies
+                setTimeout(() => {
+                    if (!settled && this.map) complete();
+                }, 1500);
             } catch (err) {
                 console.warn('[mapcn] MapLibre GL failed to mount. Falling back to 2D Canvas:', err);
                 this.init2DFallback();
@@ -353,19 +359,6 @@ export class MapCN {
             });
 
             this.map.addLayer({
-                id: 'network-corridors-glow',
-                type: 'line',
-                source: 'network-corridors',
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: {
-                    'line-color': '#38bdf8',
-                    'line-width': 3.5,
-                    'line-opacity': 0.35,
-                    'line-blur': 2
-                }
-            });
-
-            this.map.addLayer({
                 id: 'network-corridors-line',
                 type: 'line',
                 source: 'network-corridors',
@@ -448,21 +441,6 @@ export class MapCN {
                 data: { type: 'FeatureCollection', features: [] }
             });
 
-            // Outer Neon Glow
-            this.map.addLayer({
-                id: 'recommended-route-glow',
-                type: 'line',
-                source: 'recommended-route',
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: {
-                    'line-color': '#6366f1',
-                    'line-width': 9,
-                    'line-opacity': 0.5,
-                    'line-blur': 3
-                }
-            });
-
-            // Core Line
             this.map.addLayer({
                 id: 'recommended-route-core',
                 type: 'line',
@@ -488,38 +466,39 @@ export class MapCN {
     }
 
     addCustomControls() {
-        if (!this.container || this.container.querySelector('#mapcn-controls-overlay')) return;
+        const parent = this.container?.closest('.mapcn-container-wrapper') || this.container;
+        if (!parent || parent.querySelector('#mapcn-controls-overlay')) return;
 
         const controlWrapper = document.createElement('div');
         controlWrapper.id = 'mapcn-controls-overlay';
         controlWrapper.className = 'absolute top-3 right-3 z-20 flex flex-col gap-1.5 pointer-events-auto';
         controlWrapper.innerHTML = `
-            <div class="flex flex-col rounded-xl bg-[#121214]/90 backdrop-blur-md border border-white/10 shadow-2xl overflow-hidden divide-y divide-white/5 font-mono text-xs">
-                <button id="mapcn-zoom-in" title="Zoom In" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition">
+            <div class="flex flex-col rounded-[4px] bg-[#121214]/90 backdrop-blur-md border border-white/10 shadow-2xl overflow-hidden divide-y divide-white/5 font-mono text-xs">
+                <button id="mapcn-zoom-in" title="Zoom In" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition rounded-[3px]">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 </button>
-                <button id="mapcn-zoom-out" title="Zoom Out" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition">
+                <button id="mapcn-zoom-out" title="Zoom Out" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition rounded-[3px]">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
                 </button>
-                <button id="mapcn-pitch-toggle" title="Toggle 3D / 2D Perspective" class="w-8 h-8 flex items-center justify-center text-indigo-400 hover:text-indigo-300 hover:bg-white/10 transition text-[10px] font-bold">
+                <button id="mapcn-pitch-toggle" title="Toggle 3D / 2D Perspective" class="w-8 h-8 flex items-center justify-center text-indigo-400 hover:text-indigo-300 hover:bg-white/10 transition text-[10px] font-bold rounded-[3px]">
                     3D
                 </button>
-                <button id="mapcn-compass" title="Reset North Orientation" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-sky-400 hover:bg-white/10 transition text-[11px]">
+                <button id="mapcn-compass" title="Reset North Orientation" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-sky-400 hover:bg-white/10 transition text-[11px] rounded-[3px]">
                     🧭
                 </button>
-                <button id="mapcn-style-toggle" title="Cycle Basemap (Dark / Sat / Light)" class="w-8 h-8 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-white/10 transition text-[9px] font-bold uppercase">
+                <button id="mapcn-style-toggle" title="Cycle Basemap (Dark / Sat / Light)" class="w-8 h-8 flex items-center justify-center text-amber-400 hover:text-amber-300 hover:bg-white/10 transition text-[9px] font-bold uppercase rounded-[3px]">
                     SAT
                 </button>
-                <button id="mapcn-recenter" title="Recenter Corridors" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-emerald-400 hover:bg-white/10 transition">
+                <button id="mapcn-recenter" title="Recenter Corridors" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-emerald-400 hover:bg-white/10 transition rounded-[3px]">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 </button>
-                <button id="mapcn-fullscreen" title="Toggle Fullscreen" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition">
+                <button id="mapcn-fullscreen" title="Toggle Fullscreen" class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition rounded-[3px]">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                 </button>
             </div>
         `;
 
-        this.container.appendChild(controlWrapper);
+        parent.appendChild(controlWrapper);
 
         document.getElementById('mapcn-zoom-in')?.addEventListener('click', () => {
             this.map?.zoomIn({ duration: 300 });
@@ -823,6 +802,32 @@ export class MapCN {
         this.fitToCorridors();
     }
 
+    async getRoadRouteCoordinates(waypoints) {
+        if (!Array.isArray(waypoints) || waypoints.length < 2) return null;
+        const coords = waypoints
+            .filter(point => Number.isFinite(Number(point.lng)) && Number.isFinite(Number(point.lat)))
+            .map(point => [Number(point.lng), Number(point.lat)]);
+        if (coords.length < 2) return null;
+
+        const key = coords.map(point => point.join(',')).join(';');
+        if (this.routeGeometryCache.has(key)) return this.routeGeometryCache.get(key);
+
+        try {
+            const path = coords.map(point => point.join(',')).join(';');
+            const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${path}?overview=full&geometries=geojson&steps=false`, {
+                signal: AbortSignal.timeout(5000)
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            const roadCoords = data.code === 'Ok' ? data.routes?.[0]?.geometry?.coordinates : null;
+            if (!Array.isArray(roadCoords) || roadCoords.length < 2) return null;
+            this.routeGeometryCache.set(key, roadCoords);
+            return roadCoords;
+        } catch (error) {
+            return null;
+        }
+    }
+
     setOptimizationRoutes(recommendedRoute, rankedRoutes = []) {
         this.cachedRecommended = recommendedRoute;
         this.cachedAlternatives = rankedRoutes;
@@ -835,6 +840,7 @@ export class MapCN {
         }
 
         if (!this.map) return;
+        const renderVersion = ++this.routeRenderVersion;
 
         // 1. Recommended Route
         try {
@@ -890,6 +896,41 @@ export class MapCN {
             }
         } catch (e) { }
 
+        const updateRoadGeometry = async () => {
+            const routes = [recommendedRoute, ...rankedRoutes.filter(route => !route.is_recommended)];
+            const geometries = await Promise.all(routes.map(route => this.getRoadRouteCoordinates(route?.waypoints)));
+            if (renderVersion !== this.routeRenderVersion || !this.map) return;
+
+            const recCoords = geometries[0];
+            if (recCoords?.length > 1) {
+                this.map.getSource('recommended-route')?.setData({
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: { type: 'LineString', coordinates: recCoords },
+                        properties: {
+                            name: recommendedRoute?.name,
+                            distance_km: recommendedRoute?.distance_km,
+                            cost_inr: recommendedRoute?.total_cost_inr
+                        }
+                    }]
+                });
+            }
+
+            const palette = ['#10b981', '#f59e0b', '#a855f7'];
+            const alternatives = routes.slice(1).flatMap((route, index) => {
+                const coordinates = geometries[index + 1] || route.waypoints?.map(point => [point.lng, point.lat]);
+                if (!coordinates || coordinates.length < 2) return [];
+                return [{
+                    type: 'Feature',
+                    geometry: { type: 'LineString', coordinates },
+                    properties: { color: palette[index % palette.length], name: route.name, distance_km: route.distance_km }
+                }];
+            });
+            this.map.getSource('alt-routes')?.setData({ type: 'FeatureCollection', features: alternatives });
+        };
+        updateRoadGeometry();
+
         // 2. Alternative Routes
         try {
             const altSource = this.map.getSource('alt-routes');
@@ -929,6 +970,7 @@ export class MapCN {
         }
 
         if (!this.map || !route || !route.waypoints) return;
+        const renderVersion = ++this.routeRenderVersion;
         try {
             const recSource = this.map.getSource('recommended-route');
             if (recSource) {
@@ -946,6 +988,17 @@ export class MapCN {
                             distance_km: route.distance_km
                         }
                     }]
+                });
+                this.getRoadRouteCoordinates(route.waypoints).then(roadCoords => {
+                    if (!roadCoords || renderVersion !== this.routeRenderVersion || !this.map) return;
+                    this.map.getSource('recommended-route')?.setData({
+                        type: 'FeatureCollection',
+                        features: [{
+                            type: 'Feature',
+                            geometry: { type: 'LineString', coordinates: roadCoords },
+                            properties: { name: route.name, distance_km: route.distance_km }
+                        }]
+                    });
                 });
 
                 if (coords.length > 1) {
@@ -999,7 +1052,8 @@ export class MapCN {
         const w = this.fallbackCanvas.width / (window.devicePixelRatio || 1);
         const h = this.fallbackCanvas.height / (window.devicePixelRatio || 1);
 
-        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#0d0e12';
+        ctx.fillRect(0, 0, w, h);
 
         const minLat = 15.2, maxLat = 22.0;
         const minLng = 72.5, maxLng = 80.0;
@@ -1010,12 +1064,14 @@ export class MapCN {
         });
 
         // Corridors
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         this.corridors.forEach(c => {
-            const u = this.nodes.find(n => n.id === c.from_node);
-            const v = this.nodes.find(n => n.id === c.to_node);
+            const fromId = c.from_hub || c.from_node || c.from || c.source;
+            const toId = c.to_hub || c.to_node || c.to || c.target;
+            const u = this.nodes.find(n => n.id === fromId);
+            const v = this.nodes.find(n => n.id === toId);
             if (u && v) {
                 const p1 = toXY(u.lat, u.lng);
                 const p2 = toXY(v.lat, v.lng);

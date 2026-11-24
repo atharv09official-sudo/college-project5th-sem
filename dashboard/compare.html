@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compare Routes - SupplyGuard AI</title>
-    <link rel="stylesheet" href="/src/css/flowgrid.css">
     <link href="/src/css/styles.css" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/flowgrid.css">
 </head>
 
 <body class="bg-dark-bg text-gray-100 h-screen overflow-hidden flex flex-col">
@@ -181,6 +181,7 @@
     <script type="module">
         import { UI } from '/src/js/ui.js';
         import { SmoothToast } from '/src/js/smooth-toast.js';
+        import { getCountryCode, getCountryFlagHtml } from '/src/js/country-flags.js';
 
         // Make SmoothToast available globally if needed
         window.SmoothToast = SmoothToast;
@@ -335,10 +336,11 @@
                 filtered.forEach(opt => {
                     const div = document.createElement('div');
                     div.className = 'px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white cursor-pointer rounded transition-colors flex items-center gap-2';
-                    div.innerHTML = `<span>${opt}</span>`;
+                    const flag = getCountryCode(opt) ? getCountryFlagHtml(opt) : '';
+                    div.innerHTML = `${flag}<span class="truncate">${opt}</span>`;
                     
                     div.addEventListener('click', () => {
-                        selectedText.textContent = opt;
+                        selectedText.innerHTML = `${flag}<span class="align-middle">${opt}</span>`;
                         selectedText.classList.remove('text-gray-400'); // If it was placeholder style
                         selectedText.classList.add('text-white');
                         hiddenInput.value = opt;
@@ -378,6 +380,16 @@
                 // Initialize Custom Dropdowns
                 initDropdown('origin-dropdown', countries);
                 initDropdown('dest-dropdown', countries);
+
+                // Set initial flag icons on defaults
+                const originBtn = document.querySelector('#origin-dropdown .selected-text');
+                if (originBtn && originBtn.textContent.trim()) {
+                    originBtn.innerHTML = `${getCountryFlagHtml(originBtn.textContent.trim())}<span class="align-middle">${originBtn.textContent.trim()}</span>`;
+                }
+                const destBtn = document.querySelector('#dest-dropdown .selected-text');
+                if (destBtn && destBtn.textContent.trim()) {
+                    destBtn.innerHTML = `${getCountryFlagHtml(destBtn.textContent.trim())}<span class="align-middle">${destBtn.textContent.trim()}</span>`;
+                }
 
             } catch (err) {
                 console.error("Failed to load countries", err);

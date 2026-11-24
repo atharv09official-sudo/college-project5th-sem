@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Risk Map - SupplyGuard AI</title>
-    <link rel="stylesheet" href="/src/css/flowgrid.css">
     <link href="/src/css/styles.css" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/flowgrid.css">
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
     <style>
         .maplibregl-map {
@@ -14,32 +14,49 @@
             width: 100%;
             height: 100%;
         }
+
         .maplibregl-canvas-container {
             width: 100%;
             height: 100%;
         }
+        /* Refined soft corners with slightly square industrial aesthetic */
+        button, input, select, textarea, .custom-btn, .btn-geo {
+            border-radius: 4px !important;
+        }
+
         .mapcn-dark-popup .maplibregl-popup-content {
             background: rgba(18, 18, 20, 0.95) !important;
-            backdrop-filter: blur(12px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
-            border-radius: 0.75rem !important;
+            backdrop-filter: blur(14px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8) !important;
+            border-radius: 6px !important;
             padding: 0 !important;
             color: #f3f4f6 !important;
         }
+
         .mapcn-dark-popup .maplibregl-popup-tip {
             border-top-color: rgba(18, 18, 20, 0.95) !important;
             border-bottom-color: rgba(18, 18, 20, 0.95) !important;
+        }
+
+        /* Soft square button shadow and hover transitions */
+        button:not([disabled]) {
+            transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        button:not([disabled]):active {
+            transform: scale(0.975);
         }
     </style>
 </head>
 
 <body class="bg-[#09090b] text-gray-100 h-screen overflow-hidden flex flex-col font-sans select-none antialiased">
 
-    <!-- Top Navigation Bar (Dark Glassmorphic Theme) -->
-    <nav class="bg-[#09090b]/80 backdrop-blur-xl z-50 px-6 h-16 flex items-center justify-between border-b border-white/10 shadow-xs absolute top-0 left-0 right-0">
-        <div class="flex items-center gap-6">
-            <a href="/" class="text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-teal-300 to-cyan-400 tracking-tight">
+    <!-- Top Navigation Bar (Phone & Desktop Glassmorphic Header) -->
+    <nav
+        class="bg-[#09090b]/85 backdrop-blur-xl z-50 px-4 md:px-6 h-16 flex items-center justify-between border-b border-white/10 shadow-xs absolute top-0 left-0 right-0">
+        <div class="flex items-center gap-4 md:gap-6">
+            <a href="/"
+                class="text-base md:text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-teal-300 to-cyan-400 tracking-tight whitespace-nowrap">
                 SupplyGuard AI
             </a>
             <div class="hidden md:flex items-center gap-5 text-xs font-semibold text-gray-400">
@@ -52,36 +69,44 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <a href="/dashboard/trade-routes.html" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/25 transition text-xs font-semibold">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <a href="/dashboard/trade-routes.html" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/25 hover:border-indigo-400/50 shadow-xs active:scale-[0.98] transition text-xs font-semibold font-mono">
                 <span>⚡ Trade Optimizer</span>
             </a>
 
             <!-- User Profile Avatar Pill -->
             <div class="relative">
-                <button id="profile-menu-btn" class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-white/5 transition text-xs border border-white/10 focus:outline-none">
+                <button id="profile-menu-btn" class="flex items-center gap-2 px-2.5 py-1.5 rounded-[4px] hover:bg-white/5 transition text-xs border border-white/10 hover:border-white/20 active:scale-[0.98] focus:outline-none">
                     <div class="text-right hidden sm:block">
                         <div class="text-xs font-bold text-gray-200 leading-tight">System User</div>
-                        <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">Admin</span>
+                        <span class="text-[9px] px-1.5 py-0.2 rounded-[2px] bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">Admin</span>
                     </div>
-                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-teal-400 border border-white/20 shadow-xs"></div>
+                    <div class="h-7 w-7 sm:h-8 sm:w-8 rounded-[4px] bg-gradient-to-br from-indigo-500 to-teal-400 border border-white/20 shadow-xs"></div>
                 </button>
 
-                <div id="profile-menu-dropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-[#121214] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 p-1.5 z-50 text-gray-300 transform origin-top-right transition-all">
+                <div id="profile-menu-dropdown" class="hidden absolute right-0 top-full mt-2 w-56 bg-[#121214] border border-white/10 rounded-[6px] shadow-2xl shadow-black/80 p-1.5 z-50 text-gray-300 transform origin-top-right transition-all">
                     <div class="px-3 py-2 border-b border-white/10 mb-1">
                         <p class="text-xs font-bold text-white">System User</p>
                         <p class="text-[11px] text-gray-400 truncate">system@supplyguard.ai</p>
                     </div>
-                    <div class="space-y-0.5">
-                        <a href="/settings#profile" class="flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg hover:bg-white/5 hover:text-white transition font-medium">
+                    <div class="space-y-0.5 font-mono">
+                        <a href="/settings#profile" class="flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-[4px] hover:bg-white/5 hover:text-white transition font-medium">
                             <span>👤 Profile</span>
                         </a>
-                        <a href="/settings" class="flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg hover:bg-white/5 hover:text-white transition font-medium">
+                        <a href="/settings" class="flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-[4px] hover:bg-white/5 hover:text-white transition font-medium">
                             <span>⚙️ Settings</span>
                         </a>
                     </div>
                 </div>
             </div>
+
+            <!-- Mobile Menu Toggle Button (Phone Bar Trigger) -->
+            <button id="mobile-menu-toggle" type="button" aria-label="Open Mobile Navigation" class="md:hidden flex items-center justify-center p-2 rounded-[4px] border border-white/20 bg-[#121214] hover:bg-white/10 text-gray-300 transition text-sm active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
         </div>
     </nav>
 
@@ -90,128 +115,152 @@
         <!-- MapLibre GL Canvas Container -->
         <div id="mapcn-global-map" class="absolute inset-0 w-full h-full"></div>
 
-        <!-- Left Overlay: Mode Selection, Physical Feasibility & Corridor Filters -->
-        <div class="absolute top-20 left-6 z-10 w-80 max-h-[88vh] overflow-y-auto custom-scrollbar space-y-3">
+        <!-- Left Panel Dock Toggle Button -->
+        <div class="absolute top-20 left-4 md:left-6 z-20">
+            <button id="btn-toggle-left-panel" type="button" aria-controls="left-panel-container" aria-expanded="false" class="flex items-center gap-2 px-3.5 py-2 bg-[#101012]/95 hover:bg-[#18181c] text-white border border-white/20 hover:border-indigo-400/60 rounded-[4px] shadow-lg shadow-black/50 text-xs font-mono font-bold transition active:scale-[0.98] cursor-pointer">
+                <span class="w-2 h-2 rounded-[2px] bg-indigo-500 animate-pulse"></span>
+                <span class="hidden sm:inline">⚡ CORRIDORS & MODES</span>
+                <span class="sm:hidden">⚡ CORRIDORS</span>
+                <span id="left-toggle-icon" class="text-indigo-400 font-mono text-[11px] ml-1">▶</span>
+            </button>
+        </div>
+
+        <!-- Left Mobile Backdrop -->
+        <div id="left-panel-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 hidden md:hidden"></div>
+
+        <!-- Left Overlay Side Window Popup Drawer -->
+        <div id="left-panel-container"
+            class="hidden fixed md:absolute top-16 md:top-32 left-0 md:left-6 z-40 w-full sm:w-96 md:w-84 max-h-[calc(100vh-4.5rem)] md:max-h-[82vh] overflow-y-auto custom-scrollbar space-y-3 p-4 md:p-0 transition-all">
             <!-- Mode Selection & Feasibility Assessment Card -->
-            <div class="bg-[#121214]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black/80 p-4 space-y-3.5 text-gray-200">
+            <div class="bg-[#121214]/95 backdrop-blur-2xl border border-white/20 rounded-[6px] shadow-2xl shadow-black/90 p-4 space-y-3.5 text-gray-200">
                 <div class="flex items-center justify-between pb-2 border-b border-white/10">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                        Physical Mode Feasibility
+                    <h2
+                        class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5 font-mono">
+                        <span class="w-2 h-2 rounded-[2px] bg-indigo-500 animate-pulse"></span>
+                        Physical Feasibility
                     </h2>
-                    <span id="feasibility-badge" class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                        Verified
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span id="feasibility-badge" class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                            Verified
+                        </span>
+                        <button id="btn-close-left-panel" type="button" title="Close Window" class="p-1 rounded-[4px] border border-white/20 hover:bg-white/10 text-gray-400 hover:text-white transition font-mono text-xs cursor-pointer active:scale-95">
+                            ✕
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Origin & Destination Terminal Selectors -->
                 <div class="space-y-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-gray-400 mb-1">Origin Terminal</label>
-                        <select id="corridor-origin" class="w-full bg-[#18181b] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white font-medium focus:outline-none focus:border-indigo-500 transition">
-                            <option value="India" selected>🇮🇳 India (JNPT / Mumbai)</option>
-                            <option value="China">🇨🇳 China (Shanghai / Ningbo)</option>
-                            <option value="United States">🇺🇸 United States (LA / NY)</option>
-                            <option value="Germany">🇩🇪 Germany (Hamburg / Frankfurt)</option>
-                            <option value="Netherlands">🇳🇱 Netherlands (Rotterdam)</option>
-                            <option value="United Arab Emirates">🇦🇪 UAE (Jebel Ali / Dubai)</option>
-                            <option value="United Kingdom">🇬🇧 United Kingdom (Felixstowe)</option>
-                            <option value="Singapore">🇸🇬 Singapore (Jurong)</option>
-                            <option value="Japan">🇯🇵 Japan (Tokyo / Yokohama)</option>
-                            <option value="Australia">🇦🇺 Australia (Sydney / Melbourne)</option>
-                            <option value="Brazil">🇧🇷 Brazil (Santos)</option>
-                            <option value="South Africa">🇿🇦 South Africa (Durban)</option>
+                        <label class="block text-[11px] font-bold text-gray-400 mb-1 font-mono">ORIGIN CORRIDOR</label>
+                        <select id="corridor-origin" class="w-full bg-[#18181b] border border-white/20 hover:border-white/30 rounded-[4px] px-2.5 py-1.5 text-xs text-white font-mono font-medium focus:outline-none focus:border-indigo-500 transition shadow-xs">
+                            <option value="India" selected>India (JNPT / Mumbai)</option>
+                            <option value="Afghanistan">Afghanistan (Dry Port / Border)</option>
+                            <option value="China">China (Shanghai / Ningbo)</option>
+                            <option value="United States">United States (LA / NY)</option>
+                            <option value="Germany">Germany (Hamburg / Frankfurt)</option>
+                            <option value="Netherlands">Netherlands (Rotterdam)</option>
+                            <option value="United Arab Emirates">UAE (Jebel Ali / Dubai)</option>
+                            <option value="United Kingdom">United Kingdom (Felixstowe)</option>
+                            <option value="Singapore">Singapore (Jurong)</option>
+                            <option value="Japan">Japan (Tokyo / Yokohama)</option>
+                            <option value="Australia">Australia (Sydney / Melbourne)</option>
+                            <option value="Brazil">Brazil (Santos)</option>
+                            <option value="South Africa">South Africa (Durban)</option>
                         </select>
                     </div>
 
                     <div class="flex items-center justify-center -my-1">
-                        <button id="btn-swap-corridor" type="button" title="Swap Origin & Destination" class="p-1 rounded-full bg-[#18181b] hover:bg-white/10 text-gray-400 hover:text-white transition border border-white/10 text-[10px]">
-                            ⇄
+                        <button id="btn-swap-corridor" type="button" title="Swap Origin & Destination" class="px-2.5 py-1 rounded-[4px] bg-[#18181b] hover:bg-white/10 text-gray-400 hover:text-white transition border border-white/20 hover:border-white/35 active:scale-95 text-xs font-mono cursor-pointer shadow-xs">
+                            ⇄ SWAP
                         </button>
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-gray-400 mb-1">Destination Terminal</label>
-                        <select id="corridor-dest" class="w-full bg-[#18181b] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white font-medium focus:outline-none focus:border-indigo-500 transition">
-                            <option value="Netherlands" selected>🇳🇱 Netherlands (Rotterdam)</option>
-                            <option value="India">🇮🇳 India (JNPT / Mumbai)</option>
-                            <option value="China">🇨🇳 China (Shanghai)</option>
-                            <option value="United States">🇺🇸 United States (New York)</option>
-                            <option value="Germany">🇩🇪 Germany (Hamburg)</option>
-                            <option value="United Arab Emirates">🇦🇪 UAE (Dubai)</option>
-                            <option value="United Kingdom">🇬🇧 United Kingdom (London)</option>
-                            <option value="Singapore">🇸🇬 Singapore (Jurong)</option>
-                            <option value="Japan">🇯🇵 Japan (Tokyo)</option>
-                            <option value="Australia">🇦🇺 Australia (Sydney)</option>
-                            <option value="Brazil">🇧🇷 Brazil (Santos)</option>
-                            <option value="South Africa">🇿🇦 South Africa (Durban)</option>
+                        <label class="block text-[11px] font-bold text-gray-400 mb-1 font-mono">DESTINATION CORRIDOR</label>
+                        <select id="corridor-dest" class="w-full bg-[#18181b] border border-white/20 hover:border-white/30 rounded-[4px] px-2.5 py-1.5 text-xs text-white font-mono font-medium focus:outline-none focus:border-indigo-500 transition shadow-xs">
+                            <option value="Netherlands" selected>Netherlands (Rotterdam)</option>
+                            <option value="India">India (JNPT / Mumbai)</option>
+                            <option value="Afghanistan">Afghanistan (Kabul / Hairatan)</option>
+                            <option value="China">China (Shanghai)</option>
+                            <option value="United States">United States (New York)</option>
+                            <option value="Germany">Germany (Hamburg)</option>
+                            <option value="United Arab Emirates">UAE (Dubai)</option>
+                            <option value="United Kingdom">United Kingdom (London)</option>
+                            <option value="Singapore">Singapore (Jurong)</option>
+                            <option value="Japan">Japan (Tokyo)</option>
+                            <option value="Australia">Australia (Sydney)</option>
+                            <option value="Brazil">Brazil (Santos)</option>
+                            <option value="South Africa">South Africa (Durban)</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- Mode Selection Buttons -->
                 <div class="pt-2 border-t border-white/10">
-                    <label class="block text-[11px] font-bold text-gray-400 mb-1.5">Select Transport Mode</label>
-                    <div class="grid grid-cols-4 gap-1 text-[11px] font-semibold">
-                        <button type="button" data-mode-btn="all" class="mode-select-btn px-2 py-1.5 rounded-xl border border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition flex flex-col items-center justify-center gap-0.5">
+                    <label class="block text-[11px] font-bold text-gray-400 mb-1.5 font-mono">TRANSPORT MODE</label>
+                    <div class="grid grid-cols-4 gap-1 text-[11px] font-semibold font-mono">
+                        <button type="button" data-mode-btn="all" class="mode-select-btn px-2 py-1.5 rounded-[4px] border border-indigo-500 bg-indigo-600 text-white shadow-xs transition flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-95">
                             <span>🌐</span>
-                            <span class="text-[9px]">All</span>
+                            <span class="text-[9px]">ALL</span>
                         </button>
-                        <button type="button" data-mode-btn="sea" class="mode-select-btn px-2 py-1.5 rounded-xl border border-white/10 bg-[#18181b] hover:bg-white/5 text-gray-300 transition flex flex-col items-center justify-center gap-0.5 relative">
+                        <button type="button" data-mode-btn="sea" class="mode-select-btn px-2 py-1.5 rounded-[4px] border border-white/15 bg-[#18181b] hover:bg-[#202024] hover:border-white/30 text-gray-300 transition flex flex-col items-center justify-center gap-0.5 relative cursor-pointer active:scale-95 shadow-xs">
                             <span>🚢</span>
-                            <span class="text-[9px]">Sea</span>
-                            <span id="badge-mode-sea" class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-[#121214]"></span>
+                            <span class="text-[9px]">SEA</span>
+                            <span id="badge-mode-sea" class="absolute -top-1 -right-1 w-2 h-2 rounded-[2px] bg-emerald-400 border border-[#121214]"></span>
                         </button>
-                        <button type="button" data-mode-btn="air" class="mode-select-btn px-2 py-1.5 rounded-xl border border-white/10 bg-[#18181b] hover:bg-white/5 text-gray-300 transition flex flex-col items-center justify-center gap-0.5 relative">
+                        <button type="button" data-mode-btn="air" class="mode-select-btn px-2 py-1.5 rounded-[4px] border border-white/15 bg-[#18181b] hover:bg-[#202024] hover:border-white/30 text-gray-300 transition flex flex-col items-center justify-center gap-0.5 relative cursor-pointer active:scale-95 shadow-xs">
                             <span>✈️</span>
-                            <span class="text-[9px]">Air</span>
-                            <span id="badge-mode-air" class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-[#121214]"></span>
+                            <span class="text-[9px]">AIR</span>
+                            <span id="badge-mode-air" class="absolute -top-1 -right-1 w-2 h-2 rounded-[2px] bg-emerald-400 border border-[#121214]"></span>
                         </button>
-                        <button type="button" data-mode-btn="road" class="mode-select-btn px-2 py-1.5 rounded-xl border border-white/10 bg-[#18181b] hover:bg-white/5 text-gray-300 transition flex flex-col items-center justify-center gap-0.5 relative">
+                        <button type="button" data-mode-btn="road" class="mode-select-btn px-2 py-1.5 rounded-[4px] border border-white/15 bg-[#18181b] hover:bg-[#202024] hover:border-white/30 text-gray-300 transition flex flex-col items-center justify-center gap-0.5 relative cursor-pointer active:scale-95 shadow-xs">
                             <span>🚚</span>
-                            <span class="text-[9px]">Road</span>
-                            <span id="badge-mode-road" class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-[#121214]"></span>
+                            <span class="text-[9px]">ROAD</span>
+                            <span id="badge-mode-road" class="absolute -top-1 -right-1 w-2 h-2 rounded-[2px] bg-emerald-400 border border-[#121214]"></span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Physical Feasibility Diagnostics Box -->
-                <div id="feasibility-status-box" class="p-2.5 rounded-xl bg-[#18181b]/80 border border-white/5 text-[11px] space-y-1.5">
+                <div id="feasibility-status-box" class="p-2.5 rounded-[4px] bg-[#18181b]/80 border border-white/10 text-[11px] space-y-1.5 font-mono shadow-xs">
                     <div class="flex items-center justify-between font-bold text-gray-200">
-                        <span class="flex items-center gap-1"><span>🔍</span> Physical Feasibility</span>
-                        <span id="feasibility-indicator-text" class="text-indigo-400">Checking...</span>
+                        <span class="flex items-center gap-1"><span>🔍</span> FEASIBILITY STATUS</span>
+                        <span id="feasibility-indicator-text" class="text-indigo-400 font-mono">Evaluating...</span>
                     </div>
-                    <div id="feasibility-notes" class="text-gray-400 leading-snug">
-                        Validating maritime sea routes, air cargo corridors, and road contiguity...
+                    <div id="feasibility-notes" class="text-gray-400 leading-snug font-sans text-xs">
+                        Real-time multimodal connectivity across sovereign airspace, international waters, and customs
+                        borders.
                     </div>
                 </div>
 
                 <!-- Recalculate Button -->
-                <button type="button" id="btn-recalculate-route" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 transition flex items-center justify-center gap-1.5">
+                <button type="button" id="btn-recalculate-route" class="w-full py-2.5 px-3 rounded-[4px] bg-indigo-600 hover:bg-indigo-500 text-white font-mono font-bold text-xs border border-indigo-400/60 shadow-md shadow-indigo-600/25 active:scale-[0.98] transition flex items-center justify-center gap-1.5 cursor-pointer">
                     <span id="calc-btn-icon">⚡</span>
-                    <span id="calc-btn-text">Check Feasibility & Recalculate</span>
+                    <span id="calc-btn-text">EVALUATE CORRIDOR</span>
                 </button>
             </div>
 
             <!-- Map Layers & Telemetry Toggles Card -->
-            <div class="bg-[#121214]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black/80 p-4 space-y-3 text-gray-200">
+            <div class="bg-[#121214]/95 backdrop-blur-2xl border border-white/20 rounded-[6px] shadow-2xl shadow-black/90 p-4 space-y-3 text-gray-200">
                 <div class="flex items-center justify-between pb-2 border-b border-white/10">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <h2
+                        class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5 font-mono">
+                        <span class="w-2 h-2 rounded-[2px] bg-emerald-400"></span>
                         Map Overlays
                     </h2>
-                    <span id="active-routes-count" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                    <span id="active-routes-count" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
                         Loading...
                     </span>
                 </div>
 
-                <div class="space-y-2 text-xs font-medium text-gray-300">
+                <div class="space-y-2 text-xs font-mono text-gray-300">
                     <label class="flex items-center justify-between cursor-pointer hover:text-white transition">
                         <div class="flex items-center gap-2">
                             <span>🌐</span>
                             <span>Active Shipping Corridors</span>
                         </div>
-                        <input type="checkbox" checked data-layer="activeRoutes" class="rounded border-white/20 bg-[#18181b] text-indigo-500 focus:ring-indigo-500 cursor-pointer w-4 h-4 accent-indigo-500">
+                        <input type="checkbox" checked data-layer="activeRoutes" class="rounded-[2px] border-white/20 bg-[#18181b] text-indigo-500 focus:ring-indigo-500 cursor-pointer w-4 h-4 accent-indigo-500">
                     </label>
 
                     <label class="flex items-center justify-between cursor-pointer hover:text-white transition">
@@ -219,7 +268,7 @@
                             <span>⚠️</span>
                             <span>High Risk Bottlenecks</span>
                         </div>
-                        <input type="checkbox" checked data-layer="highRiskZones" class="rounded border-white/20 bg-[#18181b] text-indigo-500 focus:ring-indigo-500 cursor-pointer w-4 h-4 accent-indigo-500">
+                        <input type="checkbox" checked data-layer="highRiskZones" class="rounded-[2px] border-white/20 bg-[#18181b] text-indigo-500 focus:ring-indigo-500 cursor-pointer w-4 h-4 accent-indigo-500">
                     </label>
 
                     <label class="flex items-center justify-between cursor-pointer hover:text-white transition">
@@ -227,7 +276,7 @@
                             <span>⚓</span>
                             <span>Port Dwell & Queues</span>
                         </div>
-                        <input type="checkbox" data-layer="portCongestion" class="rounded border-white/20 bg-[#18181b] text-indigo-500 focus:ring-indigo-500 cursor-pointer w-4 h-4 accent-indigo-500">
+                        <input type="checkbox" data-layer="portCongestion" class="rounded-[2px] border-white/20 bg-[#18181b] text-indigo-500 focus:ring-indigo-500 cursor-pointer w-4 h-4 accent-indigo-500">
                     </label>
 
                     <label class="flex items-center justify-between cursor-pointer hover:text-white transition">
@@ -235,55 +284,77 @@
                             <span>🌊</span>
                             <span>Weather Hazards</span>
                         </div>
-                        <input type="checkbox" data-layer="weatherPatterns" class="rounded border-white/20 bg-[#18181b] text-indigo-500 focus:ring-indigo-500 cursor-pointer w-4 h-4 accent-indigo-500">
+                        <input type="checkbox" data-layer="weatherPatterns" class="rounded-[2px] border-white/20 bg-[#18181b] text-indigo-500 focus:ring-indigo-500 cursor-pointer w-4 h-4 accent-indigo-500">
                     </label>
                 </div>
             </div>
         </div>
 
-        <!-- Right Overlay: Route Intelligence Panel -->
-        <div id="route-intel-panel" class="absolute top-20 right-20 z-10 w-[420px] max-w-md hidden">
-            <div class="bg-[#121214]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black/80 p-5 space-y-4 max-h-[82vh] overflow-y-auto custom-scrollbar text-gray-200">
+        <!-- Right Panel Dock Toggle Button -->
+        <div class="absolute top-20 right-4 md:right-6 z-20">
+            <button id="btn-toggle-right-panel" type="button" aria-controls="route-intel-panel" aria-expanded="false" class="flex items-center gap-2 px-3.5 py-2 bg-[#101012]/95 hover:bg-[#18181c] text-white border border-white/20 hover:border-emerald-400/60 rounded-[4px] shadow-lg shadow-black/50 text-xs font-mono font-bold transition active:scale-[0.98] cursor-pointer">
+                <span class="w-2 h-2 rounded-[2px] bg-emerald-400"></span>
+                <span class="hidden sm:inline">📊 ROUTE TELEMETRY</span>
+                <span class="sm:hidden">📊 TELEMETRY</span>
+                <span id="right-toggle-icon" class="text-emerald-400 font-mono text-[11px] ml-1">◀</span>
+            </button>
+        </div>
+
+        <!-- Right Mobile Backdrop -->
+        <div id="right-panel-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 hidden md:hidden"></div>
+
+        <!-- Right Overlay Side Window Popup Drawer -->
+        <div id="route-intel-panel" class="hidden fixed md:absolute top-16 md:top-32 right-0 md:right-6 z-40 w-full sm:w-[440px] md:w-[420px] max-h-[calc(100vh-4.5rem)] md:max-h-[82vh] overflow-y-auto custom-scrollbar p-4 md:p-0 transition-all">
+            <div class="bg-[#121214]/95 backdrop-blur-2xl border border-white/20 rounded-[6px] shadow-2xl shadow-black/90 p-5 space-y-4 text-gray-200">
                 <div class="flex items-center justify-between pb-3 border-b border-white/10">
-                    <div>
-                        <div class="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest">Route Intelligence</div>
-                        <div id="route-intel-title" class="text-base text-white font-bold mt-0.5 truncate max-w-[260px]">
-                            Select a corridor
+                    <div class="flex-grow mr-2 overflow-hidden">
+                        <div class="text-[10px] font-mono font-extrabold text-indigo-400 uppercase tracking-widest">
+                            CORRIDOR TELEMETRY</div>
+                        <div id="route-intel-title"
+                            class="text-base text-white font-bold mt-0.5 truncate flex items-center gap-1.5">
+                            -- ➔ --
                         </div>
                     </div>
-                    <div id="route-intel-risk-pill" class="px-3 py-1 rounded-full border border-white/10 text-xs font-semibold text-gray-300 bg-white/5 shadow-xs">
-                        Risk: --
+                    <div class="flex items-center gap-2">
+                        <div id="route-intel-risk-pill" class="px-2.5 py-0.5 rounded-[3px] border border-white/10 text-xs font-mono font-bold text-gray-300 bg-white/5 shadow-xs whitespace-nowrap">
+                            RISK: --
+                        </div>
+                        <button id="btn-close-intel-panel" type="button" title="Close Window" class="p-1 rounded-[4px] border border-white/20 hover:bg-white/10 text-gray-400 hover:text-white transition font-mono text-xs cursor-pointer active:scale-95">
+                            ✕
+                        </button>
                     </div>
                 </div>
 
                 <!-- Confidence Meter -->
                 <div id="route-intel-confidence">
-                    <div class="flex items-center justify-between text-xs text-gray-400 font-medium">
-                        <span>Prediction Confidence</span>
+                    <div class="flex items-center justify-between text-xs text-gray-400 font-mono">
+                        <span>MODEL CONFIDENCE</span>
                         <span id="route-intel-confidence-label" class="text-white font-bold font-mono">--%</span>
                     </div>
-                    <div class="mt-1.5 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                        <div id="route-intel-confidence-bar" class="h-full w-0 bg-emerald-400 rounded-full transition-all duration-500"></div>
+                    <div class="mt-1.5 h-1.5 w-full bg-white/10 rounded-[2px] overflow-hidden">
+                        <div id="route-intel-confidence-bar" class="h-full w-0 bg-emerald-400 rounded-[2px] transition-all duration-500"></div>
                     </div>
                 </div>
 
-                <div id="route-intel-summary" class="text-xs text-gray-300 leading-relaxed bg-[#18181b]/80 p-3 rounded-xl border border-white/5">
-                    Live route risk telemetry and transit time analytics are ready.
+                <!-- Live Metrics Summary Box -->
+                <div id="route-intel-summary" class="text-xs text-gray-300 leading-relaxed bg-[#18181b]/90 p-3 rounded-[4px] border border-white/10 font-mono shadow-xs">
+                    Select a route corridor on the map to inspect physical and risk telemetry.
                 </div>
 
                 <!-- Modal Transport Comparison -->
                 <div>
-                    <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Transport Mode Comparison</div>
+                    <div class="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider mb-2">Transport
+                        Mode Comparison</div>
                     <div id="route-intel-modes" class="space-y-2"></div>
                 </div>
 
                 <!-- Timeline Slider -->
                 <div class="pt-3 border-t border-white/10 space-y-1.5">
-                    <div class="flex items-center justify-between text-xs text-gray-400 font-medium">
-                        <span>Forecasting Horizon</span>
-                        <span id="route-intel-timeline-label" class="text-indigo-400 font-bold">Today</span>
+                    <div class="flex items-center justify-between text-xs text-gray-400 font-mono">
+                        <span>FORECASTING HORIZON</span>
+                        <span id="route-intel-timeline-label" class="text-indigo-400 font-bold font-mono">Today</span>
                     </div>
-                    <input id="route-intel-timeline" type="range" min="0" max="2" value="1" class="w-full accent-indigo-500 cursor-pointer">
+                    <input id="route-intel-timeline" type="range" min="0" max="2" value="1" class="w-full accent-indigo-500 cursor-pointer rounded-[2px]">
                     <div class="flex justify-between text-[10px] text-gray-500 font-mono">
                         <span>Past 30d</span>
                         <span>Today</span>
@@ -293,36 +364,56 @@
 
                 <!-- What-If Scenarios -->
                 <div class="pt-3 border-t border-white/10 space-y-2">
-                    <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">What-If Scenarios</div>
-                    <div class="flex flex-wrap gap-1.5">
-                        <button type="button" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white shadow-xs transition" data-scenario="base">Base</button>
-                        <button type="button" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition" data-scenario="fuel">Fuel +10%</button>
-                        <button type="button" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition" data-scenario="weather">Weather Disruption</button>
-                        <button type="button" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition" data-scenario="sanctions">Sanctions Escalate</button>
+                    <div class="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">What-If Stress
+                        Simulation</div>
+                    <div class="grid grid-cols-4 gap-1.5 font-mono text-[11px]">
+                        <button type="button" class="px-2 py-1.5 rounded-[4px] border border-indigo-500 bg-indigo-600 text-white font-semibold transition cursor-pointer active:scale-95 shadow-xs" data-scenario="base">BASE</button>
+                        <button type="button" class="px-2 py-1.5 rounded-[4px] border border-white/15 bg-white/5 hover:bg-white/15 hover:border-white/30 text-gray-300 font-semibold transition cursor-pointer active:scale-95 shadow-xs" data-scenario="fuel">FUEL +10%</button>
+                        <button type="button" class="px-2 py-1.5 rounded-[4px] border border-white/15 bg-white/5 hover:bg-white/15 hover:border-white/30 text-gray-300 font-semibold transition cursor-pointer active:scale-95 shadow-xs" data-scenario="weather">WEATHER</button>
+                        <button type="button" class="px-2 py-1.5 rounded-[4px] border border-white/15 bg-white/5 hover:bg-white/15 hover:border-white/30 text-gray-300 font-semibold transition cursor-pointer active:scale-95 shadow-xs" data-scenario="sanctions">SANCTIONS</button>
                     </div>
-                    <div id="route-intel-scenario-note" class="text-[11px] text-gray-400 italic">
-                        Base baseline view (nominal operating conditions).
+                    <div id="route-intel-scenario-note" class="text-[11px] text-gray-400 font-mono">
+                        Nominal operating conditions: standard bunker fuel rates and tariff schedules.
                     </div>
                 </div>
 
                 <!-- Routing Optimization Advisory -->
                 <div class="pt-3 border-t border-white/10">
-                    <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Route Optimization Advisory</div>
-                    <div id="route-intel-captain" class="text-xs text-indigo-200 leading-relaxed bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl font-medium">
-                        Loading route optimization advisory...
+                    <div class="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider mb-1.5">Dispatch & Corridor Advisory</div>
+                    <div id="route-intel-captain" class="text-xs text-indigo-200 leading-relaxed bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-[4px] font-mono shadow-xs">
+                        Corridor operational parameters active.
                     </div>
                 </div>
             </div>
         </div>
+    </main>
 
-        <!-- Bottom Center/Right Interaction Helper -->
-        <div class="absolute bottom-6 right-6 z-10 pointer-events-none">
-            <div class="bg-[#121214]/90 backdrop-blur-md border border-white/10 shadow-2xl text-gray-300 text-xs px-4 py-2 rounded-full font-medium flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
-                <span>Click any route or pin for live telemetry • Drag to pan • Scroll to zoom</span>
+    <!-- Mobile Menu Overlay (Phone Bar Side Window) -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden md:hidden">
+        <div class="absolute inset-0 bg-black/75 backdrop-blur-sm" id="mobile-menu-close"></div>
+        <div
+            class="absolute right-0 top-0 bottom-0 w-72 bg-[#101012] border-l border-white/20 p-6 flex flex-col justify-between shadow-2xl font-mono">
+            <div class="space-y-6">
+                <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                    <span class="text-base font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-teal-300 to-cyan-400">SupplyGuard AI</span>
+                    <button id="mobile-menu-close-btn" class="p-1 rounded-[4px] border border-white/20 text-gray-400 hover:text-white text-xs cursor-pointer active:scale-95">✕</button>
+                </div>
+                <div class="flex flex-col gap-2.5 text-xs font-semibold text-gray-300">
+                    <a href="/dashboard" class="p-2 border border-white/10 rounded-[4px] hover:border-indigo-500/40 hover:bg-white/5 transition flex items-center gap-2">📊 Dashboard</a>
+                    <a href="/analysis" class="p-2 border border-white/10 rounded-[4px] hover:border-indigo-500/40 hover:bg-white/5 transition flex items-center gap-2">📈 Analysis</a>
+                    <a href="/routes" class="p-2 border border-white/10 rounded-[4px] hover:border-indigo-500/40 hover:bg-white/5 transition flex items-center gap-2">🛣️ Routes</a>
+                    <a href="/map" class="p-2 border border-indigo-500 rounded-[4px] bg-indigo-500/20 text-white flex items-center gap-2">🗺️ Risk Map</a>
+                    <a href="/intelligence" class="p-2 border border-white/10 rounded-[4px] hover:border-indigo-500/40 hover:bg-white/5 transition flex items-center gap-2">🛰️ Intelligence</a>
+                    <a href="/reports" class="p-2 border border-white/10 rounded-[4px] hover:border-indigo-500/40 hover:bg-white/5 transition flex items-center gap-2">📑 Reports</a>
+                    <a href="/dashboard/trade-routes.html" class="p-2 border border-indigo-500/50 rounded-[4px] text-indigo-300 hover:bg-indigo-500/20 transition flex items-center gap-2">⚡ Trade Optimizer</a>
+                </div>
+            </div>
+            <div class="pt-4 border-t border-white/10 text-xs text-gray-400">
+                <a href="/settings" class="flex items-center gap-2 p-2 rounded-[4px] hover:text-white transition">⚙️ Settings</a>
+                <div class="text-[10px] text-gray-600 mt-2 font-mono">System v2.4 • SupplyGuard Engine</div>
             </div>
         </div>
-    </main>
+    </div>
 
     <script type="module" src="/src/js/global-mapcn.js"></script>
     <script type="module" src="/src/js/app.js"></script>

@@ -3,6 +3,7 @@ import { UI } from './ui.js';
 import { GlobeMap } from './map-fast.js';
 import { SmoothDropdown } from './smooth-dropdown.js';
 import { SmoothToast } from './smooth-toast.js';
+import { getCountryCode, getCountryFlagHtml } from './country-flags.js';
 // Assumes Chart.js and jsPDF are available via CDN globally
 
 export class Dashboard {
@@ -51,6 +52,97 @@ export class Dashboard {
 
         // Load Real-Time Fuel Benchmarks via Google RSS
         this.loadFuelBenchmarks();
+        this.initEnergyMarketQuotes();
+    }
+
+    initEnergyMarketQuotes() {
+        const container = document.getElementById('energy-market-cards');
+        const updatedEl = document.getElementById('energy-market-updated');
+        const refreshButton = document.getElementById('btn-refresh-energy-market');
+        const refreshIcon = document.getElementById('energy-market-refresh-icon');
+        if (!container) return;
+
+        const refresh = async () => {
+            refreshButton?.setAttribute('disabled', 'true');
+            refreshIcon?.classList.add('animate-spin');
+            try {
+                const response = await fetch('/api/v1/energy-market');
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Market quotes are temporarily unavailable.');
+                this.renderEnergyMarketQuotes(data.quotes || []);
+                if (updatedEl) {
+                    const updatedAt = data.updated_at ? new Date(data.updated_at) : new Date();
+                    updatedEl.textContent = `Updated ${updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}${data.cached ? ' · cached' : ''}`;
+                }
+            } catch (error) {
+                container.replaceChildren();
+                const message = document.createElement('div');
+                message.className = 'glass-panel p-4 rounded-xl border border-amber-500/20 bg-[#121214]/90 text-xs text-amber-200 sm:col-span-2 xl:col-span-3';
+                message.textContent = error.message || 'Market quotes are temporarily unavailable.';
+                container.appendChild(message);
+                if (updatedEl) updatedEl.textContent = 'Feed unavailable';
+            } finally {
+                refreshButton?.removeAttribute('disabled');
+                refreshIcon?.classList.remove('animate-spin');
+            }
+        };
+
+        refreshButton?.addEventListener('click', refresh);
+        refresh();
+        window.setInterval(() => {
+            if (document.visibilityState === 'visible') refresh();
+        }, 720_000);
+    }
+
+    renderEnergyMarketQuotes(quotes) {
+        const container = document.getElementById('energy-market-cards');
+        if (!container) return;
+        container.replaceChildren();
+
+        quotes.forEach(quote => {
+            const card = document.createElement('article');
+            card.className = 'glass-panel p-4 rounded-xl border border-white/10 border-t-2 border-t-cyan-400/70 bg-[#121214]/90 shadow-lg';
+
+            const header = document.createElement('div');
+            header.className = 'flex items-start justify-between gap-3';
+            const title = document.createElement('div');
+            const name = document.createElement('div');
+            name.className = 'text-sm font-semibold text-white';
+            name.textContent = quote.name;
+            const symbol = document.createElement('div');
+            symbol.className = 'mt-0.5 text-[10px] font-mono text-gray-400';
+            symbol.textContent = `${quote.symbol} · ${quote.type}`;
+            title.append(name, symbol);
+            header.appendChild(title);
+
+            if (quote.available && quote.percent_change !== null) {
+                const change = document.createElement('span');
+                const isUp = Number(quote.percent_change) >= 0;
+                change.className = `shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-mono ${isUp ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-rose-500/30 bg-rose-500/10 text-rose-300'}`;
+                change.textContent = `${isUp ? '+' : ''}${Number(quote.percent_change || 0).toFixed(2)}%`;
+                header.appendChild(change);
+            }
+
+            const price = document.createElement('div');
+            price.className = 'mt-4 text-2xl font-bold font-mono text-white';
+            price.textContent = quote.available
+                ? `${quote.currency || 'USD'} ${Number(quote.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : 'Quote unavailable';
+
+            const footer = document.createElement('div');
+            footer.className = 'mt-3 flex items-center justify-between border-t border-white/5 pt-2 text-[10px] text-gray-400';
+            const unit = document.createElement('span');
+            unit.textContent = quote.unit;
+            const quoteTime = document.createElement('span');
+            quoteTime.className = 'font-mono';
+            quoteTime.textContent = quote.quote_time
+                ? `${quote.quote_time}${quote.market_open === undefined ? '' : quote.market_open ? ' · Open' : ' · Closed'}`
+                : quote.available ? 'Latest quote' : 'Check API access';
+            footer.append(unit, quoteTime);
+
+            card.append(header, price, footer);
+            container.appendChild(card);
+        });
     }
 
     initStaticDropdowns() {
@@ -104,14 +196,17 @@ export class Dashboard {
         
         if(fromSelect && toSelect) {
             countries.forEach(c => {
+                const code = getCountryCode(c) || '';
                 const opt1 = document.createElement('option');
                 opt1.value = c;
                 opt1.textContent = c;
+                if (code) opt1.dataset.countryCode = code;
                 fromSelect.appendChild(opt1);
                 
                 const opt2 = document.createElement('option');
                 opt2.value = c;
                 opt2.textContent = c;
+                if (code) opt2.dataset.countryCode = code;
                 toSelect.appendChild(opt2);
             });
             
@@ -694,33 +789,41 @@ export class Dashboard {
         if (!whyEl || !actionEl || !data || !data.risk_summary) return;
 
         const level = data.risk_summary.combined_level || 'Unknown';
-        const originScoreText = typeof metrics.originScore === 'number' ? metrics.originScore.toFixed(1) : '–';
-        const destinationScoreText = typeof metrics.destinationScore === 'number' ? metrics.destinationScore.toFixed(1) : '–';
-        const avgRiskText = typeof metrics.avgRisk === 'number' ? metrics.avgRisk.toFixed(1) : '–';
-
         const fromLabel = data.from || 'Origin';
         const toLabel = data.to || 'Destination';
 
-        whyEl.textContent = `Corridor telemetry evaluates the ${fromLabel} → ${toLabel} corridor at ${level} composite risk index of ${avgRiskText}/10 (origin hub ${originScoreText}, destination port ${destinationScoreText}).`;
-
-        const selectedMode = metrics.selectedMode;
-        const minCostMode = metrics.minCostMode;
-        const minDaysMode = metrics.minDaysMode;
-
-        const primaryModeName = selectedMode && selectedMode.mode ? selectedMode.mode : 'the selected mode';
-        const cheapestModeName = minCostMode && minCostMode.mode ? minCostMode.mode : primaryModeName;
-        const fastestModeName = minDaysMode && minDaysMode.mode ? minDaysMode.mode : primaryModeName;
-
-        let suggestion;
-        if (level === 'High') {
-            suggestion = `Defer non-critical shipments on this lane where possible. If movement is required, prioritize ${fastestModeName} and build in contingency time.`;
-        } else if (level === 'Medium' || level === 'Moderate') {
-            suggestion = `Use ${primaryModeName} with added lead time and active monitoring of conditions around ${toLabel}. Keep ${fastestModeName} as a fallback for urgent loads.`;
+        if (data.why_this_score || data.ai_intelligence?.advisory) {
+            const aiText = data.why_this_score || data.ai_intelligence.advisory;
+            const engineTag = data.ai_intelligence?.engine ? ` [${data.ai_intelligence.engine}]` : '';
+            whyEl.textContent = `${aiText}${engineTag}`;
         } else {
-            suggestion = `Route appears stable. Prioritize cost efficiency with ${cheapestModeName} while reserving ${fastestModeName} for time-sensitive shipments.`;
+            const originScoreText = typeof metrics.originScore === 'number' ? metrics.originScore.toFixed(1) : '–';
+            const destinationScoreText = typeof metrics.destinationScore === 'number' ? metrics.destinationScore.toFixed(1) : '–';
+            const avgRiskText = typeof metrics.avgRisk === 'number' ? metrics.avgRisk.toFixed(1) : '–';
+            whyEl.textContent = `Corridor telemetry evaluates the ${fromLabel} → ${toLabel} corridor at ${level} composite risk index of ${avgRiskText}/10 (origin hub ${originScoreText}, destination port ${destinationScoreText}).`;
         }
 
-        actionEl.textContent = suggestion;
+        if (data.routing_key_points && data.routing_key_points.length > 0) {
+            actionEl.textContent = "Routing Key Points: " + data.routing_key_points.slice(0, 2).join(" • ");
+        } else {
+            const selectedMode = metrics.selectedMode;
+            const minCostMode = metrics.minCostMode;
+            const minDaysMode = metrics.minDaysMode;
+
+            const primaryModeName = selectedMode && selectedMode.mode ? selectedMode.mode : 'the selected mode';
+            const cheapestModeName = minCostMode && minCostMode.mode ? minCostMode.mode : primaryModeName;
+            const fastestModeName = minDaysMode && minDaysMode.mode ? minDaysMode.mode : primaryModeName;
+
+            let suggestion;
+            if (level === 'High') {
+                suggestion = `Defer non-critical shipments on this lane where possible. If movement is required, prioritize ${fastestModeName} and build in contingency time.`;
+            } else if (level === 'Medium' || level === 'Moderate') {
+                suggestion = `Use ${primaryModeName} with added lead time and active monitoring of conditions around ${toLabel}. Keep ${fastestModeName} as a fallback for urgent loads.`;
+            } else {
+                suggestion = `Route appears stable. Prioritize cost efficiency with ${cheapestModeName} while reserving ${fastestModeName} for time-sensitive shipments.`;
+            }
+            actionEl.textContent = suggestion;
+        }
     }
 
     async renderAIStats() {

@@ -50,6 +50,9 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Environment & Local Secrets
+.env
+.env.*
+!.env.example
 .env.local
 .env.*.local
 

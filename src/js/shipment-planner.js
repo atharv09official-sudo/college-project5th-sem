@@ -3,6 +3,7 @@ import { GlobeMap } from './map-fast.js';
 import { SmoothToast } from './smooth-toast.js';
 import { UI } from './ui.js';
 import { SmoothDropdown } from './smooth-dropdown.js';
+import { getCountryCode, getCountryFlagHtml } from './country-flags.js';
 
 export class ShipmentPlanner {
     constructor() {
@@ -116,10 +117,11 @@ export class ShipmentPlanner {
             filtered.forEach(opt => {
                 const div = document.createElement('div');
                 div.className = 'px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white cursor-pointer rounded transition-colors flex items-center gap-2';
-                div.innerHTML = `<span>${opt}</span>`;
+                const flagHtml = getCountryCode(opt) ? getCountryFlagHtml(opt) : '';
+                div.innerHTML = `${flagHtml}<span class="truncate">${opt}</span>`;
                 
                 div.addEventListener('click', () => {
-                    selectedText.textContent = opt;
+                    selectedText.innerHTML = `${flagHtml}<span class="align-middle">${opt}</span>`;
                     selectedText.classList.remove('text-gray-400'); // If it was placeholder style
                     selectedText.classList.add('text-white');
                     menuDiv.classList.add('hidden');

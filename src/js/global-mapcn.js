@@ -7,6 +7,7 @@
 
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { getCountryCode, getCountryFlagHtml } from './country-flags.js';
 
 const { Map, Marker, Popup, LngLatBounds } = maplibregl;
 
@@ -205,14 +206,18 @@ export class GlobalRiskMap {
     async init() {
         if (!this.container) return;
 
-        // Initialize MapLibre GL with dark glass theme
+        // Initialize MapLibre GL with dark glass theme (single map, no duplicate wrapping)
         this.map = new Map({
             container: this.containerId,
             style: MAPCN_STYLES.dark,
             center: [30.0, 24.0],
             zoom: 2.3,
+            minZoom: 1.5,
+            maxZoom: 12,
             pitch: 0,
             bearing: 0,
+            renderWorldCopies: false,
+            maxBounds: [[-175, -80], [175, 80]],
             attributionControl: false
         });
 
@@ -222,6 +227,7 @@ export class GlobalRiskMap {
             this.setupLayers();
             await this.loadRouteData();
             this.setupEventListeners();
+            this.setupSideWindows();
             this.setupCorridorControls();
 
             // Initial feasibility check for default India -> Netherlands
@@ -241,16 +247,16 @@ export class GlobalRiskMap {
 
         const ctrl = document.createElement('div');
         ctrl.id = 'mapcn-controls';
-        ctrl.className = 'absolute top-20 right-6 z-20 flex flex-col gap-1.5 bg-[#121214]/90 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 shadow-2xl';
+        ctrl.className = 'absolute bottom-8 left-4 md:left-6 z-20 flex flex-col gap-1 bg-[#101012]/95 border border-white/20 rounded-[5px] p-1.5 shadow-2xl backdrop-blur-md';
         ctrl.innerHTML = `
-            <button id="ctrl-zoom-in" title="Zoom In" class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition font-bold text-base">＋</button>
-            <button id="ctrl-zoom-out" title="Zoom Out" class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition font-bold text-base">－</button>
+            <button id="ctrl-zoom-in" title="Zoom In" class="w-8 h-8 rounded-[4px] border border-white/10 hover:border-white/30 bg-white/5 hover:bg-white/15 flex items-center justify-center text-gray-300 hover:text-white transition font-mono font-bold text-sm active:scale-95 shadow-xs">＋</button>
+            <button id="ctrl-zoom-out" title="Zoom Out" class="w-8 h-8 rounded-[4px] border border-white/10 hover:border-white/30 bg-white/5 hover:bg-white/15 flex items-center justify-center text-gray-300 hover:text-white transition font-mono font-bold text-sm active:scale-95 shadow-xs">－</button>
             <div class="h-px bg-white/10 my-0.5"></div>
-            <button id="ctrl-tilt" title="Toggle 3D Perspective" class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-indigo-400 hover:bg-white/10 transition text-[10px] font-bold font-mono">3D</button>
-            <button id="ctrl-compass" title="Reset North" class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition text-sm">🧭</button>
-            <button id="ctrl-recenter" title="Fit All Corridors" class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition text-sm">🎯</button>
+            <button id="ctrl-tilt" title="Toggle 3D Perspective" class="w-8 h-8 rounded-[4px] border border-white/10 hover:border-white/30 bg-white/5 hover:bg-white/15 flex items-center justify-center text-gray-300 hover:text-indigo-400 transition text-[10px] font-mono font-bold active:scale-95 shadow-xs">3D</button>
+            <button id="ctrl-compass" title="Reset North" class="w-8 h-8 rounded-[4px] border border-white/10 hover:border-white/30 bg-white/5 hover:bg-white/15 flex items-center justify-center text-gray-300 hover:text-white transition text-xs font-mono active:scale-95 shadow-xs">🧭</button>
+            <button id="ctrl-recenter" title="Fit All Corridors" class="w-8 h-8 rounded-[4px] border border-white/10 hover:border-white/30 bg-white/5 hover:bg-white/15 flex items-center justify-center text-gray-300 hover:text-white transition text-xs font-mono active:scale-95 shadow-xs">🎯</button>
             <div class="h-px bg-white/10 my-0.5"></div>
-            <button id="ctrl-style" title="Switch Basemap Style" class="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition text-xs font-mono font-bold">🗺️</button>
+            <button id="ctrl-style" title="Switch Basemap Style" class="w-8 h-8 rounded-[4px] border border-white/10 hover:border-white/30 bg-white/5 hover:bg-white/15 flex items-center justify-center text-gray-300 hover:text-white transition text-xs font-mono font-bold active:scale-95 shadow-xs">🗺️</button>
         `;
         this.container.appendChild(ctrl);
 
@@ -558,10 +564,10 @@ export class GlobalRiskMap {
 
             // Origin Marker
             const originEl = document.createElement('div');
-            originEl.className = 'group cursor-pointer pointer-events-auto transform transition-transform hover:scale-110';
+            originEl.className = 'group cursor-pointer pointer-events-auto transform transition-transform hover:scale-105';
             originEl.innerHTML = `
-                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#121214]/95 border ${isSelected ? 'border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.5)] ring-1 ring-indigo-400/50' : 'border-white/20'} shadow-2xl text-[11px] font-bold text-white backdrop-blur-md">
-                    <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-indigo-400 animate-ping' : 'bg-indigo-500'}"></span>
+                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#101012]/95 border ${isSelected ? 'border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.5)] ring-1 ring-indigo-400/50' : 'border-white/20'} shadow-2xl text-[11px] font-mono font-bold text-white backdrop-blur-md">
+                    <span class="w-1.5 h-1.5 rounded-[2px] ${isSelected ? 'bg-indigo-400 animate-ping' : 'bg-indigo-500'}"></span>
                     <span class="truncate max-w-[110px]">${route.from}</span>
                 </div>
             `;
@@ -574,10 +580,10 @@ export class GlobalRiskMap {
 
             // Destination Marker
             const destEl = document.createElement('div');
-            destEl.className = 'group cursor-pointer pointer-events-auto transform transition-transform hover:scale-110';
+            destEl.className = 'group cursor-pointer pointer-events-auto transform transition-transform hover:scale-105';
             destEl.innerHTML = `
-                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#121214]/95 border ${isSelected ? 'border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.5)] ring-1 ring-emerald-400/50' : 'border-white/20'} shadow-2xl text-[11px] font-bold text-white backdrop-blur-md">
-                    <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-500'}"></span>
+                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#101012]/95 border ${isSelected ? 'border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.5)] ring-1 ring-emerald-400/50' : 'border-white/20'} shadow-2xl text-[11px] font-mono font-bold text-white backdrop-blur-md">
+                    <span class="w-1.5 h-1.5 rounded-[2px] ${isSelected ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-500'}"></span>
                     <span class="truncate max-w-[110px]">${route.to}</span>
                 </div>
             `;
@@ -608,8 +614,8 @@ export class GlobalRiskMap {
             el.className = 'cursor-pointer pointer-events-auto group';
             el.innerHTML = `
                 <div class="relative flex items-center justify-center">
-                    <span class="absolute w-6 h-6 rounded-full bg-rose-500/25 animate-ping"></span>
-                    <div class="w-5 h-5 rounded-full bg-rose-500 border border-white/50 shadow-lg shadow-rose-500/40 flex items-center justify-center text-white text-[9px] font-bold">!</div>
+                    <span class="absolute w-5 h-5 rounded-[4px] bg-rose-500/25 animate-ping"></span>
+                    <div class="w-4 h-4 rounded-[3px] bg-rose-600 border border-white/60 shadow-lg flex items-center justify-center text-white text-[9px] font-mono font-bold">!</div>
                 </div>
             `;
 
@@ -643,8 +649,26 @@ export class GlobalRiskMap {
         // Sync selectors in Left Panel
         const selOrigin = document.getElementById('corridor-origin');
         const selDest = document.getElementById('corridor-dest');
-        if (selOrigin && route.from) selOrigin.value = route.from;
-        if (selDest && route.to) selDest.value = route.to;
+        if (selOrigin && route.from) {
+            let found = Array.from(selOrigin.options).some(o => o.value.toLowerCase() === route.from.toLowerCase());
+            if (!found) {
+                const opt = document.createElement('option');
+                opt.value = route.from;
+                opt.textContent = route.from;
+                selOrigin.appendChild(opt);
+            }
+            selOrigin.value = route.from;
+        }
+        if (selDest && route.to) {
+            let found = Array.from(selDest.options).some(o => o.value.toLowerCase() === route.to.toLowerCase());
+            if (!found) {
+                const opt = document.createElement('option');
+                opt.value = route.to;
+                opt.textContent = route.to;
+                selDest.appendChild(opt);
+            }
+            selDest.value = route.to;
+        }
 
         // Run feasibility check on this corridor
         this.checkFeasibility(route.from, route.to);
@@ -723,28 +747,28 @@ export class GlobalRiskMap {
         const bAir = document.getElementById('badge-mode-air');
         const bRoad = document.getElementById('badge-mode-road');
 
-        if (bSea) bSea.className = `absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-[#121214] ${feas.sea?.feasible ? 'bg-emerald-400' : 'bg-rose-500'}`;
-        if (bAir) bAir.className = `absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-[#121214] ${feas.air?.feasible ? 'bg-emerald-400' : 'bg-rose-500'}`;
-        if (bRoad) bRoad.className = `absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-[#121214] ${feas.road?.feasible ? 'bg-emerald-400' : 'bg-rose-500'}`;
+        if (bSea) bSea.className = `absolute -top-1 -right-1 w-2 h-2 rounded-[2px] border border-[#121214] ${feas.sea?.feasible ? 'bg-emerald-400' : 'bg-rose-500'}`;
+        if (bAir) bAir.className = `absolute -top-1 -right-1 w-2 h-2 rounded-[2px] border border-[#121214] ${feas.air?.feasible ? 'bg-emerald-400' : 'bg-rose-500'}`;
+        if (bRoad) bRoad.className = `absolute -top-1 -right-1 w-2 h-2 rounded-[2px] border border-[#121214] ${feas.road?.feasible ? 'bg-emerald-400' : 'bg-rose-500'}`;
 
         if (this.selectedMode === 'road' && !feas.road?.feasible) {
             if (badgeEl) {
-                badgeEl.textContent = 'Road Blocked';
-                badgeEl.className = 'text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30';
+                badgeEl.textContent = 'ROAD INFEASIBLE';
+                badgeEl.className = 'text-[9px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-rose-500/15 text-rose-400 border border-rose-500/30';
             }
-            if (indEl) indEl.textContent = '❌ Road Infeasible';
+            if (indEl) indEl.textContent = '❌ Contiguity Blocked';
             if (notesEl) notesEl.innerHTML = `<span class="text-rose-400 font-semibold">${feas.road?.reason || 'Oceanic barrier blocks road freight.'}</span> Recommended: Switch to Sea (Container) or Air Cargo.`;
         } else if (this.selectedMode === 'sea' && !feas.sea?.feasible) {
             if (badgeEl) {
-                badgeEl.textContent = 'Sea Infeasible';
-                badgeEl.className = 'text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30';
+                badgeEl.textContent = 'SEA INFEASIBLE';
+                badgeEl.className = 'text-[9px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-rose-500/15 text-rose-400 border border-rose-500/30';
             }
-            if (indEl) indEl.textContent = '❌ Sea Infeasible';
+            if (indEl) indEl.textContent = '❌ Maritime Infeasible';
             if (notesEl) notesEl.innerHTML = `<span class="text-rose-400 font-semibold">${feas.sea?.reason}</span>`;
         } else {
             if (badgeEl) {
-                badgeEl.textContent = 'Feasible Mode';
-                badgeEl.className = 'text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+                badgeEl.textContent = 'CORRIDOR VERIFIED';
+                badgeEl.className = 'text-[9px] font-mono font-bold px-2 py-0.5 rounded-[3px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
             }
             if (indEl) indEl.textContent = '✅ Verified Physical Corridor';
             const activeReason = this.selectedMode === 'road' ? feas.road?.reason : this.selectedMode === 'air' ? feas.air?.reason : feas.sea?.reason;
@@ -841,20 +865,29 @@ export class GlobalRiskMap {
     hydrateIntelPanel(route) {
         const panel = document.getElementById('route-intel-panel');
         if (!panel) return;
-        panel.classList.remove('hidden');
+        if (this.openRightPanel) {
+            this.openRightPanel();
+        } else {
+            panel.classList.remove('hidden');
+        }
 
-        document.getElementById('route-intel-title').textContent = `${route.from} ➔ ${route.to}`;
+        const fromFlag = getCountryFlagHtml(route.from) || '';
+        const toFlag = getCountryFlagHtml(route.to) || '';
+        const titleEl = document.getElementById('route-intel-title');
+        if (titleEl) {
+            titleEl.innerHTML = `<span class="inline-flex items-center gap-1">${fromFlag}<span>${route.from}</span></span><span class="text-indigo-400 mx-1">➔</span><span class="inline-flex items-center gap-1">${toFlag}<span>${route.to}</span></span>`;
+        }
 
         // Risk Pill
         const pill = document.getElementById('route-intel-risk-pill');
         const level = route.riskLevel || 'Low';
-        pill.textContent = `Risk: ${level}`;
+        pill.textContent = `RISK: ${level.toUpperCase()}`;
         if (level === 'High') {
-            pill.className = 'px-3 py-1 rounded-full border border-rose-500/30 text-xs font-bold text-rose-400 bg-rose-500/15 shadow-xs';
+            pill.className = 'px-2.5 py-0.5 rounded-[3px] border border-rose-500/40 text-xs font-mono font-bold text-rose-400 bg-rose-500/15 shadow-xs whitespace-nowrap';
         } else if (level === 'Medium') {
-            pill.className = 'px-3 py-1 rounded-full border border-amber-500/30 text-xs font-bold text-amber-400 bg-amber-500/15 shadow-xs';
+            pill.className = 'px-2.5 py-0.5 rounded-[3px] border border-amber-500/40 text-xs font-mono font-bold text-amber-400 bg-amber-500/15 shadow-xs whitespace-nowrap';
         } else {
-            pill.className = 'px-3 py-1 rounded-full border border-emerald-500/30 text-xs font-bold text-emerald-400 bg-emerald-500/15 shadow-xs';
+            pill.className = 'px-2.5 py-0.5 rounded-[3px] border border-emerald-500/40 text-xs font-mono font-bold text-emerald-400 bg-emerald-500/15 shadow-xs whitespace-nowrap';
         }
 
         // Confidence
@@ -862,20 +895,43 @@ export class GlobalRiskMap {
         document.getElementById('route-intel-confidence-label').textContent = `${confVal}%`;
         const confBar = document.getElementById('route-intel-confidence-bar');
         confBar.style.width = `${confVal}%`;
-        confBar.className = level === 'High' ? 'h-full bg-rose-500 rounded-full' : 'h-full bg-emerald-400 rounded-full';
+        confBar.className = level === 'High' ? 'h-full bg-rose-500 rounded-[2px]' : 'h-full bg-emerald-400 rounded-[2px]';
 
-        // Summary
-        document.getElementById('route-intel-summary').textContent =
-            `AI tracking indicates this corridor operates at composite index ${level === 'High' ? '7.8' : level === 'Medium' ? '5.2' : '2.1'}/10 with active maritime/air freight monitoring.`;
+        // Telemetry Summary (Sharp Industrial Telemetry)
+        const summaryEl = document.getElementById('route-intel-summary');
+        const distKm = route.distanceKm ? Math.round(route.distanceKm).toLocaleString() + ' km' : 'Direct Multimodal';
+        const startTerminal = route.startHub || `${route.from} Primary Hub`;
+        const endTerminal = route.endHub || `${route.to} Gateway`;
+        const riskIdx = level === 'High' ? '7.8' : level === 'Medium' ? '5.2' : '2.1';
+        summaryEl.innerHTML = `
+            <div class="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                <div>
+                    <span class="text-gray-400 text-[10px] block">ORIGIN HUB</span>
+                    <span class="text-white font-semibold truncate block">${startTerminal}</span>
+                </div>
+                <div>
+                    <span class="text-gray-400 text-[10px] block">DESTINATION GATEWAY</span>
+                    <span class="text-white font-semibold truncate block">${endTerminal}</span>
+                </div>
+                <div>
+                    <span class="text-gray-400 text-[10px] block">CORRIDOR DISTANCE</span>
+                    <span class="text-white font-semibold">${distKm}</span>
+                </div>
+                <div>
+                    <span class="text-gray-400 text-[10px] block">COMPOSITE RISK INDEX</span>
+                    <span class="${level === 'High' ? 'text-rose-400' : level === 'Medium' ? 'text-amber-400' : 'text-emerald-400'} font-bold">${riskIdx} / 10.0</span>
+                </div>
+            </div>
+        `;
 
         // Render Mode Cards
         const modesEl = document.getElementById('route-intel-modes');
         modesEl.innerHTML = '';
 
         const baseModes = [
-            { mode: 'sea', icon: '🚢', label: 'Sea Freight', cost: route.cost || 3400, days: route.days || 18, risk: level, desc: 'Cost-optimal for heavy containerized volume' },
-            { mode: 'air', icon: '✈️', label: 'Air Cargo', cost: (route.cost ? route.cost * 2.4 : 7800), days: 2.5, risk: 'Low', desc: 'Fastest SLA dispatch with minimal dwell' },
-            { mode: 'road', icon: '🚚', label: 'Intermodal / Road', cost: (route.cost ? route.cost * 1.3 : 4200), days: (route.days ? route.days * 0.6 : 10), risk: 'Medium', desc: 'Regional transit with flexible multimodal handoffs' }
+            { mode: 'sea', icon: '🚢', label: 'Sea Freight', cost: route.cost || 3400, days: route.days || 18, risk: level, desc: 'Container lane via deep-sea maritime channels.' },
+            { mode: 'air', icon: '✈️', label: 'Air Cargo', cost: (route.cost ? route.cost * 2.4 : 7800), days: 2.5, risk: 'Low', desc: 'Direct scheduled international widebody freighter.' },
+            { mode: 'road', icon: '🚚', label: 'Intermodal / Road', cost: (route.cost ? route.cost * 1.3 : 4200), days: (route.days ? route.days * 0.6 : 10), risk: 'Medium', desc: 'Overland trucking & rail transit where border contiguous.' }
         ];
 
         const scenario = this.currentScenario;
@@ -899,25 +955,25 @@ export class GlobalRiskMap {
             const isSelectedMode = route.preferred_mode === m.mode;
 
             const card = document.createElement('div');
-            card.className = `p-3 rounded-xl border transition cursor-pointer ${
+            card.className = `p-3 rounded-[5px] border transition cursor-pointer active:scale-[0.99] shadow-xs ${
                 !isFeasible
                     ? 'bg-rose-950/20 border-rose-500/30 opacity-60 text-gray-400'
                     : isSelectedMode
-                    ? 'bg-indigo-950/40 border-indigo-500/50 ring-1 ring-indigo-500/30 text-white'
-                    : 'bg-[#18181b] border-white/10 hover:bg-white/5 text-gray-300'
-            }`;
+                    ? 'bg-indigo-950/50 border-indigo-500 ring-1 ring-indigo-500/50 text-white'
+                    : 'bg-[#18181b] border-white/10 hover:bg-[#202024] hover:border-white/25 text-gray-300'
+                }`;
 
             card.innerHTML = `
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between font-mono">
                     <div class="flex items-center gap-2">
                         <span class="text-base">${m.icon}</span>
-                        <span class="text-xs font-bold text-white uppercase tracking-wide">${m.label}</span>
+                        <span class="text-xs font-bold text-white uppercase tracking-wider">${m.label}</span>
                     </div>
                     <div>
                         ${!isFeasible
-                            ? '<span class="px-2 py-0.5 rounded-full text-[9px] bg-rose-500/20 text-rose-300 font-bold tracking-wider border border-rose-500/30">BLOCKED</span>'
+                            ? '<span class="px-2 py-0.5 rounded-[3px] text-[9px] font-mono bg-rose-500/20 text-rose-300 font-bold tracking-wider border border-rose-500/40">BLOCKED</span>'
                             : isSelectedMode
-                            ? '<span class="px-2 py-0.5 rounded-full text-[9px] bg-indigo-600 text-white font-bold tracking-wider">SELECTED</span>'
+                            ? '<span class="px-2 py-0.5 rounded-[3px] text-[9px] font-mono bg-indigo-600 text-white font-bold tracking-wider border border-indigo-400">ACTIVE</span>'
                             : ''}
                     </div>
                 </div>
@@ -926,7 +982,7 @@ export class GlobalRiskMap {
                     <span>${adjustedDays} days</span>
                     <span class="font-bold ${adjustedRisk === 'High' ? 'text-rose-400' : adjustedRisk === 'Medium' ? 'text-amber-400' : 'text-emerald-400'}">${adjustedRisk}</span>
                 </div>
-                <div class="text-[11px] text-gray-400 mt-1">${!isFeasible ? 'Physical barrier: No contiguous connection' : m.desc}</div>
+                <div class="text-[11px] text-gray-400 mt-1 font-sans">${!isFeasible ? 'Physical barrier: Infeasible for selected corridor' : m.desc}</div>
             `;
 
             card.onclick = () => {
@@ -946,14 +1002,43 @@ export class GlobalRiskMap {
 
         // Route optimization advisory text
         const captainEl = document.getElementById('route-intel-captain');
-        captainEl.textContent = `Operational advisory: route ${route.from} ➔ ${route.to} via ${route.preferred_mode.toUpperCase()}. Expected transit is ~${route.days || 14} days with stable delivery certainty.`;
+        captainEl.textContent = `Dispatch guidance: corridor ${route.from} ➔ ${route.to} committed via ${route.preferred_mode.toUpperCase()}. Estimated transit ~${route.days || 14}d under verified physical routing.`;
     }
 
-    setupCorridorControls() {
+    async setupCorridorControls() {
         const selOrigin = document.getElementById('corridor-origin');
         const selDest = document.getElementById('corridor-dest');
         const btnSwap = document.getElementById('btn-swap-corridor');
         const btnRecalc = document.getElementById('btn-recalculate-route');
+
+        // Dynamically populate countries list if available
+        try {
+            const res = await fetch('/api/countries');
+            if (res.ok) {
+                const list = await res.json();
+                if (Array.isArray(list) && list.length > 0 && selOrigin && selDest) {
+                    const curOrig = selOrigin.value || 'India';
+                    const curDest = selDest.value || 'Netherlands';
+                    selOrigin.innerHTML = '';
+                    selDest.innerHTML = '';
+                    list.forEach(c => {
+                        const o1 = document.createElement('option');
+                        o1.value = c;
+                        o1.textContent = c;
+                        if (c === curOrig) o1.selected = true;
+                        selOrigin.appendChild(o1);
+
+                        const o2 = document.createElement('option');
+                        o2.value = c;
+                        o2.textContent = c;
+                        if (c === curDest) o2.selected = true;
+                        selDest.appendChild(o2);
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('Could not load countries for corridor dropdown:', e);
+        }
 
         // Mode Selection Buttons
         document.querySelectorAll('[data-mode-btn]').forEach(btn => {
@@ -1006,6 +1091,107 @@ export class GlobalRiskMap {
         });
     }
 
+    setupSideWindows() {
+        const leftPanel = document.getElementById('left-panel-container');
+        const leftToggle = document.getElementById('btn-toggle-left-panel');
+        const leftClose = document.getElementById('btn-close-left-panel');
+        const leftBackdrop = document.getElementById('left-panel-backdrop');
+        const leftIcon = document.getElementById('left-toggle-icon');
+
+        const rightPanel = document.getElementById('route-intel-panel');
+        const rightToggle = document.getElementById('btn-toggle-right-panel');
+        const rightClose = document.getElementById('btn-close-intel-panel');
+        const rightBackdrop = document.getElementById('right-panel-backdrop');
+        const rightIcon = document.getElementById('right-toggle-icon');
+
+        this.openLeftPanel = () => {
+            if (!leftPanel) return;
+            leftPanel.classList.remove('hidden');
+            leftToggle?.setAttribute('aria-expanded', 'true');
+            if (leftIcon) leftIcon.textContent = '▼';
+            if (leftToggle) leftToggle.classList.add('border-indigo-500', 'bg-indigo-950/40');
+            if (window.innerWidth < 768 && leftBackdrop) {
+                leftBackdrop.classList.remove('hidden');
+            }
+        };
+
+        this.closeLeftPanel = () => {
+            if (!leftPanel) return;
+            leftPanel.classList.add('hidden');
+            leftToggle?.setAttribute('aria-expanded', 'false');
+            if (leftIcon) leftIcon.textContent = '▶';
+            if (leftToggle) leftToggle.classList.remove('border-indigo-500', 'bg-indigo-950/40');
+            if (leftBackdrop) leftBackdrop.classList.add('hidden');
+        };
+
+        this.toggleLeftPanel = () => {
+            if (!leftPanel) return;
+            if (leftPanel.classList.contains('hidden')) {
+                this.openLeftPanel();
+            } else {
+                this.closeLeftPanel();
+            }
+        };
+
+        this.openRightPanel = () => {
+            if (!rightPanel) return;
+            rightPanel.classList.remove('hidden');
+            rightToggle?.setAttribute('aria-expanded', 'true');
+            if (rightIcon) rightIcon.textContent = '▼';
+            if (rightToggle) rightToggle.classList.add('border-emerald-500', 'bg-emerald-950/40');
+            if (window.innerWidth < 768 && rightBackdrop) {
+                rightBackdrop.classList.remove('hidden');
+            }
+        };
+
+        this.closeRightPanel = () => {
+            if (!rightPanel) return;
+            rightPanel.classList.add('hidden');
+            rightToggle?.setAttribute('aria-expanded', 'false');
+            if (rightIcon) rightIcon.textContent = '◀';
+            if (rightToggle) rightToggle.classList.remove('border-emerald-500', 'bg-emerald-950/40');
+            if (rightBackdrop) rightBackdrop.classList.add('hidden');
+        };
+
+        this.toggleRightPanel = () => {
+            if (!rightPanel) return;
+            if (rightPanel.classList.contains('hidden')) {
+                this.openRightPanel();
+            } else {
+                this.closeRightPanel();
+            }
+        };
+
+        // Attach event listeners
+        leftToggle?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleLeftPanel();
+        });
+        leftClose?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.closeLeftPanel();
+        });
+        leftBackdrop?.addEventListener('click', () => this.closeLeftPanel());
+
+        rightToggle?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleRightPanel();
+        });
+        rightClose?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.closeRightPanel();
+        });
+        rightBackdrop?.addEventListener('click', () => this.closeRightPanel());
+
+        // Escape key dismisses open panels
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeLeftPanel();
+                this.closeRightPanel();
+            }
+        });
+    }
+
     setupEventListeners() {
         // Layer Toggles
         document.querySelectorAll('[data-layer]').forEach(cb => {
@@ -1034,10 +1220,10 @@ export class GlobalRiskMap {
 
                 const note = document.getElementById('route-intel-scenario-note');
                 if (note) {
-                    if (scen === 'base') note.textContent = 'Base baseline view (nominal operating conditions).';
-                    if (scen === 'fuel') note.textContent = 'Fuel surcharge +10%: Higher operational freight costs applied.';
-                    if (scen === 'weather') note.textContent = 'Weather disruption: Coastal and air corridors experience +25% transit delay.';
-                    if (scen === 'sanctions') note.textContent = 'Sanctions escalation: Regulatory and transit risk elevated.';
+                    if (scen === 'base') note.textContent = 'Nominal operating conditions: standard bunker fuel rates and tariff schedules.';
+                    if (scen === 'fuel') note.textContent = 'Simulated fuel shock: +10% bunker adjustment factor (BAF) across maritime and air modes.';
+                    if (scen === 'weather') note.textContent = 'Severe weather disruption: +25% transit delay factored into maritime and air routes.';
+                    if (scen === 'sanctions') note.textContent = 'Sanctions escalation: sovereign corridor restrictions and heightened customs scrutiny.';
                 }
 
                 if (this.activeRoute) {
